@@ -21,4 +21,8 @@ I)  Acquirung data with tofpet readout
      * Prepare setup, check light-tightness and set HV of SiPMs to OP voltage
      * Run data acquisition using ```test_daq.py``` script
 
-II) 
+II) Data convertation using calibration files
+Acuired data is in the raw format and needs to be converted in order to opbtain physical values. More info can be found [here](https://gitlab.cern.ch/snd-scifi/software/-/wikis/Raw-data-format) and at the [TOFPET data-sheet](/home/cholak/Documents/PETsys TOFPET 2C ASIC - Datasheet (rev 10).pdf)
+
+  1. Raw data is located in ```/home/cholak/Documents/data_test``` and calibrated in ```/home/cholak/Documents/data_conv```
+  2. Source data converation utilities with ```source /home/cholak/Documents/data_conv/setup.sh```
