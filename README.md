@@ -26,3 +26,4 @@ Acuired data is in the raw format and needs to be converted in order to opbtain 
 
   1. Raw data is located in ```/home/cholak/Documents/data_test``` and calibrated in ```/home/cholak/Documents/data_conv```
   2. Source data converation utilities with ```source /home/cholak/Documents/data_conv/setup.sh```
+  3. Calibration functions can be expoted from: 
