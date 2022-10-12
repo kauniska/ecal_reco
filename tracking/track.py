@@ -4,6 +4,7 @@ The methods are the chi^2.
 """
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 class Track:
     def __init__(self, *args):
@@ -82,61 +83,103 @@ class Track:
     def is_good_fit(self):
         return (self.chi2() > 3.841)
     
-    def find_tracks(self):
-        """Finds the best linear track using Hough transform, gives the tangent angle and the coordinate of the crossing of the top of the box
+    def tracks(hits, plot=False):
+        """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
+
+        Args:
+            hits (list of Hit): recorded hits
+            plot (bool, optional): If a figure of the track is to be made or not. Defaults to False.
 
         Returns:
-            t: tangent angle (0° is vertical)
-            x0: coordinate of the track at the top of the box
+            x0: coordinate at the top of the box
+            t: tan of the angle (0° is vertical)
+            indices: indices of the hits considered
         """
-        n_points = 100
-        max = 5  # max=5 => angle scanning between [-78.7°,78,7°]
-        
-        # region over which we want to look for the angle
-        tneg = np.linspace(-max, 0, n_points)
-        tpos = np.linspace(0, max, n_points)
-        n_hits = len(self.hits)
-        
-        x0 = pd.DataFrame(data = {
-            'xu' : [np.zeros(2*n_points) for i in range(n_hits)],
-            'xd' : [np.zeros(2*n_points) for i in range(n_hits)]
-        })
-        
-        for hit in range(n_hits):
-            x0['xu'][hit][:n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 8) * 2 * tneg
-            x0['xu'][hit][n_points:2*n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 9) * 2 * tpos
-            x0['xd'][hit][:n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 8) * 2 * tneg
-            x0['xd'][hit][n_points:2*n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 8) * 2 * tpos
+        max = 3  # max=5 => angle scanning between [-78.7°,78,7°]
+        sampling = 5
+        angle_sampling = 150
+        T = np.linspace(-max, max, angle_sampling)
+        x0s = np.empty(len(hits) * sampling * sampling * angle_sampling)
+        txs = np.empty(len(hits) * sampling * sampling * angle_sampling)
+        for n, hit in enumerate(hits):
+            zs = np.linspace(hit.coord[1] - 0.5, hit[1] + 0.5, sampling)
+            xs = np.linspace(hit.coord[0] - 0.5, hit[0] + 0.5, sampling)
+            for i, z in enumerate(zs):
+                for j, x in enumerate(xs):
+                    index_prefix = n * sampling * sampling * angle_sampling + \
+                        i * sampling * angle_sampling + j * angle_sampling
+                    x0s[index_prefix:index_prefix +
+                        angle_sampling] = -(z - 9) * T + x
+                    txs[index_prefix:index_prefix + angle_sampling] = T
 
-        T = np.append(tneg, tpos)
-        t_overlap = [[] for i in range(2*n_points)]
-        boundaries = [[] for i in range(2*n_points)]
-        overlap = 0
-        for t in range(2*n_points):
-            a = 0
-            t_overlap[t], a, boundaries[t] = self.max_overlap(x0, t)
-            if a > overlap:
-                overlap = a
-        t_max_overlap = [T[t] for t in range(2*n_points) if len(t_overlap[t]) == overlap]
-        min_max_overlap = [boundaries[t] for t in range(2*n_points) if len(t_overlap[t]) == overlap][0]
-        t = np.mean(t_max_overlap)
-        x0 = np.mean([np.mean(ov) for ov in min_max_overlap])
-        indices = [t_overlap[t] for t in range(2*n_points) if len(t_overlap[t])==overlap][0]
-        return t, x0, indices
+        H, ts, xs = np.histogram2d(txs, x0s, bins=[100, 100])
+        id_t, id_x0 = np.unravel_index(np.argmax(H, axis=None), H.shape)
+        t = ts[id_t]
+        x0 = xs[id_x0]
+        indices = range(len(hits))
+        fit = [[np.round(t * (z-9) + x0), z] for z in range(9)]
+
+        if plot:
+            plt.figure()
+            plt.hist2d(txs, x0s, bins=[len(T), len(T)], cmap='inferno')
+            plt.plot([t], [x0], 'rx')
+            plt.xlabel('$t$')
+            plt.ylabel('$x$')
+
+            plt.figure()
+            hitsX = [hit.coord[0] for hit in hits]
+            hitsZ = [hit.coord[1] for hit in hits]
+            plt.hist2d(hitsX, hitsZ, bins=[24, 8], range=[
+                       [1, 24], [1, 8]], cmap='inferno')
+            plt.plot([t * (z-9) + x0 for z in range(9)], range(9), 'r-')
+            coords_x = []
+            coords_z = []
+            for hit in hits:
+                if hit.coord in fit:
+                    coords_x.append(hit.coord[0])
+                    coords_z.append(hit.coord[1])
+            plt.plot(coords_x, coords_z, 'b+')
+            plt.xlabel('$x$')
+            plt.ylabel('$z$')
+
+        return x0, t, indices
     
-    def max_overlap(self, x0, t):
-        nb_hits = len(x0)
-        x0u = [x0['xu'].iloc[i][t] for i in range(nb_hits)]
-        x0d = [x0['xd'].iloc[i][t] for i in range(nb_hits)]
-        index_sort = np.argsort(np.array(x0u))
-        index_sort = index_sort[::-1]
-        x0u_sorted = x0u
-        x0u_sorted.sort(reverse = True)
-        index_overlap = max([[j for j in index_sort[i:] if (x0u_sorted[j] >= x0d[index_sort[i]])] for i in range(nb_hits)], key = len)
-        boundaries = [0,0]
-        if len(index_overlap) > 0:
-            boundaries = [min([x0u[i] for i in index_overlap]), max([x0u[i] for i in index_overlap])]
-        return np.sort(index_overlap), len(index_overlap), boundaries
+    def precise_track(self):
+        """Makes a very precise fit of the track, updates the angle of the object
+        
+        Returns:
+            x0: coordinate at the top of the box
+            t: tan of the angle (0° is vertical)
+            indices: indices of the hits considered
+        """
+        max = 6  # max=5 => angle scanning between [-78.7°,78,7°]
+        sampling = 20
+        angle_sampling = 500
+        T = np.linspace(-max, max, angle_sampling)
+        x0s = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
+        txs = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
+        for n, hit in enumerate(self.hits):
+            zs = np.linspace(hit.coord[1] - 0.5, hit[1] + 0.5, sampling)
+            xs = np.linspace(hit.coord[0] - 0.5, hit[0] + 0.5, sampling)
+            for i, z in enumerate(zs):
+                for j, x in enumerate(xs):
+                    index_prefix = n * sampling * sampling * angle_sampling + \
+                        i * sampling * angle_sampling + j * angle_sampling
+                    x0s[index_prefix:index_prefix +
+                        angle_sampling] = -(z - 9) * T + x
+                    txs[index_prefix:index_prefix + angle_sampling] = T
+
+        H, ts, xs = np.histogram2d(txs, x0s, bins=[100, 100])
+        id_t, id_x0 = np.unravel_index(np.argmax(H, axis=None), H.shape)
+        t = ts[id_t]
+        x0 = xs[id_x0]
+        fit = [ [-(z - 9) * t + x0, z] for z in range(9)]
+        indices = [i for i, hit in enumerate(self.hits) if hit.coord in fit]
+        
+        self.reduced_chi2 = self.chi2() / self.n_freedom
+        
+        return t, x0, indices
+        
     
     def get_tracks(self):
         """Returns a list of the coordinates of the tracks
