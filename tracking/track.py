@@ -8,26 +8,6 @@ import matplotlib.pyplot as plt
 from scipy.optimize import OptimizeWarning
 import scipy.optimize as opt
 
-
-def gaussian2D(xy, x0, y0, sigma_x, sigma_y, A=1, theta=0):
-    """ Gaussian in 2D with maximum at (x0, y0) of amplitude A and std deviation (sigma_x, sigma_y) rotated around an angle theta
-    : (x,y): position the function is evaluated at
-      (x0, y0): center of gaussian
-      (sigma_x, sigma_y): std deviation along both axes
-      A: amplitude, if -1 then normalized to 1 (-1 by default)
-      theta: angle of rotation (radian) (0 by default)
-    return: scalar
-    """
-    (x, y) = np.asarray(xy).reshape(2, int(np.shape(xy)[0]/2))
-    a = np.cos(theta)**2/(2*sigma_x**2) + np.sin(theta)**2/(2*sigma_y**2)
-    b = -np.sin(2*theta)/(4*sigma_x**2) + np.sin(2*theta)**2/(4*sigma_y**2)
-    c = np.sin(theta)**2/(2*sigma_x**2) + np.cos(theta)**2/(2*sigma_y**2)
-    r = np.exp(-(a*(x-x0)**2 + 2*b*(x-x0)*(y-y0) + c*(y-y0)**2))
-    if np.sum(r) != 0:
-        return A*r/np.sum(r)
-    else:
-        return np.inf
-
 class Track:
     def __init__(self, *args):
         """Creates a Track from arguments.
@@ -151,7 +131,6 @@ class Track:
             fig.set_size_inches(12, 3, forward=True)
             fig.set_dpi(140)
             axs[0].hist2d(txs, x0s, bins=angle_sampling, cmap='inferno')
-            # axs[0].hist2d(txs, x0s, bins = angle_sampling, cmap = 'inferno')
             axs[0].plot([self.t], [self.x0], 'bx', label='max')
             axs[0].set(xlabel='$t$', ylabel='$x$')
             axs[0].legend()
