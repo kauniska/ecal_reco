@@ -41,6 +41,7 @@ class Track:
             x0 (flaot): extrapolated coordinate of the crossing of the top of the box
             hits_index: index of the hits in the event when the data was recorded
         """
+        self.steps = 8
         if len(args) == 0:
             self.hits = []
             self.t = None
@@ -53,8 +54,7 @@ class Track:
             self.hits = args[0]
             self.t, self.x0, self.hits_index = self.find_track()
             self.mean_time = None # TODO: implement
-            # two parameters: f(x) = a*x + b, number of data points = len + 1
-            self.n_freedom = len(self.hits) - 1
+            self.n_freedom = len(self.hits) - 1 # two parameters: f(x) = a*x + b, number of data points = len + 1
             if self.n_freedom > 0:
                 self.reduced_chi2 = self.chi2()/self.n_freedom
             else:
@@ -79,6 +79,12 @@ class Track:
         self.hits = [self.hits[i] for i in self.hits_index]
         self.n_freedom = len(self.hits) - 1
         
+    def x(self, z):
+        if self.t != 0:
+            return 8 + (z - self.x0) / self.t
+        else:
+            return self.x0
+            
     def get_timestamps(self):
         """Gets the timestamps for all the hits
 
@@ -98,10 +104,14 @@ class Track:
         Returns:
             float: chi^2
         """
-        return sum([(hit[0] - track[0])**2 / track[0] for hit, track in zip(self.get_hits_coords(), self.get_tracks()) if track[0] != 0])
+        hits = self.get_hits_coords()
+        tracks = self.get_tracks()
+        hits.sort(key=lambda x: x[1])
+        tracks.sort(key=lambda x: x[1])
+        return np.sum([(hit[0] - track[0])**2 / 0.5 for hit, track in zip(hits, tracks)])
     
     def is_good_fit(self):
-        return (self.chi2()/self.n_freedom < 10 * 3.841)
+        return (self.chi2()/self.n_freedom < 5 * 3.841)
     
     def find_track(self, plot = False):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
@@ -115,10 +125,10 @@ class Track:
             t: tan of the angle (0° is vertical)
             indices: indices of the hits considered
         """
-        max = 3  # max=5 => angle scanning between [-78.7°,78,7°]
+        maxi = 6  # maxi=5 => angle scanning between [-78.7°,78,7°]
         sampling = 5
-        angle_sampling = 150
-        T = np.linspace(-max, max, angle_sampling)
+        angle_sampling = 240
+        T = np.linspace(-maxi, maxi, angle_sampling)
         x0s = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         txs = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         for n, hit in enumerate(self.hits):
@@ -127,39 +137,44 @@ class Track:
             for i, z in enumerate(zs):
                 for j, x in enumerate(xs):
                     index_prefix = n * sampling * sampling * angle_sampling + i * sampling * angle_sampling + j * angle_sampling
-                    x0s[index_prefix:index_prefix + angle_sampling] = -(z - 9) * T + x
+                    x0s[index_prefix:index_prefix + angle_sampling] = z - T * (x - 8)
                     txs[index_prefix:index_prefix + angle_sampling] = T
 
         H, ts, xs = np.histogram2d(txs, x0s, bins=[100, 100])
         id_t, id_x0 = np.unravel_index(np.argmax(H, axis=None), H.shape)
-        t = ts[id_t]
-        x0 = xs[id_x0]
-        indices = [i for i in range(len(self.hits))]
-        fit = [[np.round(t * (z-9) + x0), z] for z in range(9)]
+        self.t = ts[id_t]
+        self.x0 = xs[id_x0]
+        fit = [[self.x(z), z] for z in np.linspace(1, self.steps, self.steps)]
 
         if plot:
-            plt.figure()
-            plt.hist2d(txs, x0s, bins=[50, 50], cmap='inferno', range=[[t - 1, t+1], [x0-10, x0+10]])
-            plt.plot([t], [x0], 'rx')
-            plt.xlabel('$t$')
-            plt.ylabel('$x$')
+            fig, axs = plt.subplots(1, 2)
+            fig.set_size_inches(12, 3, forward=True)
+            fig.set_dpi(140)
+            axs[0].hist2d(txs, x0s, bins=angle_sampling, cmap='inferno')
+            # axs[0].hist2d(txs, x0s, bins = angle_sampling, cmap = 'inferno')
+            axs[0].plot([self.t], [self.x0], 'bx', label='max')
+            axs[0].set(xlabel='$t$', ylabel='$x$')
+            axs[0].legend()
 
-            plt.figure()
             hitsX = [hit.coord[0] for hit in self.hits]
             hitsZ = [hit.coord[1] for hit in self.hits]
-            plt.hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='inferno')
-            plt.plot([t * (z-9) + x0 for z in range(9)], range(9), 'r-')
+            axs[1].hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='inferno')
+            axs[1].plot([f[0] for f in fit], [f[1] for f in fit], 'b+')
+            axs[1].set_xticks(np.linspace(1, 24, 25))
+            axs[1].set_yticks(np.linspace(1, 8, 9))
+            axs[1].grid(True, which='major')
+            axs[1].grid(False, which='minor')
             coords_x = []
             coords_z = []
-            for hit in self.hits:
-                if hit.coord in fit:
-                    coords_x.append(hit.coord[0])
-                    coords_z.append(hit.coord[1])
-            plt.plot(coords_x, coords_z, 'b+')
-            plt.xlabel('$x$')
-            plt.ylabel('$z$')
+            for i in self.hits_index:
+                if self.hits[i].coord in fit:
+                    coords_x.append(self.hits[i].coord[0])
+                    coords_z.append(self.hits[i].coord[1])
+            axs[1].plot(coords_x, coords_z, 'k*')
+            axs[1].set(xlabel='$x$', ylabel='$z$')
 
-        return x0, t, indices
+        self.hits_index = []
+        return self.x0, self.t, self.hits_index
 
     def precise_track(self, plot = False):
         """Makes a very precise fit of the track, updates the angle of the object
@@ -171,10 +186,10 @@ class Track:
         """
         old_x0 = self.x0
         old_t = self.t
-        max = 6  # max=5 => angle scanning between [-78.7°,78,7°]
-        angle_sampling = 250
-        sampling = 24
-        T = np.linspace(-max, max, angle_sampling)
+        maxi = 6  # max=5 => angle scanning between [-78.7°,78,7°]
+        angle_sampling = 480
+        sampling = 20
+        T = np.linspace(-maxi, maxi, angle_sampling)
         x0s = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         txs = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         for n, hit in enumerate(self.hits):
@@ -183,60 +198,60 @@ class Track:
             for i, z in enumerate(zs):
                 for j, x in enumerate(xs):
                     index_prefix = n * sampling * sampling * angle_sampling + i * sampling * angle_sampling + j * angle_sampling
-                    x0s[index_prefix:index_prefix + angle_sampling] = -(z - 9) * T + x
+                    x0s[index_prefix:index_prefix +
+                        angle_sampling] = z - T * (x - 8)
                     txs[index_prefix:index_prefix + angle_sampling] = T
 
         H, ts, xs = np.histogram2d(txs, x0s, bins = [angle_sampling, angle_sampling], normed = True)
         id_t, id_x0 = np.unravel_index(np.argmax(H, axis=None), H.shape)
-        t = ts[id_t]
-        x0 = xs[id_x0]
-        # x = np.linspace(np.min(ts), np.max(ts), angle_sampling)
-        # y = np.linspace(np.min(xs), np.max(xs), angle_sampling)
-        # xy = np.meshgrid(y, x)
-        # xy = np.ravel(xy)
-        # initial_guess = (t, x0, 1, 1, 0.1, 0)
-        # try:
-            # params, _ = opt.curve_fit(gaussian2D, xy, np.ravel(H), p0=initial_guess, bounds=([np.min(ts), np.min(xs), 0, 0, 0, -np.inf], [np.max(ts), np.max(xs), 20, 20, np.inf, np.inf]))
-        # except RuntimeError:
-            # params = [0, 0, 0, 0, 0]
-        # except OptimizeWarning:
-            # params = [0, 0, 0, 0, 0]
+        self.t = ts[id_t]
+        self.x0 = xs[id_x0]
         
-        fit = [ [-(z - 9) * t + x0, z] for z in range(9)]
-        indices = [i for i, hit in enumerate(self.hits) if hit.coord in fit]
+        fit = self.get_tracks()
+        self.hits_index = self.get_indices(False)
         
         self.reduced_chi2 = self.chi2() / self.n_freedom
         
         if plot:
-            # fitgauss = gaussian2D(xy, params[0], params[1],params[2], params[3], A=-1)
             fig, axs = plt.subplots(1, 2)
             fig.set_size_inches(12, 3, forward=True)
             fig.set_dpi(140)
-            # plt.hist2d(txs, x0s, bins=int(4 / max * sampling), cmap='inferno', range=[[t - 2, t+2], [x0-20, x0+20]])
-            axs[0].hist2d(txs, x0s, bins = angle_sampling, cmap = 'inferno')
-            # leg = 't0 = {:.1}, x0 = {:.1}, sig_t0 = {:.2}, {:.2}'.format(float(params[0]), float(params[1]), float(params[2]), float(params[4]))
-            # plt.title(leg)
-            # plt.contour(y, x, fitgauss.reshape(len(x), len(y)), 8, colors='w')
-            axs[0].plot([t], [x0], 'bx', label = 'new')
-            axs[0].plot([old_t], [old_x0], 'rx', label = 'old')
+            axs[0].hist2d(txs, x0s, bins = int(2 * angle_sampling / maxi), cmap='inferno', range=[[self.t - 2, self.t+2], [self.x0-10, self.x0+10]])
+            # axs[0].hist2d(txs, x0s, bins = angle_sampling, cmap = 'inferno')
+            axs[0].plot([self.t], [self.x0], 'bx', label = 'precise')
+            axs[0].plot([old_t], [old_x0], 'rx', label = 'rough')
             axs[0].set(xlabel = '$t$', ylabel = '$x$')
             axs[0].legend()
 
             hitsX = [hit.coord[0] for hit in self.hits]
             hitsZ = [hit.coord[1] for hit in self.hits]
             axs[1].hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='inferno')
-            axs[1].plot([t * (z-9) + x0 for z in range(9)], range(9), 'b-')
+            axs[1].plot([f[0] for f in fit], [f[1] for f in fit], 'b+')
+            axs[1].set_xticks(np.linspace(1, 24, 25))
+            axs[1].set_yticks(np.linspace(1, 8, 9))
+            axs[1].grid(True, which = 'major')
+            axs[1].grid(False, which = 'minor')
             coords_x = []
             coords_z = []
-            for hit in self.hits:
-                if hit.coord in fit:
-                    coords_x.append(hit.coord[0])
-                    coords_z.append(hit.coord[1])
-            axs[1].plot(coords_x, coords_z, 'b+')
-            axs[1].set(xlabel = '$x$', ylabel = '$x$')
+            for i in self.hits_index:
+                if self.hits[i].coord in fit:
+                    coords_x.append(self.hits[i].coord[0])
+                    coords_z.append(self.hits[i].coord[1])
+            axs[1].plot(coords_x, coords_z, 'k*')
+            axs[1].set(xlabel = '$x$', ylabel = '$z$')
 
-            return t, x0, indices
+        return self.t, self.x0, self.hits_index
         
+    def get_indices(self, redo_track = True):
+        c = self.chi2()
+        if redo_track:
+            self.precise_track()
+        self.hits_index = []
+        for t in self.get_tracks():
+            for i, hit in enumerate(self.hits):
+                if (hit.coord[0] == int(np.round(t[0]))) and (hit.coord[1] == int(np.round(t[1]))):
+                    self.hits_index.append(i)
+        return self.hits_index
     
     def get_tracks(self):
         """Returns a list of the coordinates of the tracks
@@ -244,8 +259,7 @@ class Track:
         Returns:
             list of coordinates (x, z)
         """
-        steps = 9
-        return [[-self.t * (z - 9) + self.x0, z] for z in np.linspace(1,steps,steps)]
+        return [[self.x(z), z] for z in np.linspace(1, self.steps, self.steps)]
     
     def get_hits_coords(self):
         """Gets the list of coordinates of the hits

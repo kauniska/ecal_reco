@@ -21,7 +21,7 @@ class Track3D:
             self.time = self.get_time()
             
     def get_time_interval(self):
-        """Get the timings of all hits
+        """Get the timings of all hits, returns None if zero hits are associated to the track
         
         Return:
             self.time (List of float): timestamps of hits
@@ -29,11 +29,14 @@ class Track3D:
         self.time = np.concatenate([self.x.get_timestamps(), self.x.get_timestamps()])
         hits = self.x.hits + self.y.hits
         hits_indices = self.x.hits_index + self.y.hits_index
-        last_hit = hits[np.argmax(hits_indices, axis = 0)]
-        if last_hit.coord[1] < 8:
-            distances = self.x._dr(last_hit, hits)
-            if np.any(np.array(distances) < 2):
-                return np.mean(self.time) - hits[0].timestamp_event
+        if len(hits_indices) > 0:
+            last_hit = hits[np.argmax(hits_indices, axis = 0)]
+            if last_hit.coord[1] < 8:
+                distances = self.x._dr(last_hit, hits)
+                if np.any(np.array(distances) < 2):
+                    return np.mean(self.time) - hits[0].timestamp_event
+        else:
+            return None
         
     def precise_track(self):
         self.x.precise_track()
