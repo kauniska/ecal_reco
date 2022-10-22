@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from track import Track
 
 class Track3D:
@@ -19,6 +20,7 @@ class Track3D:
             self.x = args[0]
             self.y = args[1]
             self.time = self.get_time()
+
             
     def get_time_interval(self):
         """Get the timings of all hits, returns None if zero hits are associated to the track
@@ -47,3 +49,17 @@ class Track3D:
     
     def reduced_chi2(self):
         return self.x.reduced_chi2 + self.y.reduced_chi2
+    
+    def print(self, plot = False):
+        fig, axs = plt.subplots(1, 2)
+        fig.set_size_inches(12, 6)
+        self.x.print(plot, axs[0])
+        self.y.print(plot, axs[1])
+        # fig.show()
+        # fig.savefig('test.png')
+        
+    def kalman_filter(self, sigma = 0.5):
+        fig, axs = plt.subplots(1, 2)
+        fig.set_size_inches(12, 6)
+        self.x.kalman_filter(sigma, axs[0])
+        self.y.kalman_filter(sigma, axs[1])
