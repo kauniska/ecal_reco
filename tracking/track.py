@@ -4,6 +4,9 @@ The methods are the chi^2.
 """
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+plt.ion()
+from filterpy.kalman import KalmanFilter
 
 class Track:
     def __init__(self, *args):
@@ -18,6 +21,7 @@ class Track:
             x0 (flaot): extrapolated coordinate of the crossing of the top of the box
             hits_index: index of the hits in the event when the data was recorded
         """
+        self.steps = 8
         if len(args) == 0:
             self.hits = []
             self.t = None
@@ -28,12 +32,9 @@ class Track:
             self.hits_index = None
         elif len(args) == 1:
             self.hits = args[0]
-            self.t, self.x0, self.hits_index = self.find_track(self)
-            self.t = None
-            self.x0 = None
+            self.n_freedom = len(self.hits) - 1 # two parameters: f(x) = a*x + b, number of data points = len + 1
+            self.find_track()
             self.mean_time = None # TODO: implement
-            # two parameters: f(x) = a*x + b, number of data points = len + 1
-            self.n_freedom = len(self.hits) - 1
             if self.n_freedom > 0:
                 self.reduced_chi2 = self.chi2()/self.n_freedom
             else:
@@ -58,6 +59,9 @@ class Track:
         self.hits = [self.hits[i] for i in self.hits_index]
         self.n_freedom = len(self.hits) - 1
         
+    def x(self, z):
+        return self.t * z + self.x0
+            
     def get_timestamps(self):
         """Gets the timestamps for all the hits
 
@@ -65,89 +69,155 @@ class Track:
             list of float: timestamps of hits
         """
         return [hit.timestamp + hit.timestamp_event for hit in self.hits]
+    
+    def get_plot(self, axs):
+        fit = np.round(self.get_tracks())
+        fit = [[int(f[0]), int(f[1])] for f in fit]
+        hitsX = [hit.coord[0] for hit in self.hits]
+        hitsZ = [hit.coord[1] for hit in self.hits]
+        # axs.hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='magma')
+        axs.hist2d(hitsX, hitsZ, bins = [-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
+        axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
+        plt.xticks(np.linspace(1, 24, 6))
+        plt.yticks(np.linspace(1, 8, 8))
+        coords_x = []
+        coords_z = []
+        for i in self.hits_index:
+            if self.hits[i].coord in fit:
+                coords_x.append(self.hits[i].coord[0])
+                coords_z.append(self.hits[i].coord[1])
+        axs.plot(coords_x, coords_z, 'r*')
+        axs.set(xlabel='$x$', ylabel='$z$')
+        return axs
 
-    def print(self):
+    def print(self, plot = False, ax = None):
         """Prints the relevant information (reduced chi^2, tangent angle and x0)
         """
         print("Reduced chi^2 = {:.2f}".format(self.reduced_chi2))
         print("t = {:.2f},\t x0 = {:.2f}".format(self.t, self.x0))
+        if plot:
+            if ax is None:
+                fig, ax = plt.subplots(1, 1)     
+                self.get_plot(ax)
+                # fig.show()
+            else:
+                self.get_plot(ax)
+            
 
     def chi2(self):
         """Computes the chi^2 between the hits and the track
         Returns:
             float: chi^2
         """
-        return sum([(hit.coord[0] - track[0])**2 / track[0] for hit, track in zip(self.hits, self.get_tracks()) if track[0] != 0])
+        hits = self.get_hits_coords()
+        tracks = self.get_tracks()
+        hits.sort(key=lambda x: x[1])
+        tracks.sort(key=lambda x: x[1])
+        return np.sum([(hit[0] - track[0])**2 / 0.5 for hit, track in zip(hits, tracks)])
     
     def is_good_fit(self):
-        return (self.chi2() > 3.841)
+        return (self.chi2()/self.n_freedom < 2 * 3.841)
     
-    def find_tracks(self):
-        """Finds the best linear track using Hough transform, gives the tangent angle and the coordinate of the crossing of the top of the box
+    def find_track(self, sampling = 10, angle_sampling = 240, plot = False):
+        """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
+
+        Args:
+            hits (list of Hit): recorded hits
+            plot (bool, optional): If a figure of the track is to be made or not. Defaults to False.
 
         Returns:
-            t: tangent angle (0° is vertical)
-            x0: coordinate of the track at the top of the box
+            x0: coordinate at the top of the box
+            t: tan of the angle (0° is vertical)
+            indices: indices of the hits considered
         """
-        n_points = 100
-        max = 5  # max=5 => angle scanning between [-78.7°,78,7°]
-        
-        # region over which we want to look for the angle
-        tneg = np.linspace(-max, 0, n_points)
-        tpos = np.linspace(0, max, n_points)
-        n_hits = len(self.hits)
-        
-        x0 = pd.DataFrame(data = {
-            'xu' : [np.zeros(2*n_points) for i in range(n_hits)],
-            'xd' : [np.zeros(2*n_points) for i in range(n_hits)]
-        })
-        
-        for hit in range(n_hits):
-            x0['xu'][hit][:n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 8) * 2 * tneg
-            x0['xu'][hit][n_points:2*n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 9) * 2 * tpos
-            x0['xd'][hit][:n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 8) * 2 * tneg
-            x0['xd'][hit][n_points:2*n_points] = (self.hits.coord[hit] + 1) * 1.6 - (self.hits[hit][1] - 8) * 2 * tpos
+        maxi = 6  # max=5 => angle scanning between [-78.7°,78,7°]
+        T = np.linspace(-maxi, maxi, angle_sampling, False)
+        x0s = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
+        txs = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
+        for n, hit in enumerate(self.hits):
+            zs = np.linspace(hit.coord[1] - 0.5, hit.coord[1] + 0.5, sampling)
+            xs = np.linspace(hit.coord[0] - 0.5, hit.coord[0] + 0.5, sampling)
+            for i, z in enumerate(zs):
+                for j, x in enumerate(xs):
+                    index_prefix = n * sampling * sampling * angle_sampling + \
+                        i * sampling * angle_sampling + j * angle_sampling
+                    x0s[index_prefix:index_prefix +
+                        angle_sampling] = x - T * z
+                    txs[index_prefix:index_prefix + angle_sampling] = T
 
-        T = np.append(tneg, tpos)
-        t_overlap = [[] for i in range(2*n_points)]
-        boundaries = [[] for i in range(2*n_points)]
-        overlap = 0
-        for t in range(2*n_points):
-            a = 0
-            t_overlap[t], a, boundaries[t] = self.max_overlap(x0, t)
-            if a > overlap:
-                overlap = a
-        t_max_overlap = [T[t] for t in range(2*n_points) if len(t_overlap[t]) == overlap]
-        min_max_overlap = [boundaries[t] for t in range(2*n_points) if len(t_overlap[t]) == overlap][0]
-        t = np.mean(t_max_overlap)
-        x0 = np.mean([np.mean(ov) for ov in min_max_overlap])
-        indices = [t_overlap[t] for t in range(2*n_points) if len(t_overlap[t])==overlap][0]
-        return t, x0, indices
-    
-    def max_overlap(self, x0, t):
-        nb_hits = len(x0)
-        x0u = [x0['xu'].iloc[i][t] for i in range(nb_hits)]
-        x0d = [x0['xd'].iloc[i][t] for i in range(nb_hits)]
-        index_sort = np.argsort(np.array(x0u))
-        index_sort = index_sort[::-1]
-        x0u_sorted = x0u
-        x0u_sorted.sort(reverse = True)
-        index_overlap = max([[j for j in index_sort[i:] if (x0u_sorted[j] >= x0d[index_sort[i]])] for i in range(nb_hits)], key = len)
-        boundaries = [0,0]
-        if len(index_overlap) > 0:
-            boundaries = [min([x0u[i] for i in index_overlap]), max([x0u[i] for i in index_overlap])]
-        return np.sort(index_overlap), len(index_overlap), boundaries
+        H, ts, xs = np.histogram2d(txs, x0s, bins=[angle_sampling, angle_sampling])
+        id_t, id_x0 = np.unravel_index(np.argmax(H, axis=None), H.shape)
+        self.t = ts[id_t]
+        self.x0 = xs[id_x0]
+
+        fit = self.get_tracks()
+        self.hits_index = self.get_indices(None, False)
+        self.reduced_chi2 = self.chi2() / self.n_freedom
+        if plot:
+            fig, axs = plt.subplots(1, 2)
+            fig.set_size_inches(12, 3, forward=True)
+            fig.set_dpi(140)
+            axs[0].set_title('t = {:.2f},\t x0 = {:.2f}'.format(self.t, self.x0))
+            # axs[0].hist2d(txs, x0s, bins=int(2 * angle_sampling / maxi), cmap='inferno', range=[[self.t - 2, self.t+2], [self.x0-10, self.x0+10]])
+            axs[0].hist2d(txs, x0s, bins = angle_sampling, cmap = 'inferno')
+            axs[0].plot([self.t], [self.x0], 'bx', label='precise')
+            axs[0].set(xlabel='$t$', ylabel='$x$')
+            axs[0].legend()
+
+            hitsX = [hit.coord[0] for hit in self.hits]
+            hitsZ = [hit.coord[1] for hit in self.hits]
+            axs[1].hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
+            axs[1].plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
+            axs[1].set_xticks(np.linspace(1, 24, 6))
+            axs[1].set_yticks(np.linspace(1, 8, 8))
+            axs[1].grid(True, which='major')
+            axs[1].grid(False, which='minor')
+            coords_x = []
+            coords_z = []
+            fit = np.round(self.get_tracks())
+            fit = [[int(f[0]), int(f[1])] for f in fit]
+            for i in self.hits_index:
+                if self.hits[i].coord in fit:
+                    coords_x.append(self.hits[i].coord[0])
+                    coords_z.append(self.hits[i].coord[1])
+            axs[1].plot(coords_x, coords_z, 'r*')
+            axs[1].set(xlabel='$x$', ylabel='$z$')
+
+        # return self.x0, self.t, self.hits_index
+
+    def precise_track(self, plot = False):
+        """Makes a very precise fit of the track, updates the angle of the object
+        
+        Returns:
+            x0: coordinate at the top of the box
+            t: tan of the angle (0° is vertical)
+            indices: indices of the hits considered
+        """
+        self.find_track(30, 480, plot)
+        self.hits_index = self.get_indices(None, False)
+        self.n_freedom = len(self.hits)
+        self.reduced_chi2 = self.chi2() / self.n_freedom
+                
+    def get_indices(self, fit_hits = None, redo_track = False):
+        c = self.chi2()
+        if redo_track:
+            self.precise_track()
+        self.hits_index = []
+        if fit_hits is None:
+            fit_hits = self.get_tracks()
+        for t in fit_hits:
+            for i, hit in enumerate(self.hits):
+                if (hit.coord[0] == int(np.round(t[0]))) and (hit.coord[1] == int(np.round(t[1]))):
+                    self.hits_index.append(i)
+        return self.hits_index.copy()
     
     def get_tracks(self):
         """Returns a list of the coordinates of the tracks
         
         Returns:
-            list of coordinates
+            list of coordinates (x, z)
         """
-        steps = 9
-        zs = np.linspace(1,steps,steps)
-        xs = self.t * (zs-9) * 2 + self.x0
-        return [[x, (z-1) * 2] for x, z in zip(xs, zs)] # track projection on X
+        return [[self.x(z), z] for z in np.linspace(1, self.steps, self.steps)]
     
     def get_hits_coords(self):
         """Gets the list of coordinates of the hits
@@ -182,3 +252,57 @@ class Track:
         ## eval module
         dr_mod = [np.sqrt(dr_u[i]*dr_u[i] + dr_d[i]*dr_d[i]) for i in range(len(dr_u))]
         return dr_mod
+
+    def kalman_filter(self, sigma = 1, axs = None):
+        # define the different vectors and matrices
+        f = KalmanFilter(dim_x=4, dim_z=2)
+        # physical state vector
+        f.x = np.array([[0.], # x
+                        [0.], # z
+                        [1.], # v_x
+                        [1.]]) #v_z
+        #  propagation matrix
+        f.F = np.array([[1., 0., self.t, 0.],
+                        [0., 1., 0., self.t],
+                        [0., 0., 1., 0.],
+                        [0., 0., 0., 1.]])
+        # measurement matrix
+        f.H = np.array([[1., 0., 0., 0.],
+                        [0., 1., 0., 0.]])
+        # covariance matrix # TODO: find right value
+        f.P = np.array([[1/sigma, 0., 0., 0.],
+                        [0., 1/sigma, 0., 0.],
+                        [0., 0., 1/sigma, 0.],
+                        [0., 0., 0., 1/sigma]])
+        # measurement noise matrix
+        f.R = np.array([[0.5, 0.], # x
+                        [0., 0.5]]) # z
+        #  process noise, # TODO: find right value
+        f.Q = np.array([[1., 0., 0., 0.],
+                        [0., 1., 0., 0.],
+                        [0., 0., 1., 0.],
+                        [0., 0., 0., 1.]])
+        
+        #iterate over the hit coordinates
+        hits = self.get_hits_coords()
+        hits.sort(key = lambda x: x[1])
+        # for h in hits:
+            # f.predict()
+            # f.update(np.array(h))
+        (mu, cov, _, _) = f.batch_filter(hits)
+        (xs, P, K, Pp) = f.rts_smoother(mu, cov)
+        kalman_hits = [[int(np.round(x[0])), int(np.round(x[1]))] for x in xs]
+        fit = self.get_tracks()
+        
+        if axs is None:
+            fig, axs = plt.subplots(1, 1)
+        hitsX = [hit.coord[0] for hit in self.hits]
+        hitsZ = [hit.coord[1] for hit in self.hits]
+        axs.hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
+        axs.plot([f[0] for f in kalman_hits], [f[1] for f in kalman_hits], 'r--', label = 'Kalman')
+        axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-', label = 'Hough')
+        plt.xticks(np.linspace(1, 24, 6))
+        plt.yticks(np.linspace(1, 8, 8))
+        axs.set(xlabel='$x$', ylabel='$z$')
+        axs.legend()
+        indices = self.get_indices(fit, False)
