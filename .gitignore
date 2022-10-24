@@ -4,3 +4,7 @@ tests/.ipynb_checkpoints
 **/*.root
 **/Makefile
 **/*.cmake
+**/*.out
+**/*.o
+**/*.d
+**/*/CMakeFiles

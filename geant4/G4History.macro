@@ -1,0 +1,21 @@
+/run/verbose 2
+/run/initialize
+/control/execute vis.mac
+/vis/open OGL 600x600-0+0
+/vis/sceneHandler/create OGL
+/control/execute run1.mac
+/run/initialize
+/tracking/verbose 1
+/run/beamOn 1
+/gun/particle mu+
+/gun/energy 3 MeV
+/run/beamOn 3
+/tracking/verbose 0
+/run/printProgress 5
+/run/beamOn 20
+/globalField/setValue 0.2 0 0 tesla
+/run/beamOn 3
+/process/list
+/process/inactivate eBrem
+/run/physicsModified
+/run/beamOn 20

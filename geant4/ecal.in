@@ -3,7 +3,7 @@
 /run/initialize
 
 # e+ 300MeV 
-/gun/particle e+
+/gun/particle 11
 /gun/energy 300 MeV
 /run/beamOn 1
 #

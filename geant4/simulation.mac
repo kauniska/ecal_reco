@@ -1,0 +1,11 @@
+/run/initialize
+
+/gun/particle mu-
+/gun/energy 1 GeV
+/run/printProgress 100
+/run/beamOn 1000
+
+/gun/particle mu+
+/gun/energy 1 GeV
+/run/printProgress 100
+/run/beamOn 1000
