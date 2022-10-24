@@ -8,19 +8,23 @@ def new_method_tracks(hits):
     #     if h.is_sidex:
     #         hits.append(h)
     n_points = 100
-    max = 5
+    tmax = 6.25
+    n_strips = 24
+    n_layers = 8
+    width = 1
+    thickness = 1
     map = np.zeros((2*n_points,2*n_points))
-    tneg = np.linspace(-max, 0, n_points)
-    tpos = np.linspace(0, max, n_points)
+    tneg = np.linspace(-tmax, 0, n_points)
+    tpos = np.linspace(0, tmax, n_points)
     T = np.append(tneg,tpos)
-    x0_max = (24+1)*1.6 - (1-9)*2*5
-    x0_min = 1*1.6-(1-9)*2*(-5)
+    x0_max = (n_strips+0.5)*width + tmax*(n_layers+0.5)*thickness
+    x0_min = 0.5*width - tmax*(n_layers+0.5)*thickness
     x = np.linspace(x0_min,x0_max,2*n_points)
     for h in hits:
-        x0u_neg = (h.coord[0]+1)*1.6-(h.coord[1]-8)*2*tneg
-        x0d_neg = h.coord[0]*1.6-(h.coord[1]-9)*2*tneg
-        x0u_pos = (h.coord[0]+1)*1.6-(h.coord[1]-9)*2*tpos
-        x0d_pos = h.coord[0]*1.6-(h.coord[1]-8)*2*tpos
+        x0u_neg = (h.coord[0]+0.5)*width + (h.coord[1]+0.5)*tneg*thickness
+        x0d_neg = (h.coord[0]-0.5)*width + (h.coord[1]-0.5)*tneg*thickness
+        x0u_pos = (h.coord[0]+0.5)*width + (h.coord[1]-0.5)*tpos*thickness
+        x0d_pos = (h.coord[0]-0.5)*width + (h.coord[1]+0.5)*tpos*thickness
         x0d = np.concatenate((x0d_neg,x0d_pos))
         x0u = np.concatenate((x0u_neg,x0u_pos))
 
@@ -49,4 +53,4 @@ def new_method_tracks(hits):
     # plt.imshow(detector_map, interpolation='nearest', extent=[0,24*1.6,0,8*2])
     # plt.plot(x_track,z_grid,'r-')
     # plt.show
-    return x0,t,1
+    return t,x0

@@ -94,3 +94,13 @@ def chi_2(Hits,track,index_):
         return False
     else:
         return True
+
+
+
+
+
+
+hits = []
+hits_coord = []
+for h in hits:
+    hits_coord.append(h.coord)
