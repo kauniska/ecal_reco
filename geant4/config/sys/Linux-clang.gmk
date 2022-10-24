@@ -1,9 +1,11 @@
 #
-# ------ GNU/LINUX ------ gcc 9.3 and higher
+# ------ GNU/LINUX ------ clang 9.0 and higher
 #
-ifeq ($(G4SYSTEM),Linux-g++)
-  CXX       := g++
-  CXXFLAGS  := -W -Wall -ansi -pedantic -Wno-non-virtual-dtor -Wno-long-long
+# Original author: Gabriele Cosmo - CERN
+#
+ifeq ($(G4SYSTEM),Linux-clang)
+  CXX       := clang++
+  CXXFLAGS  := -Wall -Wno-non-virtual-dtor -Wno-long-long
   CXXFLAGS  += -Wwrite-strings -Wpointer-arith -Woverloaded-virtual
   CXXFLAGS  += -Wno-variadic-macros -Wshadow -pipe -pthread
   CXXFLAGS  += -fno-trapping-math -ftree-vectorize -fno-math-errno
@@ -40,10 +42,10 @@ ifeq ($(G4SYSTEM),Linux-g++)
     FCFLAGS   += -fPIC
     CCFLAGS   += -fPIC
   endif
-  G4RUNPATHOPTION := -Wl,-rpath 
+  G4RUNPATHOPTION := -Wl,-rpath, 
   G4STATIC_MODE += -Wl,--whole-archive
   G4NOSTATIC_MODE += -Wl,--no-whole-archive
-  CC := gcc
+  CC := clang
   FC := gfortran
   FCFLAGS += -fno-automatic -fno-backslash -fno-second-underscore
   FCLIBS := -lg2c -lnsl

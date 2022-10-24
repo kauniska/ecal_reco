@@ -3,7 +3,8 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/Users/lucahartman/geant4/geant4-v11.0.3-install/include/Geant4/**"
             ],
             "defines": [],
             "macFrameworkPath": [

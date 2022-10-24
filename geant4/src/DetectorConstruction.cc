@@ -85,19 +85,17 @@ void DetectorConstruction::DefineMaterials()
   // Lead material defined using NIST Manager
   auto nistManager = G4NistManager::Instance();
   nistManager->FindOrBuildMaterial("G4_Pb");
-  nistManager->FindOrBuildMaterial("G4_Al");
 
   // Liquid argon material
   G4double a;  // mass of a mole;
   G4double z;  // z=mean number of protons;
   G4double density;
-  //new G4Material("Al", z=13., a= 26.981*g/mole, density= 2.7*g/cm3);
+  new G4Material("liquidArgon", z=18., a= 39.95*g/mole, density= 1.390*g/cm3);
          // The argon by NIST Manager is a gas with a different density
- // new G4Material("Pb", z = 82., a = 207.2 * g / mole, density = 11.34 * g / cm3);
+
   // Vacuum
   new G4Material("Galactic", z=1., a=1.01*g/mole,density= universe_mean_density,
                   kStateGas, 2.73*kelvin, 3.e-18*pascal);
-  new G4Material("carbon", z = 6., a = 12.001 * g / mole, density = 2. * g / cm3);
 
   // Print materials
   G4cout << *(G4Material::GetMaterialTable()) << G4endl;
@@ -109,12 +107,11 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 {
   // Geometry parameters
   fNofLayers = 10;
-  G4double absorberThickness = 4.*mm;
-  G4double gapThickness = 1. * mm;
-  G4double scintThickness = 4. * mm;
-  G4double calorSizeXY  = 20.*cm;
+  G4double absoThickness = 10.*mm;
+  G4double gapThickness =  5.*mm;
+  G4double calorSizeXY  = 10.*cm;
 
-  auto layerThickness = absorberThickness + 2 * gapThickness + scintThickness;
+  auto layerThickness = absoThickness + gapThickness;
   auto calorThickness = fNofLayers * layerThickness;
   auto worldSizeXY = 1.2 * calorSizeXY;
   auto worldSizeZ  = 1.2 * calorThickness;
@@ -122,10 +119,9 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   // Get materials
   auto defaultMaterial = G4Material::GetMaterial("Galactic");
   auto absorberMaterial = G4Material::GetMaterial("G4_Pb");
-  auto gapMaterial = G4Material::GetMaterial("G4_Al");
-  auto scintMaterial = G4Material::GetMaterial("carbon"); // TODO: more precise
+  auto gapMaterial = G4Material::GetMaterial("liquidArgon");
 
-  if ( ! defaultMaterial || ! absorberMaterial || ! gapMaterial || ! scintMaterial) {
+  if ( ! defaultMaterial || ! absorberMaterial || ! gapMaterial ) {
     G4ExceptionDescription msg;
     msg << "Cannot retrieve materials already defined.";
     G4Exception("DetectorConstruction::DefineVolumes()",
@@ -205,7 +201,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   //
   auto absorberS
     = new G4Box("Abso",            // its name
-                 calorSizeXY/2, calorSizeXY/2, absorberThickness/2); // its size
+                 calorSizeXY/2, calorSizeXY/2, absoThickness/2); // its size
 
   auto absorberLV
     = new G4LogicalVolume(
@@ -238,32 +234,9 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
   new G4PVPlacement(
                  0,                // no rotation
-                 G4ThreeVector(0., 0., gapThickness/2), // its position
+                 G4ThreeVector(0., 0., absoThickness/2), // its position
                  gapLV,            // its logical volume
                  "Gap",            // its name
-                 layerLV,          // its mother  volume
-                 false,            // no boolean operation
-                 0,                // copy number
-                 fCheckOverlaps);  // checking overlaps
-
-                 //
-  // Gap
-  //
-  auto scintS
-    = new G4Box("scint",             // its name
-                 calorSizeXY/2, calorSizeXY/2, scintThickness/2); // its size
-
-  auto scintLV
-    = new G4LogicalVolume(
-                 scintS,             // its solid
-                 scintMaterial,      // its material
-                 "scintLV");         // its name
-
-  new G4PVPlacement(
-                 0,                // no rotation
-                 G4ThreeVector(0., 0., scintThickness/2), // its position
-                 scintLV,            // its logical volume
-                 "scint",            // its name
                  layerLV,          // its mother  volume
                  false,            // no boolean operation
                  0,                // copy number
@@ -276,7 +249,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
     << G4endl
     << "------------------------------------------------------------" << G4endl
     << "---> The calorimeter is " << fNofLayers << " layers of: [ "
-    << absorberThickness/mm << "mm of " << absorberMaterial->GetName()
+    << absoThickness/mm << "mm of " << absorberMaterial->GetName()
     << " + "
     << gapThickness/mm << "mm of " << gapMaterial->GetName() << " ] " << G4endl
     << "------------------------------------------------------------" << G4endl;

@@ -22,7 +22,7 @@
 #
 /gun/particle mu+
 /gun/energy 3 MeV
-/run/beamOn 300
+/run/beamOn 3
 #
 # 20 events
 #

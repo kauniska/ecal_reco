@@ -1,4 +1,3 @@
-# $Id: G4VIS_USE.gmk,v 1.28 2009-11-17 11:34:56 gcosmo Exp $
 # -------------------------------------------------------------
 # GNUmakefile for CPPFLAGS for visualization USE phase.
 #   John Allison, 24th January 1998.
@@ -8,7 +7,7 @@ ifndef G4VIS_NONE
 ifndef G4VIS_USE_INCLUDED
 G4VIS_USE_INCLUDED = 1
 
-ifndef VISLIBS 
+ifndef VISLIBS
  VISLIBS :=
 endif
 
@@ -40,11 +39,6 @@ ifneq ($(G4INCLUDE_EXEC),1)
   CPPFLAGS += -I$(G4BASE)/visualization/RayTracer/include
   CPPFLAGS += -I$(G4BASE)/visualization/Tree/include
   CPPFLAGS += -I$(G4BASE)/visualization/VRML/include
-endif
-
-ifdef G4VIS_USE_DAWN
-  CPPFLAGS += -DG4VIS_USE_DAWN
-  # CPPFLAGS += -I... and VISLIBS += set above.
 endif
 
 ifdef G4VIS_USE_OPENGLX
@@ -117,6 +111,16 @@ ifdef G4VIS_USE_OI
   INC_IV    = 1
   LOAD_IV   = 1
   G4LIB_USE_GL2PS = 1
+endif
+
+ifdef G4VIS_USE_QT3D
+  CPPFLAGS += -DG4VIS_USE_QT3D
+  VISLIBS  += -lG4visQt3D
+  ifneq ($(G4INCLUDE_EXEC),1)
+    CPPFLAGS += -I$(G4BASE)/visualization/Qt3D/include
+  endif
+  INC_QT    = 1
+  LOAD_3DQT = 1
 endif
 
 ifdef G4VIS_USE_RAYTRACERX

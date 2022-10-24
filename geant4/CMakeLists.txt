@@ -41,7 +41,7 @@ target_link_libraries(ecal ${Geant4_LIBRARIES})
 # build B4c. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(EXAMPLEB4C_SCRIPTS
+set(ecal_SCRIPTS
   ecal.out
   ecal.in
   gui.mac
@@ -53,7 +53,7 @@ set(EXAMPLEB4C_SCRIPTS
   vis.mac
   )
 
-foreach(_script ${EXAMPLEB4C_SCRIPTS})
+foreach(_script ${ecal_SCRIPTS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}

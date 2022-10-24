@@ -1,4 +1,3 @@
-# $Id: binmake.gmk,v 1.149 2010-11-23 13:21:37 gcosmo Exp $
 # ----------------------------------------------------------
 # Script defining rules and paths for making binaries.
 #    First implementation: Gabriele Cosmo, 25/06/1998.
@@ -38,14 +37,21 @@ ifndef SHAREDLIBS
 endif
 ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
   SHAREDLIBS := $(shell test -f $(G4LIB)/$(G4SYSTEM)/G4global.$(SHEXT) && echo yes)
-endif  
+endif
 
 ifndef INCFLAGS
  ifeq ($(G4INCLUDE_EXEC),1)
   INCFLAGS := -I$(G4INCLUDE)
  else
   INCFLAGS := \
-              -I$(G4BASE)/analysis/include \
+              -I$(G4BASE)/externals/g4tools/include \
+              -I$(G4BASE)/analysis/management/include \
+              -I$(G4BASE)/analysis/hntools/include \
+              -I$(G4BASE)/analysis/csv/include \
+              -I$(G4BASE)/analysis/root/include \
+              -I$(G4BASE)/analysis/xml/include \
+              -I$(G4BASE)/analysis/factory/include \
+              -I$(G4BASE)/analysis/accumulables/include \
               -I$(G4BASE)/global/management/include \
               -I$(G4BASE)/global/HEPRandom/include \
               -I$(G4BASE)/global/HEPGeometry/include \
@@ -63,12 +69,26 @@ ifndef INCFLAGS
               -I$(G4BASE)/particles/shortlived/include \
               -I$(G4BASE)/physics_lists/lists/include \
               -I$(G4BASE)/physics_lists/builders/include \
+              -I$(G4BASE)/physics_lists/constructors/decay/include \
+              -I$(G4BASE)/physics_lists/constructors/electromagnetic/include \
+              -I$(G4BASE)/physics_lists/constructors/factory/include \
+              -I$(G4BASE)/physics_lists/constructors/gamma_lepto_nuclear/include \
+              -I$(G4BASE)/physics_lists/constructors/hadron_elastic/include \
+              -I$(G4BASE)/physics_lists/constructors/hadron_inelastic/include \
+              -I$(G4BASE)/physics_lists/constructors/ions/include \
+              -I$(G4BASE)/physics_lists/constructors/limiters/include \
+              -I$(G4BASE)/physics_lists/constructors/stopping/include \
+              -I$(G4BASE)/physics_lists/util/include \
               -I$(G4BASE)/processes/management/include \
               -I$(G4BASE)/processes/cuts/include \
-              -I$(G4BASE)/processes/biasing/include \
+              -I$(G4BASE)/processes/biasing/generic/include \
+              -I$(G4BASE)/processes/biasing/importance/include \
+              -I$(G4BASE)/processes/biasing/management/include \
               -I$(G4BASE)/processes/scoring/include \
               -I$(G4BASE)/processes/decay/include \
               -I$(G4BASE)/processes/optical/include \
+              -I$(G4BASE)/processes/solidstate/channeling/include \
+              -I$(G4BASE)/processes/solidstate/phonon/include \
               -I$(G4BASE)/processes/transportation/include \
               -I$(G4BASE)/processes/parameterisation/include \
               -I$(G4BASE)/processes/electromagnetic/adjoint/include \
@@ -88,16 +108,10 @@ ifndef INCFLAGS
               -I$(G4BASE)/processes/electromagnetic/polarisation/include \
               -I$(G4BASE)/processes/hadronic/cross_sections/include \
               -I$(G4BASE)/processes/hadronic/management/include \
+              -I$(G4BASE)/processes/hadronic/models/abla/include \
               -I$(G4BASE)/processes/hadronic/models/abrasion/include \
               -I$(G4BASE)/processes/hadronic/models/binary_cascade/include \
               -I$(G4BASE)/processes/hadronic/models/cascade/cascade/include \
-              -I$(G4BASE)/processes/hadronic/models/cascade/evaporation/include \
-              -I$(G4BASE)/processes/hadronic/models/cascade/utils/include \
-              -I$(G4BASE)/processes/hadronic/models/chiral_inv_phase_space/body/include \
-              -I$(G4BASE)/processes/hadronic/models/chiral_inv_phase_space/cross_sections/include \
-              -I$(G4BASE)/processes/hadronic/models/chiral_inv_phase_space/fragmentation/include \
-              -I$(G4BASE)/processes/hadronic/models/chiral_inv_phase_space/interface/include \
-              -I$(G4BASE)/processes/hadronic/models/chiral_inv_phase_space/processes/include \
               -I$(G4BASE)/processes/hadronic/models/coherent_elastic/include \
               -I$(G4BASE)/processes/hadronic/models/de_excitation/ablation/include \
               -I$(G4BASE)/processes/hadronic/models/de_excitation/evaporation/include \
@@ -110,42 +124,37 @@ ifndef INCFLAGS
               -I$(G4BASE)/processes/hadronic/models/de_excitation/photon_evaporation/include \
               -I$(G4BASE)/processes/hadronic/models/de_excitation/util/include \
               -I$(G4BASE)/processes/hadronic/models/em_dissociation/include \
-              -I$(G4BASE)/processes/hadronic/models/high_energy/include \
+              -I$(G4BASE)/processes/hadronic/models/fission/include \
+              -I$(G4BASE)/processes/hadronic/models/gamma_nuclear/include \
               -I$(G4BASE)/processes/hadronic/models/im_r_matrix/include \
               -I$(G4BASE)/processes/hadronic/models/inclxx/interface/include \
               -I$(G4BASE)/processes/hadronic/models/inclxx/utils/include \
               -I$(G4BASE)/processes/hadronic/models/inclxx/incl_physics/include \
-              -I$(G4BASE)/processes/hadronic/models/isotope_production/include \
               -I$(G4BASE)/processes/hadronic/models/lend/include \
-              -I$(G4BASE)/processes/hadronic/models/lll_fission/include \
-              -I$(G4BASE)/processes/hadronic/models/low_energy/include \
-              -I$(G4BASE)/processes/hadronic/models/management/include \
-              -I$(G4BASE)/processes/hadronic/models/neutron_hp/include \
+              -I$(G4BASE)/processes/hadronic/models/lepto_nuclear/include \
+              -I$(G4BASE)/processes/hadronic/models/particle_hp/include \
               -I$(G4BASE)/processes/hadronic/models/parton_string/diffraction/include \
               -I$(G4BASE)/processes/hadronic/models/parton_string/hadronization/include \
               -I$(G4BASE)/processes/hadronic/models/parton_string/management/include \
               -I$(G4BASE)/processes/hadronic/models/parton_string/qgsm/include \
-              -I$(G4BASE)/processes/hadronic/models/lepto_nuclear/include \
               -I$(G4BASE)/processes/hadronic/models/pre_equilibrium/exciton_model/include \
               -I$(G4BASE)/processes/hadronic/models/qmd/include \
               -I$(G4BASE)/processes/hadronic/models/quasi_elastic/include \
               -I$(G4BASE)/processes/hadronic/models/radioactive_decay/include \
-              -I$(G4BASE)/processes/hadronic/models/rpg/include \
               -I$(G4BASE)/processes/hadronic/models/theo_high_energy/include \
-              -I$(G4BASE)/processes/hadronic/models/util/include \
               -I$(G4BASE)/processes/hadronic/processes/include \
               -I$(G4BASE)/processes/hadronic/stopping/include \
               -I$(G4BASE)/processes/hadronic/util/include \
               -I$(G4BASE)/geometry/management/include \
               -I$(G4BASE)/geometry/solids/CSG/include \
               -I$(G4BASE)/geometry/solids/specific/include \
-              -I$(G4BASE)/geometry/solids/BREPS/include \
               -I$(G4BASE)/geometry/solids/Boolean/include \
               -I$(G4BASE)/geometry/divisions/include \
               -I$(G4BASE)/geometry/volumes/include \
               -I$(G4BASE)/geometry/navigation/include \
               -I$(G4BASE)/geometry/magneticfield/include \
               -I$(G4BASE)/geometry/biasing/include \
+              -I$(G4BASE)/tasking/include \
               -I$(G4BASE)/track/include \
               -I$(G4BASE)/tracking/include \
               -I$(G4BASE)/digits_hits/detector/include \
@@ -179,9 +188,10 @@ ifdef G4EXLIB
   LDFLAGS += -L$(G4TMPDIR)
   ifdef SHAREDLIBS
     ifdef G4RUNPATHOPTION
-#     For the example dependent directory, keep the 
+#     For the example dependent directory, keep the
 #     path to the shared lib in the executable.
       LDFLAGS += $(G4RUNPATHOPTION)$(G4TMPDIR)
+      LDFLAGS += $(G4RUNPATHOPTION)$(G4LIB)/$(G4SYSTEM)
     endif
   endif
   include $(G4INSTALL)/config/common.gmk
@@ -206,7 +216,7 @@ ifdef G4EXLIB
     TARGETLIB  := -l$(G4TARGET)
   else
   # Windows
-    TARGETLIB  := lib$(G4TARGET).a   
+    TARGETLIB  := lib$(G4TARGET).a
   endif
 endif
 
@@ -223,10 +233,10 @@ ifdef GLOBALLIBS
     LDLIBS2 += -lG3toG4
   endif
 
-  LDLIBS2 += -lG4analysis \
-             -lG4error_propagation \
+  LDLIBS2 += -lG4error_propagation \
              -lG4readout \
              -lG4physicslists \
+             -lG4tasking \
              -lG4run \
              -lG4event \
              -lG4tracking \
@@ -238,6 +248,7 @@ ifdef GLOBALLIBS
              -lG4geometry \
              -lG4materials \
              -lG4graphics_reps \
+             -lG4analysis \
              -lG4intercoms \
              -lG4global
 
@@ -245,21 +256,31 @@ ifdef GLOBALLIBS
     LDLIBS2 += -lG4clhep
   endif
 
+  ifdef G4LIB_USE_PTL
+    LDLIBS2 += -lG4ptl
+  endif
+
   ifdef G4LIB_USE_EXPAT
     LDLIBS2 += -lG4expat
   endif
 
-  ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-    LDLIBS2 += -lG4expat
-  endif
+  LDLIBS += -lG4tools
 
   ifdef G4LIB_USE_ZLIB
     LDLIBS2 += -lG4zlib
   endif
 
+  # Bring all symbols in for libraries which requires this (templated factories).
+  #
+  ifeq (,$(findstring WIN32-VC,$(G4SYSTEM)))
+    ifndef SHAREDLIBS
+      LDFLAGS += $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4physicslists.a $(G4NOSTATIC_MODE)
+    endif
+  endif
+
 else
-# The next lines specifically should read LDLIBS2 = , not LDLIBS2 :=, so
-# that it is not expanded until the directory G4TMPDIR is created.
+  # The next lines specifically should read LDLIBS2 = , not LDLIBS2 :=, so
+  # that it is not expanded until the directory G4TMPDIR is created.
   ifeq ($(G4INCLUDE_EXEC),1)
     LDLIBS2 = $(shell \
         G4TMP=$(G4TMP); export G4TMP; \
@@ -279,8 +300,26 @@ else
 # Warning: do not add to LDLIBS2 with += because this causes it to be
 # expanded too soon.  Hence extra libraries must have a different name...
 # Extra libraries to resolve remaining circular dependencies...
-#  LDLIBS2EXTRA = 
+#  LDLIBS2EXTRA =
   endif
+  # Bring all symbols in for libraries which requires this (templated factories).
+  #
+  # ifeq (,$(findstring WIN32-VC,$(G4SYSTEM)))
+  #   ifndef SHAREDLIBS
+  #     LDFLAGS += $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_lists.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_decay.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_em.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_glnuclear.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_helastic.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_hinelastic.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_ions.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_limiters.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_stopping.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_builders.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4phys_ctor_factory.a $(G4NOSTATIC_MODE) \
+  #                $(G4STATIC_MODE) $(G4LIB)/$(G4SYSTEM)/libG4physlist_util.a $(G4NOSTATIC_MODE)
+  #   endif
+  # endif
 endif
 
 # LDLIBS3 contains the first set of low level libraries...
@@ -306,7 +345,7 @@ ifdef USER_DEFINED_LDLIBS
 else
 # Again, do not use := or +=.  See note on LDLIBS2 above.
   LDLIBS_PREFINAL = $(LDLIBS1) $(LDLIBS2) $(LDLIBS2EXTRA) $(LDLIBS3)
-# Version leaving out EXTRALIBS 
+# Version leaving out EXTRALIBS
   LDLIBS_KERNEL   = $(LDLIBS2) $(LDLIBS2EXTRA) $(LDLIBS3)
 endif
 LDLIBS_PREFINAL += $(LDLIBS4)
@@ -333,12 +372,12 @@ ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
 else
   # Unix
   LDLIBS = $(TARGETLIB) $(LDLIBS_PREFINAL)
-  OUT   := -o 
+  OUT   := -o
   TARGOBJEXT := o
 endif
 
 ifdef transform-RPath
-# Invoke system specific transformation of 
+# Invoke system specific transformation of
 include $(G4INSTALL)/config/sys/$(G4SYSTEM)-runpath.gmk
 endif
 
