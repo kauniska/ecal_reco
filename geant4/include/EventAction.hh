@@ -23,48 +23,53 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id$
-// 
-/// \file B4RunAction.hh
-/// \brief Definition of the B4RunAction class
+//
+/// \file EventAction.hh
+/// \brief Definition of the B4c::EventAction class
 
-#ifndef B4RunAction_h
-#define B4RunAction_h 1
+#ifndef B4cEventAction_h
+#define B4cEventAction_h 1
 
-#include "G4UserRunAction.hh"
+#include "G4UserEventAction.hh"
+
+#include "CalorHit.hh"
+
 #include "globals.hh"
 
-class G4Run;
-
-/// Run action class
-///
-/// It accumulates statistic and computes dispersion of the energy deposit 
-/// and track lengths of charged particles with use of analysis tools:
-/// H1D histograms are created in BeginOfRunAction() for the following 
-/// physics quantities:
-/// - Edep in absorber
-/// - Edep in gap
-/// - Track length in absorber
-/// - Track length in gap
-/// The same values are also saved in the ntuple.
-/// The histograms and ntuple are saved in the output file in a format
-/// accoring to a selected technology in B4Analysis.hh.
-///
-/// In EndOfRunAction(), the accumulated statistic and computed 
-/// dispersion is printed.
-///
-
-class B4RunAction : public G4UserRunAction
+namespace B4c
 {
-  public:
-    B4RunAction();
-    virtual ~B4RunAction();
 
-    virtual void BeginOfRunAction(const G4Run*);
-    virtual void   EndOfRunAction(const G4Run*);
+/// Event action class
+///
+/// In EndOfEventAction(), it prints the accumulated quantities of the energy
+/// deposit and track lengths of charged particles in Absober and Gap layers
+/// stored in the hits collections.
+
+class EventAction : public G4UserEventAction
+{
+public:
+  EventAction();
+  ~EventAction() override;
+
+  void  BeginOfEventAction(const G4Event* event) override;
+  void    EndOfEventAction(const G4Event* event) override;
+
+private:
+  // methods
+  CalorHitsCollection* GetHitsCollection(G4int hcID,
+                                            const G4Event* event) const;
+  void PrintEventStatistics(G4double absoEdep, G4double absoTrackLength,
+                            G4double gapEdep, G4double gapTrackLength) const;
+
+  // data members
+  G4int fAbsHCID = -1;
+  G4int fGapHCID = -1;
 };
+
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
+
 

@@ -23,65 +23,71 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id$
 //
-/// \file B4dEventAction.hh
-/// \brief Definition of the B4dEventAction class
+/// \file CalorHit.cc
+/// \brief Implementation of the B4c::CalorHit class
 
-#ifndef B4dEventAction_h
-#define B4dEventAction_h 1
+#include "CalorHit.hh"
+#include "G4UnitsTable.hh"
+#include "G4VVisManager.hh"
+#include "G4Circle.hh"
+#include "G4Colour.hh"
+#include "G4VisAttributes.hh"
 
-#include "G4UserEventAction.hh"
+#include <iomanip>
 
-#include "G4THitsMap.hh"
-#include "globals.hh"
-
-class G4GenericMessenger;
-
-/// Event action class
-///
-/// In EndOfEventAction(), it prints the accumulated quantities of the energy 
-/// deposit and track lengths of charged particles in Absober and Gap layers 
-/// stored in the hits collections.
-///
-/// The data member fPrintModulo defines the frequency of printing
-/// the accumulated quantities. Its value can be changed via a command
-/// defined using G4GenericMessenger class:
-/// - /B4/event/setPrintModulo value
-
-class B4dEventAction : public G4UserEventAction
+namespace B4c
 {
-public:
-  B4dEventAction();
-  virtual ~B4dEventAction();
 
-  virtual void  BeginOfEventAction(const G4Event* event);
-  virtual void    EndOfEventAction(const G4Event* event);
-                     
-  // set methods
-  void SetPrintModulo(G4int value);
-    
-private:
-  // methods
-  G4THitsMap<G4double>* GetHitsCollection(const G4String& hcName,
-                                          const G4Event* event) const;
-  G4double GetSum(G4THitsMap<G4double>* hitsMap) const;
-  void PrintEventStatistics(G4double absoEdep, G4double absoTrackLength,
-                            G4double gapEdep, G4double gapTrackLength) const;
-  
-  // data members                   
-  G4GenericMessenger*  fMessenger;
-  G4int  fPrintModulo;
-};
+G4ThreadLocal G4Allocator<CalorHit>* CalorHitAllocator = nullptr;
 
-// inline functions
-
-inline void B4dEventAction::SetPrintModulo(G4int value) {
-  fPrintModulo = value;
-}
-                     
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+CalorHit::CalorHit()
+{}
 
-    
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+CalorHit::~CalorHit() {}
+
+// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+// CalorHit::CalorHit(const CalorHit& right)
+//   : G4VHit()
+// {
+//   fEdep        = right.fEdep;
+//   fTrackLength = right.fTrackLength;
+// }
+
+// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+// const CalorHit& CalorHit::operator=(const CalorHit& right)
+// {
+//   fEdep        = right.fEdep;
+//   fTrackLength = right.fTrackLength;
+
+//   return *this;
+// }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4bool CalorHit::operator==(const CalorHit& right) const
+{
+  return ( this == &right ) ? true : false;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CalorHit::Print()
+{
+  G4cout
+     << "Edep: "
+     << std::setw(7) << G4BestUnit(fEdep,"Energy")
+     << " track length: "
+     << std::setw(7) << G4BestUnit( fTrackLength,"Length")
+     << G4endl;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+}

@@ -3,6 +3,12 @@
 # Can be run in batch, without graphic
 # or interactively: Idle> /control/execute run1.mac
 #
+# Change the default number of workers (in multi-threading mode) 
+#/run/numberOfThreads 4
+#
+# Initialize kernel
+/run/initialize
+#
 # Default kinematics: 
 # electron 50 MeV in direction (0.,0.,1.)
 # 1 event with tracking/verbose
@@ -21,12 +27,12 @@
 # 20 events
 #
 /tracking/verbose 0
-/B4/event/setPrintModulo 5
+/run/printProgress 5
 /run/beamOn 20
 #
 # Magnetic field
 # 
-/B4/det/setMagField 0.2 tesla
+/globalField/setValue 0.2 0 0 tesla
 /run/beamOn 3
 #
 # Activate/inactivate physics processes

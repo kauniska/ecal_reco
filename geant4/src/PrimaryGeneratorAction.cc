@@ -23,12 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id$
 //
-/// \file B4dPrimaryGeneratorAction.cc
-/// \brief Implementation of the B4dPrimaryGeneratorAction class
+/// \file PrimaryGeneratorAction.cc
+/// \brief Implementation of the B4::PrimaryGeneratorAction class
 
-#include "B4PrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorAction.hh"
 
 #include "G4RunManager.hh"
 #include "G4LogicalVolumeStore.hh"
@@ -41,18 +40,19 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
+namespace B4
+{
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B4PrimaryGeneratorAction::B4PrimaryGeneratorAction()
- : G4VUserPrimaryGeneratorAction(),
-   fParticleGun(0)
+PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
   G4int nofParticles = 1;
   fParticleGun = new G4ParticleGun(nofParticles);
 
   // default particle kinematic
   //
-  G4ParticleDefinition* particleDefinition 
+  auto particleDefinition
     = G4ParticleTable::GetParticleTable()->FindParticle("e-");
   fParticleGun->SetParticleDefinition(particleDefinition);
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
@@ -61,14 +61,14 @@ B4PrimaryGeneratorAction::B4PrimaryGeneratorAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B4PrimaryGeneratorAction::~B4PrimaryGeneratorAction()
+PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete fParticleGun;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   // This function is called at the begining of event
 
@@ -76,20 +76,27 @@ void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // on DetectorConstruction class we get world volume
   // from G4LogicalVolumeStore
   //
-  G4double worldZHalfLength = 0;
-  G4LogicalVolume* worlLV
-    = G4LogicalVolumeStore::GetInstance()->GetVolume("World");
-  G4Box* worldBox = 0;
-  if ( worlLV) worldBox = dynamic_cast< G4Box*>(worlLV->GetSolid()); 
+  G4double worldZHalfLength = 0.;
+  auto worldLV = G4LogicalVolumeStore::GetInstance()->GetVolume("World");
+
+  // Check that the world volume has box shape
+  G4Box* worldBox = nullptr;
+  if (  worldLV ) {
+    worldBox = dynamic_cast<G4Box*>(worldLV->GetSolid());
+  }
+
   if ( worldBox ) {
-    worldZHalfLength = worldBox->GetZHalfLength();  
+    worldZHalfLength = worldBox->GetZHalfLength();
   }
   else  {
-    G4cerr << "World volume of box not found." << G4endl;
-    G4cerr << "Perhaps you have changed geometry." << G4endl;
-    G4cerr << "The gun will be place in the center." << G4endl;
-  } 
-  
+    G4ExceptionDescription msg;
+    msg << "World volume of box shape not found." << G4endl;
+    msg << "Perhaps you have changed geometry." << G4endl;
+    msg << "The gun will be place in the center.";
+    G4Exception("PrimaryGeneratorAction::GeneratePrimaries()",
+      "MyCode0002", JustWarning, msg);
+  }
+
   // Set gun position
   fParticleGun
     ->SetParticlePosition(G4ThreeVector(0., 0., -worldZHalfLength));
@@ -99,3 +106,4 @@ void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+}
