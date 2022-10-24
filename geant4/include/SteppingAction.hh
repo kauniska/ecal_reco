@@ -23,53 +23,44 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
+// 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
-#include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "TrackingAction.hh"
-#include "SteppingAction.hh"
+#ifndef SteppingAction_h
+#define SteppingAction_h 1
+
+#include "G4UserSteppingAction.hh"
+#include "globals.hh"
+
+class DetectorConstruction;
+class EventAction;
+
+class G4LogicalVolume;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction* det)
- : G4VUserActionInitialization(),fDetector(det)
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-ActionInitialization::~ActionInitialization()
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
+class SteppingAction : public G4UserSteppingAction
 {
- SetUserAction(new RunAction(fDetector));
-}
+  public:
+    SteppingAction(DetectorConstruction*, EventAction*);
+   ~SteppingAction();
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::Build() const
-{
-  PrimaryGeneratorAction* primary = new PrimaryGeneratorAction(fDetector);
-  SetUserAction(primary);
- 
-  RunAction* runaction = new RunAction(fDetector,primary);
-  SetUserAction(runaction); 
-  
-  EventAction* eventaction = new EventAction(fDetector,primary);
-  SetUserAction(eventaction);
-
-  SetUserAction(new TrackingAction(fDetector));
-
-  SetUserAction(new SteppingAction(fDetector,eventaction));
-}  
+    void UserSteppingAction(const G4Step*);
+    
+    G4double BirksAttenuation(const G4Step*);
+    
+  private:
+    DetectorConstruction* detector;
+    EventAction*          eventAct;
+    
+    G4bool           first;
+    G4LogicalVolume* lvol_world;
+    G4LogicalVolume* lvol_module;
+    G4LogicalVolume* lvol_layer;
+    G4LogicalVolume* lvol_fiber;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+#endif

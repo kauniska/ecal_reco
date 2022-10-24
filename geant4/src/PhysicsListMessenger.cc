@@ -24,52 +24,48 @@
 // ********************************************************************
 //
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
-#include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "TrackingAction.hh"
-#include "SteppingAction.hh"
+#include "PhysicsListMessenger.hh"
+
+#include "PhysicsList.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAString.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction* det)
- : G4VUserActionInitialization(),fDetector(det)
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-ActionInitialization::~ActionInitialization()
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
+PhysicsListMessenger::PhysicsListMessenger(PhysicsList* pPhys)
+:pPhysicsList(pPhys)
 {
- SetUserAction(new RunAction(fDetector));
+  amsDir = new G4UIdirectory("/ams/");
+  amsDir->SetGuidance("UI commands specific to this example");
+  	
+  physDir = new G4UIdirectory("/ams/phys/");
+  physDir->SetGuidance("physics list commands");
+
+  pListCmd = new G4UIcmdWithAString("/ams/phys/addPhysics",this);  
+  pListCmd->SetGuidance("Add modula physics list.");
+  pListCmd->SetParameterName("PList",false);
+  pListCmd->AvailableForStates(G4State_PreInit);
+  pListCmd->SetToBeBroadcasted(false);    
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+PhysicsListMessenger::~PhysicsListMessenger()
+{
+  delete pListCmd;
+  delete physDir;
+  delete amsDir;      
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ActionInitialization::Build() const
-{
-  PrimaryGeneratorAction* primary = new PrimaryGeneratorAction(fDetector);
-  SetUserAction(primary);
- 
-  RunAction* runaction = new RunAction(fDetector,primary);
-  SetUserAction(runaction); 
-  
-  EventAction* eventaction = new EventAction(fDetector,primary);
-  SetUserAction(eventaction);
-
-  SetUserAction(new TrackingAction(fDetector));
-
-  SetUserAction(new SteppingAction(fDetector,eventaction));
-}  
+void PhysicsListMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
+{       
+  if( command == pListCmd )
+   { pPhysicsList->AddPhysicsList(newValue);}
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

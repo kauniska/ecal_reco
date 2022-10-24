@@ -23,52 +23,55 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file electromagnetic/TestEm11/include/Run.hh
+/// \brief Definition of the Run class
 //
-/// \file CalorimeterSD.hh
-/// \brief Definition of the B4c::CalorimeterSD class
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef B4cCalorimeterSD_h
-#define B4cCalorimeterSD_h 1
+#ifndef Run_h
+#define Run_h 1
 
-#include "G4VSensitiveDetector.hh"
+#include "G4Run.hh"
+#include "globals.hh"
+#include <map>
 
-#include "CalorHit.hh"
+class DetectorConstruction;
+class G4ParticleDefinition;
 
-#include <vector>
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class G4Step;
-class G4HCofThisEvent;
-
-namespace B4c
-{
-
-/// Calorimeter sensitive detector class
-///
-/// In Initialize(), it creates one hit for each calorimeter layer and one more
-/// hit for accounting the total quantities in all layers.
-///
-/// The values are accounted in hits in ProcessHits() function which is called
-/// by Geant4 kernel at each step.
-
-class CalorimeterSD : public G4VSensitiveDetector
+class Run : public G4Run
 {
   public:
-    CalorimeterSD(const G4String& name,
-                  const G4String& hitsCollectionName,
-                  G4int nofCells);
-    ~CalorimeterSD() override;
+    Run(DetectorConstruction*);
+   ~Run();
 
-    // methods from base class
-    void   Initialize(G4HCofThisEvent* hitCollection) override;
-    G4bool ProcessHits(G4Step* step, G4TouchableHistory* history) override;
-    void   EndOfEvent(G4HCofThisEvent* hitCollection) override;
-
+  public:
+    void SetPrimary(G4ParticleDefinition* particle, G4double energy);
+	
+    void SumEvents_1(G4int,G4double,G4double);
+    void SumEvents_2(G4double,G4double,G4double);  
+    void DetailedLeakage(G4int,G4double);
+                
+    virtual void Merge(const G4Run*);
+    void EndOfRun();
+     
   private:
-    CalorHitsCollection* fHitsCollection = nullptr;
-    G4int fNofCells = 0;
+    DetectorConstruction*  fDetector;
+    G4ParticleDefinition*  fParticle;
+    G4double  fEkin;
+	
+    G4int nbOfModules, nbOfLayers, kLayerMax;     
+    std::vector<G4double>   EtotLayer, Etot2Layer;
+    std::vector<G4double>   EvisLayer, Evis2Layer;
+  
+    G4double EtotCalor, Etot2Calor;
+    G4double EvisCalor, Evis2Calor;
+    G4double Eleak,     Eleak2;
+    G4double EdLeak[3];
 };
-
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

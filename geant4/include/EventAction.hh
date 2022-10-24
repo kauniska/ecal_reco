@@ -24,52 +24,53 @@
 // ********************************************************************
 //
 //
-/// \file EventAction.hh
-/// \brief Definition of the B4c::EventAction class
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef B4cEventAction_h
-#define B4cEventAction_h 1
+#ifndef EventAction_h
+#define EventAction_h 1
 
 #include "G4UserEventAction.hh"
-
-#include "CalorHit.hh"
-
+#include "DetectorConstruction.hh"
 #include "globals.hh"
 
-namespace B4c
-{
+#include <vector>
+#include <map>
 
-/// Event action class
-///
-/// In EndOfEventAction(), it prints the accumulated quantities of the energy
-/// deposit and track lengths of charged particles in Absober and Gap layers
-/// stored in the hits collections.
+class PrimaryGeneratorAction;
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class EventAction : public G4UserEventAction
 {
-public:
-  EventAction();
-  ~EventAction() override;
+  public:  
+    EventAction(DetectorConstruction*, PrimaryGeneratorAction*);
+   ~EventAction();
 
-  void  BeginOfEventAction(const G4Event* event) override;
-  void    EndOfEventAction(const G4Event* event) override;
+    void BeginOfEventAction(const G4Event*);
+    void   EndOfEventAction(const G4Event*);
+    
+    void SumDeStep(G4int, G4int, G4int, G4double);
+	
+	void WriteFibers(const G4Event*);
+			         	    
 
-private:
-  // methods
-  CalorHitsCollection* GetHitsCollection(G4int hcID,
-                                            const G4Event* event) const;
-  void PrintEventStatistics(G4double absoEdep, G4double absoTrackLength,
-                            G4double gapEdep, G4double gapTrackLength) const;
-
-  // data members
-  G4int fAbsHCID = -1;
-  G4int fGapHCID = -1;
+  private:  
+    DetectorConstruction*   detector;
+    PrimaryGeneratorAction* primary;
+	
+	G4int nbOfModules, nbOfLayers, kLayerMax;     
+    std::vector<G4double>   EtotLayer;
+    std::vector<G4double>   EvisLayer;
+	
+	G4double EtotCalor;
+	G4double EvisCalor;
+	
+	std::map<G4int, G4double> EvisFiber;
 };
-
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
 
-
+    

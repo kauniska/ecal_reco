@@ -23,139 +23,84 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file advanced/amsEcal.cc
+/// \brief Main program of the advanced/amsEcal example
 //
-/// \file exampleB4c.cc
-/// \brief Main program of the B4c example
+//
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "DetectorConstruction.hh"
-#include "ActionInitialization.hh"
+#include "G4Types.hh"
 
 #include "G4RunManagerFactory.hh"
-#include "G4SteppingVerbose.hh"
-#include "G4UIcommand.hh"
 #include "G4UImanager.hh"
-#include "G4UIExecutive.hh"
-#include "G4VisExecutive.hh"
-#include "FTFP_BERT.hh"
+#include "G4SteppingVerbose.hh"
 #include "Randomize.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "DetectorConstruction.hh"
+#include "PhysicsList.hh"
+#include "ActionInitialization.hh"
 
-namespace {
-  void PrintUsage() {
-    G4cerr << " Usage: " << G4endl;
-    G4cerr << " exampleB4c [-m macro ] [-u UIsession] [-t nThreads] [-vDefault]"
-           << G4endl;
-    G4cerr << "   note: -t option is available only for multi-threaded mode."
-           << G4endl;
-  }
-}
+#include "G4UIExecutive.hh"
+#include "G4VisExecutive.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-int main(int argc,char** argv)
-{
-  // Evaluate arguments
-  //
-  if ( argc > 7 ) {
-    PrintUsage();
-    return 1;
-  }
+int main(int argc,char** argv) {
 
-  G4String macro;
-  G4String session;
-  G4bool verboseBestUnits = true;
-#ifdef G4MULTITHREADED
-  G4int nThreads = 0;
-#endif
-  for ( G4int i=1; i<argc; i=i+2 ) {
-    if      ( G4String(argv[i]) == "-m" ) macro = argv[i+1];
-    else if ( G4String(argv[i]) == "-u" ) session = argv[i+1];
-#ifdef G4MULTITHREADED
-    else if ( G4String(argv[i]) == "-t" ) {
-      nThreads = G4UIcommand::ConvertToInt(argv[i+1]);
-    }
-#endif
-    else if ( G4String(argv[i]) == "-vDefault" ) {
-      verboseBestUnits = false;
-      --i;  // this option is not followed with a parameter
-    }
-    else {
-      PrintUsage();
-      return 1;
-    }
-  }
-
-  // Detect interactive mode (if no macro provided) and define UI session
-  //
+  //detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = nullptr;
-  if ( ! macro.size() ) {
-    ui = new G4UIExecutive(argc, argv, session);
+  if (argc == 1) ui = new G4UIExecutive(argc,argv);
+
+  //choose the Random engine
+  G4Random::setTheEngine(new CLHEP::RanecuEngine);
+
+  //Use SteppingVerbose with Unit
+  G4int precision = 4;
+  G4SteppingVerbose::UseBestUnit(precision);
+  
+  //Creating run manager
+  auto runManager = G4RunManagerFactory::CreateRunManager();
+    
+  if (argc==3) { 
+     G4int nThreads = G4UIcommand::ConvertToInt(argv[2]);
+     runManager->SetNumberOfThreads(nThreads);
   }
+  
+  //set mandatory initialization classes
+  DetectorConstruction* detector = new DetectorConstruction;
+  runManager->SetUserInitialization(detector);
+  runManager->SetUserInitialization(new PhysicsList());
 
-  // Optionally: choose a different Random engine...
-  // G4Random::setTheEngine(new CLHEP::MTwistEngine);
-
-  // Use G4SteppingVerboseWithUnits
-  if ( verboseBestUnits ) {
-    G4int precision = 4;
-    G4SteppingVerbose::UseBestUnit(precision);
-  }
-
-  // Construct the default run manager
+  //set user action classes
   //
-  auto* runManager =
-    G4RunManagerFactory::CreateRunManager(G4RunManagerType::Default);
-#ifdef G4MULTITHREADED
-  if ( nThreads > 0 ) {
-    runManager->SetNumberOfThreads(nThreads);
-  }
-#endif
+  runManager->SetUserInitialization(new ActionInitialization(detector));
 
-  // Set mandatory initialization classes
-  //
-  auto detConstruction = new B4c::DetectorConstruction();
-  runManager->SetUserInitialization(detConstruction);
+  //initialize visualization
+  G4VisManager* visManager = nullptr;
 
-  auto physicsList = new FTFP_BERT;
-  runManager->SetUserInitialization(physicsList);
-
-  auto actionInitialization = new B4c::ActionInitialization();
-  runManager->SetUserInitialization(actionInitialization);
-
-  // Initialize visualization
-  auto visManager = new G4VisExecutive;
-  // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
-  // G4VisManager* visManager = new G4VisExecutive("Quiet");
-  visManager->Initialize();
-
-  // Get the pointer to the User Interface manager
-  auto UImanager = G4UImanager::GetUIpointer();
-
-  // Process macro or start UI session
-  //
-  if ( macro.size() ) {
-    // batch mode
-    G4String command = "/control/execute ";
-    UImanager->ApplyCommand(command+macro);
+  //get the pointer to the User Interface manager
+  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+  
+  if (ui)  {
+   //interactive mode
+   visManager = new G4VisExecutive;
+   visManager->Initialize();
+   ui->SessionStart();
+   delete ui;
   }
   else  {
-    // interactive mode : define UI session
-    UImanager->ApplyCommand("/control/execute init_vis.mac");
-    if (ui->IsGUI()) {
-      UImanager->ApplyCommand("/control/execute gui.mac");
-    }
-    ui->SessionStart();
-    delete ui;
+   //batch mode
+   G4String command = "/control/execute ";
+   G4String fileName = argv[1];
+   UImanager->ApplyCommand(command+fileName);
   }
 
-  // Job termination
-  // Free the store: user actions, physics_list and detector_description are
-  // owned and deleted by the run manager, so they should not be deleted
-  // in the main() program !
-
+  //job termination
   delete visManager;
   delete runManager;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+

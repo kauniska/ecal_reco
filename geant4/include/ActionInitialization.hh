@@ -25,30 +25,31 @@
 //
 //
 /// \file ActionInitialization.hh
-/// \brief Definition of the B4c::ActionInitialization class
+/// \brief Definition of the ActionInitialization class
 
-#ifndef B4cActionInitialization_h
-#define B4cActionInitialization_h 1
+#ifndef ActionInitialization_h
+#define ActionInitialization_h 1
 
 #include "G4VUserActionInitialization.hh"
 
-namespace B4c
-{
+class DetectorConstruction;
 
 /// Action initialization class.
+///
 
 class ActionInitialization : public G4VUserActionInitialization
 {
   public:
-    ActionInitialization();
-    ~ActionInitialization() override;
+    ActionInitialization(DetectorConstruction*);
+   ~ActionInitialization() override;
 
     void BuildForMaster() const override;
     void Build() const override;
+    
+  private:
+    DetectorConstruction* fDetector;
 };
-
-}
 
 #endif
 
-
+    

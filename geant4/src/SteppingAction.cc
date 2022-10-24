@@ -23,92 +23,92 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm5/src/RunAction.cc
-/// \brief Implementation of the RunAction class
-//
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "RunAction.hh"
+#include "SteppingAction.hh"
+
 #include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "HistoManager.hh"
-#include "Run.hh"
+#include "EventAction.hh"
 
-#include "G4Run.hh"
-#include "G4RunManager.hh"
-#include "G4UnitsTable.hh"
-
-#include "Randomize.hh"
-#include "G4SystemOfUnits.hh"
-#include <iomanip>
+#include "G4Step.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction(DetectorConstruction* det, PrimaryGeneratorAction* kin)
-:G4UserRunAction(),fDetector(det), fPrimary(kin), fRun(0), fHistoManager(0)
-{ 
-  // Book predefined histograms
-  fHistoManager = new HistoManager();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-RunAction::~RunAction()
-{ 
-  delete fHistoManager;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4Run* RunAction::GenerateRun()
-{ 
-  fRun = new Run(fDetector);
-  return fRun;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::BeginOfRunAction(const G4Run*)
+SteppingAction::SteppingAction(DetectorConstruction* det, EventAction* evt)
+:G4UserSteppingAction(),detector(det),eventAct(evt)
 {
-  // save Rndm status
-  ////  G4RunManager::GetRunManager()->SetRandomNumberStore(true);
-  if (isMaster) G4Random::showEngineStatus();
-     
-  // keep run condition
-  if ( fPrimary ) { 
-    G4ParticleDefinition* particle 
-      = fPrimary->GetParticleGun()->GetParticleDefinition();
-    G4double energy = fPrimary->GetParticleGun()->GetParticleEnergy();
-    fRun->SetPrimary(particle, energy);
-  }
+  first = true;
+  lvol_world = lvol_module = lvol_layer = lvol_fiber = 0;
+} 
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+SteppingAction::~SteppingAction()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void SteppingAction::UserSteppingAction(const G4Step* step )
+{ 
+ //some initialisation
+ // 
+ if (first) {
+   lvol_world  = detector->GetLvolWorld();
+   lvol_module = detector->GetLvolModule();   
+   lvol_layer  = detector->GetLvolLayer();
+   lvol_fiber  = detector->GetLvolFiber();      
+   first = false;   
+ }
+ 
+ //if no edep, return
+ //
+ G4double edep = step->GetTotalEnergyDeposit();
+ ///if (edep == 0.) return;
+ 
+ //locate point in geometry
+ //
+ G4int iModule = 0;
+ G4int iLayer  = 0;
+ G4int iFiber  = 0;
+   
+ G4TouchableHandle touch1 = step->GetPreStepPoint()->GetTouchableHandle(); 
+ G4LogicalVolume* lvol = touch1->GetVolume()->GetLogicalVolume();
   
-  //histograms
-  //        
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  if ( analysisManager->IsActive() ) {
-    analysisManager->OpenFile();
-  } 
+      if (lvol == lvol_world) return;
+ else if (lvol == lvol_module) { iModule = touch1->GetCopyNumber(0);}
+ else if (lvol == lvol_layer)  { iLayer  = touch1->GetCopyNumber(0);
+                                 iModule = touch1->GetCopyNumber(1);}
+ else if (lvol == lvol_fiber)  { iFiber  = touch1->GetCopyNumber(0);
+                                 iLayer  = touch1->GetCopyNumber(1);
+                                 iModule = touch1->GetCopyNumber(2);}
+
+ // sum edep
+ //
+ eventAct->SumDeStep(iModule, iLayer, iFiber, edep);         
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RunAction::EndOfRunAction(const G4Run*)
-{  
-  // print Run summary
-  //
-  if (isMaster) fRun->EndOfRun();    
-      
-  // save histograms
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();  
-  if ( analysisManager->IsActive() ) {    
-    analysisManager->Write();
-    analysisManager->CloseFile();
-  }  
-
-  // show Rndm status
-  if (isMaster) G4Random::showEngineStatus();
+G4double SteppingAction::BirksAttenuation(const G4Step* aStep)
+{
+ //Example of Birk attenuation law in organic scintillators.
+ //adapted from Geant3 PHYS337. See MIN 80 (1970) 239-244
+ //
+ G4Material* material = aStep->GetTrack()->GetMaterial();
+ G4double birk1       = material->GetIonisation()->GetBirksConstant();
+ G4double destep      = aStep->GetTotalEnergyDeposit();
+ G4double stepl       = aStep->GetStepLength();  
+ G4double charge      = aStep->GetTrack()->GetDefinition()->GetPDGCharge();
+ //
+ G4double response = destep;
+ if (birk1*destep*stepl*charge != 0.)
+   {
+     response = destep/(1. + birk1*destep/stepl);
+   }
+ return response;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+

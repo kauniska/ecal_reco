@@ -24,52 +24,39 @@
 // ********************************************************************
 //
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
-#include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "TrackingAction.hh"
-#include "SteppingAction.hh"
+#ifndef PhysicsList_h
+#define PhysicsList_h 1
+
+#include "G4VModularPhysicsList.hh"
+#include "globals.hh"
+
+class PhysicsListMessenger;
+class G4VPhysicsConstructor;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction* det)
- : G4VUserActionInitialization(),fDetector(det)
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-ActionInitialization::~ActionInitialization()
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
+class PhysicsList: public G4VModularPhysicsList
 {
- SetUserAction(new RunAction(fDetector));
-}
+  public:
+    PhysicsList();
+   ~PhysicsList();
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::Build() const
-{
-  PrimaryGeneratorAction* primary = new PrimaryGeneratorAction(fDetector);
-  SetUserAction(primary);
- 
-  RunAction* runaction = new RunAction(fDetector,primary);
-  SetUserAction(runaction); 
-  
-  EventAction* eventaction = new EventAction(fDetector,primary);
-  SetUserAction(eventaction);
-
-  SetUserAction(new TrackingAction(fDetector));
-
-  SetUserAction(new SteppingAction(fDetector,eventaction));
-}  
+    void ConstructParticle();
+    void ConstructProcess();
+    
+    void AddPhysicsList(const G4String& name);
+    
+  private:    
+    G4VPhysicsConstructor*  emPhysicsList;
+    G4String emName;
+    
+    PhysicsListMessenger* pMessenger;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+#endif
+

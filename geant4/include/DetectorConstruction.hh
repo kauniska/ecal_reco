@@ -24,63 +24,104 @@
 // ********************************************************************
 //
 //
-/// \file DetectorConstruction.hh
-/// \brief Definition of the B4c::DetectorConstruction class
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef B4cDetectorConstruction_h
-#define B4cDetectorConstruction_h 1
+#ifndef DetectorConstruction_h
+#define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
+#include "G4Cache.hh"
 
 class G4VPhysicalVolume;
+class G4LogicalVolume;
+class G4Material;
 class G4GlobalMagFieldMessenger;
-
-namespace B4c
-{
-
-/// Detector construction class to define materials and geometry.
-/// The calorimeter is a box made of a given number of layers. A layer consists
-/// of an absorber plate and of a detection gap. The layer is replicated.
-///
-/// Four parameters define the geometry of the calorimeter :
-///
-/// - the thickness of an absorber plate,
-/// - the thickness of a gap,
-/// - the number of layers,
-/// - the transverse size of the calorimeter (the input face is a square).
-///
-/// In ConstructSDandField() sensitive detectors of CalorimeterSD type
-/// are created and associated with the Absorber and Gap volumes.
-/// In addition a transverse uniform magnetic field is defined
-/// via G4GlobalMagFieldMessenger class.
+            
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
-  public:
-    DetectorConstruction();
-    ~DetectorConstruction() override;
+public:
+  
+  DetectorConstruction();
+ ~DetectorConstruction();
 
-  public:
-    G4VPhysicalVolume* Construct() override;
-    void ConstructSDandField() override;
+public:
+     
+  virtual G4VPhysicalVolume* Construct();
+  virtual void ConstructSDandField();
+  
+  void PrintCalorParameters();
+       
+public:
 
-  private:
-    // methods
-    //
-    void DefineMaterials();
-    G4VPhysicalVolume* DefineVolumes();
+  G4VPhysicalVolume* GetPvolWorld()         {return pvol_world;};
+  G4Material*        GetWorldMaterial()     {return worldMat;};
+  G4double           GetWorldSizeX()        {return worldSizeX;};
+  G4double           GetCalorThickness()    {return calorThickness;};  
+  G4double           GetCalorSizeYZ()       {return fiberLength;};
+  G4double           GetModuleThickness()   {return moduleThickness;};
+	
+  G4LogicalVolume*   GetLvolFiber()         {return lvol_fiber;};
+  G4LogicalVolume*   GetLvolLayer()         {return lvol_layer;};  	
+  G4LogicalVolume*   GetLvolModule()        {return lvol_module;};
+  G4LogicalVolume*   GetLvolCalorimeter()   {return lvol_calorimeter;};
+  G4LogicalVolume*   GetLvolWorld()         {return lvol_world;};  
+  
+  G4int              GetNbFibers()          {return nbOfFibers;};  
+  G4int              GetNbLayers()          {return nbOfLayers;};    
+  G4int              GetNbModules()         {return nbOfModules;};
+        			 
+private:
 
-    // data members
-    //
-    static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger;
-                                      // magnetic field messenger
+  //fibers
+  //
+  G4Material*      fiberMat;  
+  G4double         fiberDiameter, fiberLength;
+  G4LogicalVolume* lvol_fiber;
+  
+  //layers
+  //
+  G4Material*      absorberMat;
+  G4Material*      gapMat;
+  G4int            nbOfFibers;
+  G4double         distanceInterFibers;
+  G4double         layerThickness;
+  G4LogicalVolume* lvol_layer;
+    
+  //modules
+  //
+  G4Material*      moduleMat;  
+  G4int            nbOfLayers;
+  G4double         milledLayer;
+  G4double         moduleThickness;    
+  G4LogicalVolume* lvol_module;  
+           
+  //calorimeter
+  //
+  G4Material*      calorimeterMat;  
+  G4int            nbOfModules;
+  G4double         calorThickness;
+  G4LogicalVolume* lvol_calorimeter;            
+  
+  //world
+  //
+  G4Material*        worldMat;
+  G4double           worldSizeX;
+  G4LogicalVolume*   lvol_world;                
+  G4VPhysicalVolume* pvol_world;
+  
+  G4Material*        defaultMat;
+              
+  G4Cache<G4GlobalMagFieldMessenger*> fFieldMessenger;  
+      
+private:
 
-    G4bool fCheckOverlaps = true; // option to activate checking of volumes overlaps
-    G4int  fNofLayers = -1;     // number of layers
+  void DefineMaterials();
+  G4VPhysicalVolume* ConstructCalorimeter();
 };
-
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

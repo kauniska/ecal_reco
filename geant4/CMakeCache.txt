@@ -14,15 +14,6 @@
 # EXTERNAL cache entries
 ########################
 
-//Value Computed by CMake
-B4c_BINARY_DIR:STATIC=/Users/lucahartman/Documents/EPFL/MA1/project/ecal_reco/geant4
-
-//Value Computed by CMake
-B4c_IS_TOP_LEVEL:STATIC=ON
-
-//Value Computed by CMake
-B4c_SOURCE_DIR:STATIC=/Users/lucahartman/Documents/EPFL/MA1/project/ecal_reco/geant4
-
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=CMAKE_ADDR2LINE-NOTFOUND
 
@@ -37,7 +28,7 @@ CMAKE_BUILD_TYPE:STRING=Release
 CMAKE_COLOR_MAKEFILE:BOOL=ON
 
 //CXX compiler
-CMAKE_CXX_COMPILER:STRING=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
+CMAKE_CXX_COMPILER:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
 
 //Flags used by the CXX compiler during all build types.
 CMAKE_CXX_FLAGS:STRING=
@@ -55,7 +46,7 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
 //C compiler
-CMAKE_C_COMPILER:STRING=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
+CMAKE_C_COMPILER:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
 
 //Flags used by the C compiler during all build types.
 CMAKE_C_FLAGS:STRING=
@@ -152,7 +143,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=B4c
+CMAKE_PROJECT_NAME:STATIC=amsEcal
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib
@@ -236,6 +227,15 @@ PTL_DIR:PATH=/Users/lucahartman/geant4/geant4-v11.0.3-install/lib/Geant4-11.0.3/
 
 //Build example with Geant4 UI and Vis drivers
 WITH_GEANT4_UIVIS:BOOL=ON
+
+//Value Computed by CMake
+amsEcal_BINARY_DIR:STATIC=/Users/lucahartman/Documents/EPFL/MA1/project/ecal_reco/geant4
+
+//Value Computed by CMake
+amsEcal_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+amsEcal_SOURCE_DIR:STATIC=/Users/lucahartman/Documents/EPFL/MA1/project/ecal_reco/geant4
 
 //Path to a library.
 pkgcfg_lib_PC_EXPAT_expat:FILEPATH=/opt/local/lib/libexpat.dylib

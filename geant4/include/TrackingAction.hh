@@ -24,52 +24,33 @@
 // ********************************************************************
 //
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
-#include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "TrackingAction.hh"
-#include "SteppingAction.hh"
+#ifndef TrackingAction_h
+#define TrackingAction_h 1
+
+#include "G4UserTrackingAction.hh"
+#include "globals.hh"
+
+class DetectorConstruction;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction* det)
- : G4VUserActionInitialization(),fDetector(det)
-{ }
+class TrackingAction : public G4UserTrackingAction {
+
+  public:  
+    TrackingAction(DetectorConstruction*);
+    
+   ~TrackingAction() {};
+   
+    void  PreUserTrackingAction(const G4Track*);   
+    void PostUserTrackingAction(const G4Track*);
+    
+  private:
+    DetectorConstruction*   detector;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::~ActionInitialization()
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
-{
- SetUserAction(new RunAction(fDetector));
-}
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::Build() const
-{
-  PrimaryGeneratorAction* primary = new PrimaryGeneratorAction(fDetector);
-  SetUserAction(primary);
- 
-  RunAction* runaction = new RunAction(fDetector,primary);
-  SetUserAction(runaction); 
-  
-  EventAction* eventaction = new EventAction(fDetector,primary);
-  SetUserAction(eventaction);
-
-  SetUserAction(new TrackingAction(fDetector));
-
-  SetUserAction(new SteppingAction(fDetector,eventaction));
-}  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

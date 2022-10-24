@@ -24,70 +24,58 @@
 // ********************************************************************
 //
 //
-/// \file CalorHit.cc
-/// \brief Implementation of the B4c::CalorHit class
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "CalorHit.hh"
-#include "G4UnitsTable.hh"
-#include "G4VVisManager.hh"
-#include "G4Circle.hh"
-#include "G4Colour.hh"
-#include "G4VisAttributes.hh"
+#include "PrimaryGeneratorMessenger.hh"
 
-#include <iomanip>
+#include "PrimaryGeneratorAction.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 
-namespace B4c
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(
+                                             PrimaryGeneratorAction* Gun)
+:Action(Gun)
 {
-
-G4ThreadLocal G4Allocator<CalorHit>* CalorHitAllocator = nullptr;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-CalorHit::CalorHit()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-CalorHit::~CalorHit() {}
-
-// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-// CalorHit::CalorHit(const CalorHit& right)
-//   : G4VHit()
-// {
-//   fEdep        = right.fEdep;
-//   fTrackLength = right.fTrackLength;
-// }
-
-// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-// const CalorHit& CalorHit::operator=(const CalorHit& right)
-// {
-//   fEdep        = right.fEdep;
-//   fTrackLength = right.fTrackLength;
-
-//   return *this;
-// }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4bool CalorHit::operator==(const CalorHit& right) const
-{
-  return ( this == &right ) ? true : false;
+  gunDir = new G4UIdirectory("/ams/gun/");
+  gunDir->SetGuidance("gun control");
+   
+  DefaultCmd = new G4UIcmdWithoutParameter("/ams/gun/setDefault",this);
+  DefaultCmd->SetGuidance("set/reset kinematic defined in PrimaryGenerator");
+  DefaultCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  
+  RndmCmd = new G4UIcmdWithADoubleAndUnit("/ams/gun/beam",this);
+  RndmCmd->SetGuidance("random lateral extension on the beam");
+  RndmCmd->SetGuidance(" max: 0.5*sizeYZ");
+  RndmCmd->SetParameterName("rBeam",false);
+  RndmCmd->SetRange("rBeam>=0.");
+  RndmCmd->SetUnitCategory("Length");  
+  RndmCmd->AvailableForStates(G4State_Idle);  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CalorHit::Print()
+PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
-  G4cout
-     << "Edep: "
-     << std::setw(7) << G4BestUnit(fEdep,"Energy")
-     << " track length: "
-     << std::setw(7) << G4BestUnit( fTrackLength,"Length")
-     << G4endl;
+  delete DefaultCmd;
+  delete RndmCmd;
+  delete gunDir;  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command,
+                                               G4String newValue)
+{ 
+  if( command == DefaultCmd )
+   { Action->SetDefaultKinematic();}
+   
+  if( command == RndmCmd )
+   { Action->SetRndmBeam(RndmCmd->GetNewDoubleValue(newValue));}   
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+

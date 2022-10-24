@@ -24,52 +24,60 @@
 // ********************************************************************
 //
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
-#include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
 #include "TrackingAction.hh"
-#include "SteppingAction.hh"
+
+#include "DetectorConstruction.hh"
+#include "Run.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "EventAction.hh"
+#include "HistoManager.hh"
+
+#include "G4RunManager.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4Track.hh"
+#include "G4Positron.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction* det)
- : G4VUserActionInitialization(),fDetector(det)
+TrackingAction::TrackingAction(DetectorConstruction* det)
+:G4UserTrackingAction(),detector(det)
+{ }
+ 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TrackingAction::PreUserTrackingAction(const G4Track*)
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::~ActionInitialization()
-{ }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
-{
- SetUserAction(new RunAction(fDetector));
+void TrackingAction::PostUserTrackingAction(const G4Track* track)
+{ 
+  //compute leakage
+  //
+  // if not at World boundaries, return
+  if (track->GetVolume() != detector->GetPvolWorld()) return;
+     
+  //get position
+  G4double x = (track->GetPosition()).x();
+  G4double xlimit = 0.5*(detector->GetCalorThickness());
+  G4int icase = 2;
+  if (x >= xlimit) icase = 0;
+  else if (x <= -xlimit) icase = 1;
+  
+  //get particle energy
+  G4double Eleak = track->GetKineticEnergy();
+  if (track->GetDefinition() == G4Positron::Positron())
+     Eleak += 2*electron_mass_c2;
+     
+  //sum leakage
+  Run* run = static_cast<Run*>(
+             G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+  run->DetailedLeakage(icase,Eleak);         
 }
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ActionInitialization::Build() const
-{
-  PrimaryGeneratorAction* primary = new PrimaryGeneratorAction(fDetector);
-  SetUserAction(primary);
- 
-  RunAction* runaction = new RunAction(fDetector,primary);
-  SetUserAction(runaction); 
-  
-  EventAction* eventaction = new EventAction(fDetector,primary);
-  SetUserAction(eventaction);
-
-  SetUserAction(new TrackingAction(fDetector));
-
-  SetUserAction(new SteppingAction(fDetector,eventaction));
-}  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
