@@ -7,5 +7,7 @@ tests/.ipynb_checkpoints
 **/*.out
 **/*.o
 **/*.d
-**/CMakeFiles
+geant4/CMakeFiles
 geant4/CMakeCache.txt
+geant4/log
+geant4/ecal
