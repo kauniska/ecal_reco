@@ -5,15 +5,15 @@
 /control/verbose 2
 /run/verbose 2
 #
-/ams/phys/addPhysics  local
+#/ams/phys/addPhysics  local
 /run/setCut 1 km
 #
 /run/initialize
 #
 /ams/gun/setDefault
-/gun/particle mu+
+/gun/particle mu-
 /gun/energy 1 GeV
-/ams/gun/beam 1 cm
+/ams/gun/beam 10 cm
 #
 /run/printProgress 1000
 #
