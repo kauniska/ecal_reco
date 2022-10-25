@@ -181,12 +181,7 @@ void Run::EndOfRun()
   
   G4double meanEtot,meanEtot2,varianceEtot,rmsEtot,resEtot;  
   G4double meanEvis,meanEvis2,varianceEvis,rmsEvis,resEvis;
-
-  analysisManager->SetNtupleMerging(true);
-  analysisManager->CreateNtuple("Detector", "Hits");
-  analysisManager->CreateNtupleDColumn("pdg");
-  analysisManager->FinishNtuple();
-
+  
   for (G4int i1=1; i1<kLayerMax; i1++) {
     //total energy
     meanEtot  = EtotLayer[i1] /nbEvents;

@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.16...3.21)
-project(amsEcal)
+project(ecal)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default

@@ -31,7 +31,6 @@
 #define SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
-#include "G4Track.hh"
 #include "globals.hh"
 
 class DetectorConstruction;
@@ -50,9 +49,9 @@ class SteppingAction : public G4UserSteppingAction
     void UserSteppingAction(const G4Step*);
     
     G4double BirksAttenuation(const G4Step*);
-    G4int GetParticleID(const G4Track*);
-
-  private : DetectorConstruction *detector;
+    
+  private:
+    DetectorConstruction* detector;
     EventAction*          eventAct;
     
     G4bool           first;

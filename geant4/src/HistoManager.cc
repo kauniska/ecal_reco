@@ -59,10 +59,10 @@ void HistoManager::Book()
   analysisManager->SetFileName(fFileName);
   analysisManager->SetVerboseLevel(1);
   analysisManager->SetActivation(true);    // enable inactivation of histograms
-  
+
   // Define histograms start values
   const G4int kMaxHisto = 6;
-  const G4String id[] = {"dummy", "Etot", "Evis", "Etot_profile", "Evis_profile" , "Evis_fiver"};
+  const G4String id[] = {"0", "1", "2", "3" , "4", "5"};
   const G4String title[] = 
                 { "dummy",                    //0 
 				  "total Etot in Ecal",       //1

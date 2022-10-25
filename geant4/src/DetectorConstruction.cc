@@ -99,10 +99,8 @@ void DetectorConstruction::DefineMaterials()
 
   // Lead
   //
-  G4Material* Pb = new G4Material("Lead", 82., 207.20*g/mole, density= 0.98*11.20*g/cm3);
-
-  // Aluminium
-  G4Material* Al = new G4Material("Aluminium", 13., 26.98 * g / mole, density = 2.7 * g / cm3);
+  G4Material* Pb =   
+  new G4Material("Lead", 82., 207.20*g/mole, density= 0.98*11.20*g/cm3);
 
   // Scintillator
   //
@@ -134,7 +132,6 @@ void DetectorConstruction::DefineMaterials()
   defaultMat     = Vacuum;  
   fiberMat       = Sci;
   absorberMat    = Pb;
-  gapMat         = Al;
   moduleMat      = defaultMat;
   calorimeterMat = defaultMat;
   worldMat       = defaultMat;

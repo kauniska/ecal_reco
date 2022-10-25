@@ -85,7 +85,6 @@ private:
   //layers
   //
   G4Material*      absorberMat;
-  G4Material*      gapMat;
   G4int            nbOfFibers;
   G4double         distanceInterFibers;
   G4double         layerThickness;
