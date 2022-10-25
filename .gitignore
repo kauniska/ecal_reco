@@ -8,3 +8,4 @@ tests/.ipynb_checkpoints
 **/*.o
 **/*.d
 **/CMakeFiles
+geant4/CMakeCache.txt
