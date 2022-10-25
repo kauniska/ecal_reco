@@ -26,13 +26,10 @@ endif
 ########################### Qt ###############################
 # Should be before X11.
 ifdef INC_QT
-  CPPFLAGS += -DQT_NO_DEPRECATED_WARNINGS $(QTFLAGS)
+  CPPFLAGS += $(QTFLAGS)
 endif
 ifdef LOAD_QT
   INTYLIBS += $(QTLIBS)
-endif
-ifdef LOAD_3DQT
-  INTYLIBS += $(QT3DLIBS)
 endif
 ifdef LOAD_GLQT
   INTYLIBS += $(GLQTLIBS)

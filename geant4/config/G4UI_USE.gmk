@@ -1,3 +1,4 @@
+# $Id: G4UI_USE.gmk,v 1.15 2009-03-05 09:19:37 gbarrand Exp $
 # -------------------------------------------------------------
 # GNUmakefile for CPPFLAGS for interfaces USE phase.
 #   John Allison, 6th July 1998.
@@ -26,9 +27,11 @@ endif
 ifneq ($(G4INCLUDE_EXEC),1)
   CPPFLAGS += -I$(G4BASE)/interfaces/basic/include
   CPPFLAGS += -I$(G4BASE)/interfaces/common/include
+  CPPFLAGS += -I$(G4BASE)/interfaces/GAG/include
 endif
 UILIBS   += -lG4UIbasic
 UILIBS   += -lG4UIcommon
+UILIBS   += -lG4UIGAG
 
 ifdef G4UI_USE_TERMINAL
   G4UI_USE  = 1
@@ -38,6 +41,11 @@ endif
 ifdef G4UI_USE_TCSH
   G4UI_USE  = 1
   CPPFLAGS += -DG4UI_USE_TCSH
+endif
+
+ifdef G4UI_USE_GAG
+  G4UI_USE  = 1
+  CPPFLAGS += -DG4UI_USE_GAG
 endif
 
 # Other sessions: environment variables *must* be used to control the build

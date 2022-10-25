@@ -1,3 +1,4 @@
+# $Id: architecture.gmk,v 1.125 2010-11-24 10:54:13 gcosmo Exp $
 # ------------------------------------------------------------------------
 #       GEANT 4 - Architecture configuration script for GNU Make
 #
@@ -12,20 +13,15 @@
 # List of the supported architectures/compilers and related flavors for
 # the environment variable G4SYSTEM:
 #
-#          Linux-g++    Linux (CentOS7), gcc-4.8.4 (default)
+#          Linux-g++   Linux (Red Hat Enterprise/SCL5), gcc-4.1.2 (default)
 #
-#          Darwin-clang MacOSX 10.14, clang-7
+#          Darwin-g++  MacOSX 10.7, gcc-4.2.1
 #
-#          WIN32-VC     Windows 10 and Microsoft Visual C++ 14.11
+#          WIN32-VC    Windows 7 and Microsoft Visual C++ 10.0
 # 
 # -------------------------------------------------------------------------
 
 MAKEFLAGS= --no-print-directory
-
-# Define that we are building Geant4 with Geant4Make
-#
-CPPFLAGS += -DG4GMAKE
-G4GMAKE := 1
 
 # If not specified, the default path for G4 installation G4INSTALL is
 # set to $HOME/geant4 ...
@@ -131,11 +127,6 @@ ifndef G4BIN
 endif
 G4DUMMY_VARIABLE:=$(shell [ ! -d $(G4BIN) ] && mkdir -p $(G4BIN) )
 
-# Use minimum C++14 standard constructs and compilation options ...
-#
-# CPPFLAGS += -DG4USE_STD14
-# G4USE_STD14 := 1
-
 # If G4DEBUG or G4NO_OPTIMISE are not specified,
 # the default compilation is optimised ...
 #
@@ -147,11 +138,6 @@ else
     CPPFLAGS += -DG4OPTIMISE
     G4OPTIMISE := 1
   endif
-endif
-
-ifdef G4MULTITHREADED
-  CPPFLAGS += -DG4MULTITHREADED
-  G4MULTITHREADED := 1
 endif
 
 # CLHEP path, etc.
@@ -179,59 +165,6 @@ ifndef CLHEP_INCLUDE_DIR
 endif
 ifndef CLHEP_LIB_DIR
   CLHEP_LIB_DIR     := $(CLHEP_BASE_DIR)/lib
-endif
-
-# PTL path, etc.
-#
-ifndef PTL_BASE_DIR
-  PTL_BASE_DIR  := $(G4BASE)/externals/ptl
-  G4LIB_BUILD_PTL := 1
-  G4LIB_USE_PTL := 1
-endif
-ifndef G4LIB_USE_PTL
-  ifndef PTL_LIB
-    ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-      PTL_LIB := ptl.lib
-    else
-      PTL_LIB := ptl
-    endif
-  endif
-endif
-ifndef PTL_INCLUDE_DIR
-  PTL_INCLUDE_DIR := $(PTL_BASE_DIR)/include
-endif
-ifndef CLHEP_LIB_DIR
-  PTL_LIB_DIR     := $(PTL_BASE_DIR)/lib
-endif
-
-# USolids path, etc.
-#
-ifdef G4GEOM_USE_USOLIDS
-  G4USOLIDS :=1
-endif
-ifdef G4GEOM_USE_PARTIAL_USOLIDS
-  G4USOLIDS :=1
-endif
-ifdef G4USOLIDS
-  G4LIB_USE_USOLIDS := 1
-  ifndef USOLIDS_BASE_DIR
-    $(error ERROR - Define path USOLIDS_BASE_DIR to VecGeom installation!)
-  else
-    ifndef USOLIDS_LIB
-      ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-        USOLIDS_LIB := vecgeom.lib
-      else
-        USOLIDS_LIB := vecgeom 
-      endif
-    endif
-    ifndef USOLIDS_INCLUDE_DIR
-      USOLIDS_INCLUDE_DIR := $(USOLIDS_BASE_DIR)/include
-    endif
-    ifndef USOLIDS_LIB_DIR
-      USOLIDS_LIB_DIR     := $(USOLIDS_BASE_DIR)/lib
-    endif
-    CPPFLAGS += -I$(USOLIDS_INCLUDE_DIR) 
-  endif
 endif
 
 # Paths for G4 data
@@ -279,86 +212,34 @@ endif
 # Variables for implicit rules, etc., as suggested in GNU Make manual...
 #
 CPPFLAGS  += -Iinclude 
-CPPFLAGS  += -I$(CLHEP_INCLUDE_DIR) -I$(PTL_INCLUDE_DIR)
+CPPFLAGS  += -I$(CLHEP_INCLUDE_DIR)
 
 # Positional qualifiers in action...
 #
 ifndef LDFLAGS
   LDFLAGS :=
-  #
-  # run-time loading flags
-  #
-  G4STATIC_MODE :=
-  G4NOSTATIC_MODE :=
-endif
-ifndef LOADLIBS
-  LOADLIBS :=
 endif
 ifndef G4LIB_USE_CLHEP
   ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
     LDFLAGS   += -link $(LIB_PATH)$(CLHEP_LIB_DIR)
-    LOADLIBS  += $(CLHEP_LIB)
+    LOADLIBS  := $(CLHEP_LIB)
   else
     LDFLAGS   += -L$(CLHEP_LIB_DIR)
-    LOADLIBS  += -l$(CLHEP_LIB)
+    LOADLIBS  := -l$(CLHEP_LIB)
   endif
-endif
-ifndef G4LIB_USE_PTL
+else
+  LOADLIBS :=
   ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-    LDFLAGS   += -link $(LIB_PATH)$(PTL_LIB_DIR)
-    LOADLIBS  += $(PTL_LIB)
-  else
-    LDFLAGS   += -L$(PTL_LIB_DIR)
-    LOADLIBS  += -l$(PTL_LIB)
+    LDFLAGS  += -link $(LIB_PATH)$(G4INSTALL)/lib
   endif
 endif
-ifdef G4LIB_USE_USOLIDS
-  ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-    LDFLAGS   += -link $(LIB_PATH)$(USOLIDS_LIB_DIR)
-    LOADLIBS  += $(USOLIDS_LIB)
-  else
-    LDFLAGS   += -L$(USOLIDS_LIB_DIR)
-    LOADLIBS  += -l$(USOLIDS_LIB)
+ifeq (,$(findstring WIN32-VC,$(G4SYSTEM)))
+  ifndef G4LIB_USE_EXPAT
+    LOADLIBS += -lexpat
   endif
-endif
-ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-  LDFLAGS  += -link $(LIB_PATH)$(G4INSTALL)/lib
-endif
-
-ifndef G4LIB_USE_EXPAT
-  ifndef EXPATROOT
-    EXPATROOT := /usr
+  ifndef G4LIB_USE_ZLIB
+    LOADLIBS += -lz
   endif
-  ifndef EXPATFLAGS
-    EXPATFLAGS := -I$(EXPATROOT)/include
-  endif
-  ifndef EXPATLIBS
-    ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-      EXPATLIBS := $(LIB_PATH)$(EXPATROOT)/lib expat.lib
-    else
-      EXPATLIBS := -L$(EXPATROOT)/lib -lexpat
-    endif
-  endif
-  CPPFLAGS  += $(EXPATFLAGS)
-  LOADLIBS  += $(EXPATLIBS)
-endif
-
-ifndef G4LIB_USE_ZLIB
-  ifndef ZLIBROOT
-    ZLIBROOT := /usr
-  endif
-  ifndef ZLIBFLAGS
-    ZLIBFLAGS := -I$(ZLIBROOT)/include
-  endif
-  ifndef ZLIBLIBS
-    ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
-      ZLIBLIBS := $(LIB_PATH)$(ZLIBROOT)/lib zlib.lib
-    else
-      ZLIBLIBS := -L$(ZLIBROOT)/lib -lz
-    endif
-  endif
-  CPPFLAGS  += $(ZLIBFLAGS)
-  LOADLIBS  += $(ZLIBLIBS)
 endif
 
 # Graphic variables...
@@ -372,8 +253,8 @@ endif
 # OGLFLAGS gives the directory containing include files.
 #   E.g.: OGLFLAGS  := -I$(OGLHOME)/include
 # OGLLIBS gives the libraries.
-#   E.g.: OGLLIBS   := -L$(OGLHOME)/lib -lGL
-#   Or  : OGLLIBS   := -L$(OGLHOME)/lib -lMesaGL
+#   E.g.: OGLLIBS   := -L$(OGLHOME)/lib -lGLU -lGL
+#   Or  : OGLLIBS   := -L$(OGLHOME)/lib -lMesaGLU -lMesaGL
 # OGLHOME is often /usr or /usr/local.  In such case, it is not necessary
 # to specify the path in OGLFLAGS, since added already by default by the
 # compiler.  OGLHOME can also point to a special installation.
@@ -381,23 +262,18 @@ endif
 # are set below.  Most system-dependent code assumes OGLHOME is set.
 
 # ------------- OpenInventor -----------------
-# The path to the installation of OpenInventor (Coin) must be specified
+# The path to the installation of OpenInventor must be specified
 # if the package is installed in a location different
 # than default system directories (like... /usr or /usr/local).
 #
 ifndef OIVHOME
-  OIVHOME := /usr/local/Inventor
+  OIVHOME  := /usr/local/Inventor
 endif
 ifndef OIVFLAGS
-  OIVFLAGS := -I$(OIVHOME)/include 
+  OIVFLAGS  := -I$(OIVHOME)/include 
 endif
 ifndef OIVLIBS
-  ifdef G4VIS_USE_OIQT
-    OIVLIBS := -L$(OIVHOME)/lib -lSoQt
-  else
-    OIVLIBS := -L$(OIVHOME)/lib -lSoXt
-  endif
-  OIVLIBS += -lCoin
+  OIVLIBS   := -L$(OIVHOME)/lib -lInventorXt -lInventor
 endif
 
 # ----------------- GDML ---------------------
@@ -417,7 +293,7 @@ ifdef G4LIB_USE_GDML
     ifneq (,$(findstring WIN32-VC,$(G4SYSTEM)))
       GDMLLIBS := $(LIB_PATH)$(XERCESCROOT)/lib xerces-c.lib
     else
-      GDMLLIBS := -L$(XERCESCROOT)/$(shell [ -d $(XERCESCROOT)/lib64 ] && echo "lib64" || echo "lib") -lxerces-c
+      GDMLLIBS := -L$(XERCESCROOT)/lib -lxerces-c
     endif
   endif
   CPPFLAGS  += $(GDMLFLAGS)
@@ -432,7 +308,7 @@ G4TREP := $(G4TMP)/$(G4TEMPLATE_REPOSITORY)
 
 # Default archive call. Changed for: SUN-CC.
 #
-AR := ar rc
+AR := ar r
 
 # Default echo used with makedepend. Changed for SUN-CC, Linux-g++, WIN32.
 #
@@ -465,10 +341,6 @@ SORT := sort
 # Default touch used with source/GNUmakefile.  Changed for WIN32.
 #
 TOUCH := touch
-
-# Include geometry specific setup...
-#
-include $(G4INSTALL)/config/geomconf.gmk
 
 # Include architecture dependent setups...
 #
