@@ -61,38 +61,42 @@ public:
   G4Material*        GetWorldMaterial()     {return worldMat;};
   G4double           GetWorldSizeZ()        {return worldSizeZ;};
   G4double           GetCalorThickness()    {return calorThickness;};  
-  G4double           GetCalorSizeXY()       {return fiberLength;};
+  G4double           GetCalorSizeXY()       {return scintLength;};
   G4double           GetModuleThickness()   {return moduleThickness;};
 	
-  G4LogicalVolume*   GetLvolFiber()         {return lvol_fiber;};
+  G4LogicalVolume*   GetLvolScint()         {return lvol_scint;};
   G4LogicalVolume*   GetLvolLayer()         {return lvol_layer;};  	
   G4LogicalVolume*   GetLvolModule()        {return lvol_module;};
   G4LogicalVolume*   GetLvolCalorimeter()   {return lvol_calorimeter;};
   G4LogicalVolume*   GetLvolWorld()         {return lvol_world;};  
   
-  G4int              GetNbFibers()          {return nbOfFibers;};  
+  G4int              GetNbScints()          {return nbOfScints;};  
   G4int              GetNbLayers()          {return nbOfLayers;};    
   G4int              GetNbModules()         {return nbOfModules;};
         			 
 private:
 
-  //fibers
+  //scintillator
   //
-  G4Material*      fiberMat;  
-  G4double         fiberDiameter, fiberLength;
-  G4LogicalVolume* lvol_fiber;
+  G4Material*      scintMat;
+  G4double scintDiameter, scintWidth, scintLength, scintHeight;
+  G4LogicalVolume* lvol_scint;
   
   //layers
   //
   G4Material*      absorberMat;
-  G4int            nbOfFibers;
-  G4double         distanceInterFibers;
+  G4int            nbOfScints;
+  G4double         distanceInterScints;
   G4double         layerThickness;
   G4LogicalVolume* lvol_layer;
-    
-  //modules
-  //
-  G4Material*      moduleMat;  
+  G4double leadThickness;
+  G4LogicalVolume* lvol_lead;
+  G4LogicalVolume *lvol_Al_layer;
+  G4double         gapSize;
+
+      // modules
+      //
+      G4Material *moduleMat;
   G4int            nbOfLayers;
   G4double         milledLayer;
   G4double         moduleThickness;    

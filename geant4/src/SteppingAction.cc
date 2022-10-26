@@ -40,7 +40,7 @@ SteppingAction::SteppingAction(DetectorConstruction* det, EventAction* evt)
 :G4UserSteppingAction(),detector(det),eventAct(evt)
 {
   first = true;
-  lvol_world = lvol_module = lvol_layer = lvol_fiber = 0;
+  lvol_world = lvol_module = lvol_layer = lvol_scint = 0;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -58,7 +58,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step )
    lvol_world  = detector->GetLvolWorld();
    lvol_module = detector->GetLvolModule();   
    lvol_layer  = detector->GetLvolLayer();
-   lvol_fiber  = detector->GetLvolFiber();      
+   lvol_scint  = detector->GetLvolScint();      
    first = false;   
  }
  
@@ -71,7 +71,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step )
  //
  G4int iModule = 0;
  G4int iLayer  = 0;
- G4int iFiber  = 0;
+ G4int iScint  = 0;
    
  G4TouchableHandle touch1 = step->GetPreStepPoint()->GetTouchableHandle(); 
  G4LogicalVolume* lvol = touch1->GetVolume()->GetLogicalVolume();
@@ -80,13 +80,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step )
  else if (lvol == lvol_module) { iModule = touch1->GetCopyNumber(0);}
  else if (lvol == lvol_layer)  { iLayer  = touch1->GetCopyNumber(0);
                                  iModule = touch1->GetCopyNumber(1);}
- else if (lvol == lvol_fiber)  { iFiber  = touch1->GetCopyNumber(0);
+ else if (lvol == lvol_scint)  { iScint  = touch1->GetCopyNumber(0);
                                  iLayer  = touch1->GetCopyNumber(1);
                                  iModule = touch1->GetCopyNumber(2);}
 
  // sum edep
  //
- eventAct->SumDeStep(iModule, iLayer, iFiber, edep);         
+ eventAct->SumDeStep(iModule, iLayer, iScint, edep);         
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

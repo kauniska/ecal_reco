@@ -65,27 +65,27 @@ void EventAction::BeginOfEventAction(const G4Event*)
     EtotLayer[k] = EvisLayer[k] = 0.0;
   }
   EtotCalor = EvisCalor = 0.;
-  EvisFiber.clear();
+  EvisScint.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventAction::SumDeStep(G4int iModule, G4int iLayer, G4int iFiber,
+void EventAction::SumDeStep(G4int iModule, G4int iLayer, G4int iScint,
                             G4double deStep )
 {
   if (iModule > 0) EtotCalor += deStep;
   		
-  G4int kLayer = 0; G4int kFiber = 0;
+  G4int kLayer = 0; G4int kScint = 0;
   if (iLayer > 0) {
 	kLayer = (iModule-1)*nbOfLayers + iLayer;
 	EtotLayer[kLayer] += deStep;
   }
   
-  if (iFiber > 0) {
+  if (iScint > 0) {
 	EvisLayer[kLayer] += deStep;
 	EvisCalor += deStep;
-    kFiber = 1000*kLayer + iFiber;
-	EvisFiber[kFiber] += deStep;	  	
+    kScint = 1000*kLayer + iScint;
+	EvisScint[kScint] += deStep;	  	
   }	  
 }
 
@@ -112,28 +112,28 @@ void EventAction::EndOfEventAction(const G4Event*)
   
   
   std::map<G4int,G4double>::iterator it;         
-  for (it = EvisFiber.begin(); it != EvisFiber.end(); it++) {
-     G4int kFiber = it->first;
-	 G4int iFiber = kFiber%1000;
+  for (it = EvisScint.begin(); it != EvisScint.end(); it++) {
+     G4int kScint = it->first;
+	 G4int iScint = kScint%1000;
      G4double Evis = it->second;
-	 analysisManager->FillH1(5,iFiber+0.5,Evis);
+	 analysisManager->FillH1(5,iScint+0.5,Evis);
   }
     
-  //write fired fibers on a file
+  //write fired scints on a file
   //
-  //// WriteFibers(evt); 
+  //// WriteScints(evt); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
         
 #include <fstream>
 
-void EventAction::WriteFibers(const G4Event* evt)
+void EventAction::WriteScints(const G4Event* evt)
 {
   // event is appended on a file
   //
   G4String name = G4AnalysisManager::Instance()->GetFileName();
-  G4String fileName = name + ".fibers.ascii";
+  G4String fileName = name + ".scints.ascii";
   
   std::ofstream File(fileName, std::ios::app);
   std::ios::fmtflags mode = File.flags();  
@@ -152,15 +152,15 @@ void EventAction::WriteFibers(const G4Event* evt)
   G4ThreeVector position  = gun->GetParticlePosition();
   File << ekin << " " << direction << " " << position << G4endl;  
   
-  //write fibers
+  //write scints
   //
-  File << EvisFiber.size() << G4endl;
+  File << EvisScint.size() << G4endl;
   //
   std::map<G4int,G4double>::iterator it;         
-  for (it = EvisFiber.begin(); it != EvisFiber.end(); it++) {
-     G4int kFiber = it->first;
+  for (it = EvisScint.begin(); it != EvisScint.end(); it++) {
+     G4int kScint = it->first;
      G4double Evis = it->second;
-     File << " " << std::setw(7) << kFiber << " "<< std::setw(10) << Evis
+     File << " " << std::setw(7) << kScint << " "<< std::setw(10) << Evis
             << G4endl;
   }
            

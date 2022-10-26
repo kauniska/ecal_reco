@@ -69,7 +69,7 @@ void HistoManager::Book()
                   "total Evis in Ecal",       //2
                   "Etot profile",             //3
                   "Evis profile",             //4
-                  "Evis per fiber"            //5					  
+                  "Evis per scint"            //5					  
                  };
 				 
   // Default values (to be reset via /analysis/h1/set command)               

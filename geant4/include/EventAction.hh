@@ -52,7 +52,7 @@ class EventAction : public G4UserEventAction
     
     void SumDeStep(G4int, G4int, G4int, G4double);
 	
-	void WriteFibers(const G4Event*);
+	void WriteScints(const G4Event*);
 			         	    
 
   private:  
@@ -66,7 +66,7 @@ class EventAction : public G4UserEventAction
 	G4double EtotCalor;
 	G4double EvisCalor;
 	
-	std::map<G4int, G4double> EvisFiber;
+	std::map<G4int, G4double> EvisScint;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
