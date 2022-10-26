@@ -61,12 +61,12 @@ DetectorConstruction::DetectorConstruction()
   // default parameter values of calorimeter
   //
   fiberDiameter       = 1.13*mm; 	//1.08*mm
-  nbOfFibers          = 490;		//490
-  distanceInterFibers = 1.35*mm;	//1.35*mm
-  layerThickness      = 1.73*mm;	//1.68*mm  
+  nbOfFibers          = 240;		//490
+  distanceInterFibers = 2.*mm;	//1.35*mm
+  layerThickness      = 16*mm;	//1.68*mm  
   milledLayer         = 1.00*mm;    //1.40*mm ?
-  nbOfLayers          = 10;		    //10
-  nbOfModules         = 9;		    //9
+  nbOfLayers          = 2;		    //10
+  nbOfModules         = 4;		    //9
      
   fiberLength         = (nbOfFibers+0.5)*distanceInterFibers;	//662.175*mm
 }
@@ -166,9 +166,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 				   
   // layer
   //
-  G4double sizeX = layerThickness;
+  G4double sizeZ = layerThickness;
   G4double sizeY = distanceInterFibers*nbOfFibers;
-  G4double sizeZ = fiberLength;
+  G4double sizeX = fiberLength;
   
   G4Box*      
   svol_layer = new G4Box("layer",			//name
@@ -181,13 +181,13 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // put fibers within layer
   //
-  G4double Xcenter = 0.;
+  G4double Zcenter = 0.;
   G4double Ycenter = -0.5*(sizeY + distanceInterFibers);
   
   for (G4int k=0; k<nbOfFibers; k++) {
     Ycenter += distanceInterFibers;
     new G4PVPlacement(0,		   		//no rotation
-      		  G4ThreeVector(Xcenter,Ycenter,0.),    //position
+      		  G4ThreeVector(0.,Ycenter,Zcenter),    //position
                       lvol_fiber,     		   	//logical volume	
                       "fiber",	   			//name
                       lvol_layer,        		//mother
@@ -199,9 +199,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
   // modules
   //
   moduleThickness = layerThickness*nbOfLayers + milledLayer;       
-  sizeX = moduleThickness;
+  sizeZ = moduleThickness;
   sizeY = fiberLength;
-  sizeZ = fiberLength;
+  sizeX = fiberLength;
   
   G4Box*      
   svol_module = new G4Box("module",			//name
@@ -213,14 +213,14 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // put layers within module
   //
-  Xcenter = -0.5*(nbOfLayers+1)*layerThickness;
+  Zcenter = -0.5*(nbOfLayers+1)*layerThickness;
   Ycenter =  0.25*distanceInterFibers;
   
   for (G4int k=0; k<nbOfLayers; k++) {
-    Xcenter += layerThickness;
+    Zcenter += layerThickness;
     Ycenter  = - Ycenter;
     new G4PVPlacement(0,		   		//no rotation
-      		  G4ThreeVector(Xcenter,Ycenter,0.),    //position
+      		  G4ThreeVector(0.,Ycenter,Zcenter),    //position
                       lvol_layer,     		   	//logical volume	
                       "layer",	   			//name
                       lvol_module,        		//mother
@@ -232,9 +232,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
   // calorimeter
   //
   calorThickness = moduleThickness*nbOfModules;
-  sizeX = calorThickness;
+  sizeZ = calorThickness;
   sizeY = fiberLength;
-  sizeZ = fiberLength;
+  sizeX = fiberLength;
   
   G4Box*      
   svol_calorimeter = new G4Box("calorimeter",		//name
@@ -247,14 +247,14 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // put modules inside calorimeter
   //  
-  Xcenter = -0.5*(calorThickness + moduleThickness);
+  Zcenter = -0.5*(calorThickness + moduleThickness);
   
 
   for (G4int k=0; k<nbOfModules; k++) {
-    Xcenter += moduleThickness;		  
+    Zcenter += moduleThickness;		  
     G4RotationMatrix rotm;                    //rotation matrix to place modules    
-    if ((k+1)%2 == 0) rotm.rotateX(90*deg);
-	G4Transform3D transform(rotm, G4ThreeVector(Xcenter,0.,0.));    
+    if ((k+1)%2 == 0) rotm.rotateZ(90*deg);
+	G4Transform3D transform(rotm, G4ThreeVector(0.,0.,Zcenter));    
     new G4PVPlacement(transform,		   		//rotation+position
                       lvol_module,	     		//logical volume	
                       "module", 	   		    //name
@@ -265,11 +265,11 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // world
   //
-  sizeX = 1.2*calorThickness;
-  sizeY = 1.2*fiberLength;
-  sizeZ = 1.2*fiberLength;
+  sizeZ = 2.*calorThickness;
+  sizeY = 2.*fiberLength;
+  sizeX = 2.*fiberLength;
   
-  worldSizeX = sizeX;
+  worldSizeZ = sizeZ;
   
   G4Box*      
   svol_world = new G4Box("world",			//name

@@ -68,12 +68,12 @@ void PrimaryGeneratorAction::SetDefaultKinematic()
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4String particleName;
   G4ParticleDefinition* particle
-                    = particleTable->FindParticle(particleName="e-");
+                    = particleTable->FindParticle(particleName="mu-");
   particleGun->SetParticleDefinition(particle);
-  particleGun->SetParticleMomentumDirection(G4ThreeVector(1.,0.,0.));
-  particleGun->SetParticleEnergy(1.*GeV);
-  G4double position = -0.5*(Detector->GetWorldSizeX());
-  particleGun->SetParticlePosition(G4ThreeVector(position,0.*mm,0.*mm));
+  particleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,-1.));
+  particleGun->SetParticleEnergy(2.*GeV);
+  G4double position = 0.5*(Detector->GetWorldSizeZ());
+  particleGun->SetParticlePosition(G4ThreeVector(0. * mm, 0. * mm, position));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -87,12 +87,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   if (beam > 0.) 
     {
       G4ThreeVector position = particleGun->GetParticlePosition();    
-      G4double maxYZ = 0.49*(Detector->GetCalorSizeYZ());
-      G4double x0 = position.x();
-      G4double y0 = position.y() + (G4UniformRand()-0.5)*beam;
-      G4double z0 = position.z() + (G4UniformRand()-0.5)*beam;
-      if (std::abs(y0) > maxYZ) y0 = maxYZ;
-      if (std::abs(z0) > maxYZ) z0 = maxYZ;      
+      G4double maxXY = 0.49*(Detector->GetCalorSizeXY());
+      G4double x0 = position.x() + (G4UniformRand() - 0.5) * beam;
+      G4double y0 = position.y() + (G4UniformRand() - 0.5) * beam;
+      G4double z0 = position.z();
+      if (std::abs(y0) > maxXY) x0 = maxXY;
+      if (std::abs(z0) > maxXY) y0 = maxXY;      
       particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
       particleGun->GeneratePrimaryVertex(anEvent);
       particleGun->SetParticlePosition(position);      

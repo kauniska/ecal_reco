@@ -59,9 +59,9 @@ public:
 
   G4VPhysicalVolume* GetPvolWorld()         {return pvol_world;};
   G4Material*        GetWorldMaterial()     {return worldMat;};
-  G4double           GetWorldSizeX()        {return worldSizeX;};
+  G4double           GetWorldSizeZ()        {return worldSizeZ;};
   G4double           GetCalorThickness()    {return calorThickness;};  
-  G4double           GetCalorSizeYZ()       {return fiberLength;};
+  G4double           GetCalorSizeXY()       {return fiberLength;};
   G4double           GetModuleThickness()   {return moduleThickness;};
 	
   G4LogicalVolume*   GetLvolFiber()         {return lvol_fiber;};
@@ -108,7 +108,7 @@ private:
   //world
   //
   G4Material*        worldMat;
-  G4double           worldSizeX;
+  G4double           worldSizeZ;
   G4LogicalVolume*   lvol_world;                
   G4VPhysicalVolume* pvol_world;
   

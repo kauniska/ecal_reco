@@ -22,16 +22,16 @@
 /vis/drawVolume
 #
 # Specify view angle:
-#/vis/viewer/set/viewpointThetaPhi 90. 0.
+/vis/viewer/set/viewpointThetaPhi 90. 90.
 #
 # Specify zoom value:
 #/vis/viewer/zoom 2.
 #
 # Specify style (surface or wireframe):
-#/vis/viewer/set/style wireframe
+/vis/viewer/set/style wireframe
 #
 # Draw coordinate axes:
-#/vis/scene/add/axes 0 0 0 1 m
+/vis/scene/add/axes 0 0 0 0.2 m
 #
 # Draw smooth trajectories at end of event, showing trajectory points
 # as markers 2 pixels wide:
@@ -54,11 +54,11 @@
 #
 # Many other options are available with /vis/modeling and /vis/filtering.
 # For example, to select colour by particle ID:
-#/vis/modeling/trajectories/create/drawByParticleID
-#/vis/modeling/trajectories/drawByParticleID-0/set e- blue
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set e- blue
 #
 # To superimpose all of the events from a given run:
-/vis/scene/endOfEventAction accumulate
+/vis/scene/endOfEventAction accumulate 10
 #
 # Re-establish auto refreshing and verbosity:
 /vis/viewer/set/autoRefresh true
