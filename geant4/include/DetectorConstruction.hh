@@ -86,7 +86,6 @@ private:
   //
   G4Material*      absorberMat;
   G4int            nbOfScints;
-  G4double         distanceInterScints;
   G4double         layerThickness;
   G4LogicalVolume* lvol_layer;
   G4double leadThickness;
@@ -107,8 +106,13 @@ private:
   G4Material*      calorimeterMat;  
   G4int            nbOfModules;
   G4double         calorThickness;
-  G4LogicalVolume* lvol_calorimeter;            
-  
+  G4LogicalVolume* lvol_calorimeter;
+  G4Material*      shieldingMat;
+  G4double         shieldThickness;
+  G4LogicalVolume* lvol_topPlate;
+  G4LogicalVolume* lvol_sidePlateXZ;
+  G4LogicalVolume* lvol_sidePlateYZ;
+
   //world
   //
   G4Material*        worldMat;

@@ -70,7 +70,10 @@ DetectorConstruction::DetectorConstruction()
   nbOfLayers          = 2;		    //10
   nbOfModules         = 4;		    //9
   leadThickness       = 4.*mm;
-  layerThickness      = 16 * mm; // 1.68*mm
+  layerThickness      = 16. * mm; // 1.68*mm
+  shieldThickness     = 10. *mm;
+  moduleThickness     = 4*(leadThickness + 2*gapSize + scintHeight);
+  calorThickness      = moduleThickness * nbOfModules;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -103,6 +106,11 @@ void DetectorConstruction::DefineMaterials()
   //
   G4Material* Pb =   
   new G4Material("Lead", 82., 207.20*g/mole, density= 0.98*11.20*g/cm3);
+
+  //Aluminium
+  //
+  G4Material* Al =
+      new G4Material("aluminium", 13.,26.98 * g / mole, density = 2.7 * g / cm3);
 
   // Scintillator
   //
@@ -137,6 +145,7 @@ void DetectorConstruction::DefineMaterials()
   moduleMat      = defaultMat;
   calorimeterMat = defaultMat;
   worldMat       = defaultMat;
+  shieldingMat   = Al;
 
   // print table
   //      
@@ -169,7 +178,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
   G4double sizeY = scintLength + gapSize;
   G4double sizeX = scintLength + gapSize;
 
-  G4Box * svol_lead = new G4Box("lead",                                // name
+  G4Box* svol_lead = new G4Box("lead",                                // name
                              0.5 * sizeX, 0.5 * sizeY, 0.5 * sizeZ); // size
 
   lvol_lead = new G4LogicalVolume(svol_lead,  // solid
@@ -195,8 +204,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
   sizeY = scintWidth*nbOfScints;
   sizeX = scintLength;
   
-  G4Box*      
-  svol_layer = new G4Box("layer",			//name
+  G4Box* svol_layer = new G4Box("layer",			//name
                   0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
 
 
@@ -255,8 +263,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
   sizeY = scintLength;
   sizeX = scintLength;
   
-  G4Box*      
-  svol_module = new G4Box("module",			//name
+  G4Box* svol_module = new G4Box("module",			//name
                   0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
 
   lvol_module = new G4LogicalVolume(svol_module,	//solid
@@ -279,17 +286,29 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                       false,             		//no boulean operat
                       k+1);               		//copy number
 
-  }				   				   
+  }
+
+  // create top and bottom shielding plates
+  sizeY = scintLength + shieldThickness;
+  sizeX = scintLength + shieldThickness;
+  G4Box *svol_topPlate = new G4Box("topPlate", 0.5 * sizeX, 0.5 * sizeY, 0.5 * shieldThickness);
+  lvol_topPlate = new G4LogicalVolume(svol_topPlate, shieldingMat, "topPlate");
+
+  // create side shielding plates
+  sizeZ = calorThickness;
+  sizeX = scintLength + shieldThickness;
+  G4Box* svol_sidePlateXZ = new G4Box("sidePlateXZ", 0.5 * sizeX, 0.5 * shieldThickness, 0.5 * sizeZ);
+  lvol_sidePlateXZ = new G4LogicalVolume(svol_sidePlateXZ, shieldingMat, "sidePlateXZ");
+  sizeY = scintLength;
+  G4Box* svol_sidePlateYZ = new G4Box("sidePlateYZ", 0.5 * shieldThickness, 0.5 * sizeY, 0.5 * sizeZ);
+  lvol_sidePlateYZ = new G4LogicalVolume(svol_sidePlateYZ, shieldingMat, "sidePlateYZ");
 
   // calorimeter
-  //
-  calorThickness = moduleThickness*nbOfModules;
-  sizeZ = calorThickness;
-  sizeY = scintLength;
-  sizeX = scintLength;
+  sizeZ = calorThickness + shieldThickness;
+  sizeY = scintLength + shieldThickness;
+  sizeX = scintLength + shieldThickness;
   
-  G4Box*      
-  svol_calorimeter = new G4Box("calorimeter",		//name
+  G4Box* svol_calorimeter = new G4Box("calorimeter",		//name
                   0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
 
 
@@ -298,15 +317,12 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                                    "calorimeter");		//name  
 
   // put modules inside calorimeter
-  //  
   Zcenter = -0.5*(calorThickness + moduleThickness);
-  
-
   for (G4int k=0; k<nbOfModules; k++) {
     Zcenter += moduleThickness;		  
     G4RotationMatrix rotm;                    //rotation matrix to place modules    
     if ((k+1)%2 == 0) rotm.rotateZ(90*deg);
-	G4Transform3D transform(rotm, G4ThreeVector(0.,0.,Zcenter));    
+	  G4Transform3D transform(rotm, G4ThreeVector(0.,0.,Zcenter));    
     new G4PVPlacement(transform,		   		//rotation+position
                       lvol_module,	     		//logical volume	
                       "module", 	   		    //name
@@ -314,9 +330,58 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                       false,             		//no boulean operat
                       k+1);               		//copy number
   }
+  // put top and bottom shielding plates
+  Zcenter = 0.5 * (calorThickness + shieldThickness);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter), // top
+                    lvol_topPlate,
+                    "topPlate",
+                    lvol_calorimeter,
+                    false,
+                    0);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., -Zcenter), // bottom
+                    lvol_topPlate,
+                    "topPlate",
+                    lvol_calorimeter,
+                    false,
+                    1);
+
+  // put in XZ sides plates
+  Ycenter = 0.5 * (scintLength + gapSize + shieldThickness);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., Ycenter, 0.), // bottom
+                    lvol_sidePlateXZ,
+                    "sidePlateXZ",
+                    lvol_calorimeter,
+                    false,
+                    0);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., -Ycenter, 0.), // bottom
+                    lvol_sidePlateXZ,
+                    "sidePlateXZ",
+                    lvol_calorimeter,
+                    false,
+                    1);
+
+  // put in YZ sides plates
+  Xcenter = 0.5 * (scintLength + gapSize + shieldThickness);
+  new G4PVPlacement(0,
+                    G4ThreeVector(Xcenter, 0., 0.), // bottom
+                    lvol_sidePlateYZ,
+                    "sidePlateYZ",
+                    lvol_calorimeter,
+                    false,
+                    0);
+  new G4PVPlacement(0,
+                    G4ThreeVector(-Xcenter, 0., 0.), // bottom
+                    lvol_sidePlateYZ,
+                    "sidePlateYZ",
+                    lvol_calorimeter,
+                    false,
+                    1);
 
   // world
-  //
   sizeZ = 2.*calorThickness;
   sizeY = 2.*scintLength;
   sizeX = 2.*scintLength;
