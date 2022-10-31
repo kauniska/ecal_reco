@@ -26,9 +26,7 @@ class Layer:
         c = 299792458
         e = 1.60217663*10**(-19)
         eps = 8.85418782*10**(-12)
-        dE_dx = 4*np.pi/(m_e*c**2) * self.n()*z**2/(beta**2)\
-             * (e**2/(4*np.pi*eps))**2\
-             *(np.log((2*m_e*c**2*beta**2)/(self.I*(1-beta**2)))-beta**2)
+        dE_dx = 4*np.pi/(m_e*c**2) * self.n()*z**2/(beta**2) * (e**2/(4*np.pi*eps))**2 * (np.log((2*m_e*c**2*beta**2)/(self.I*(1-beta**2)))-beta**2)
         return dE_dx
 
 
@@ -72,7 +70,7 @@ class Structure:
     '''
     def __init__(self,layers):
         self.layers = layers
-        self.bound = np.array([0,layers[0].thickness])
+        self.bound = np.array([[0,layers[0].thickness]])
         for i in range(1,len(layers)):
             np.append(self.bound, [[self.bound[-1,1],self.bound[-1,1]+layers[i].thickness]])
     
@@ -102,4 +100,8 @@ class Structure:
         for i in len(self.layers):
             if pos_z >= self.bound[i,0] and pos_z < self.bound[i,1]:
                 return self.layers[i]
+
+    def print(self):
+        for i in range(len(self.layers))
+            print(self.layers[i], "--- from ", self.bound[i,0], " to ", self.bound[i,1])
     
