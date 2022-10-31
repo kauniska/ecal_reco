@@ -91,9 +91,15 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double x0 = position.x() + (G4UniformRand() - 0.5) * beam;
       G4double y0 = position.y() + (G4UniformRand() - 0.5) * beam;
       G4double z0 = position.z();
-      if (std::abs(y0) > maxXY) x0 = maxXY;
-      if (std::abs(z0) > maxXY) y0 = maxXY;      
-      particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
+      if (std::abs(x0) > maxXY) {
+        x0 = maxXY;
+        G4cout << "###### here x ######" << G4endl;
+      }
+      if (std::abs(y0) > maxXY) {
+        y0 = maxXY;
+        G4cout << "###### here y ######" << G4endl;
+      }
+      particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
       particleGun->GeneratePrimaryVertex(anEvent);
       particleGun->SetParticlePosition(position);      
     }
