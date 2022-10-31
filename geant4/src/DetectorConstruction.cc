@@ -67,8 +67,8 @@ DetectorConstruction::DetectorConstruction()
   scintLength         = 384. * mm;
   gapSize             = 1. * mm;                // 662.175*mm
   milledLayer         = 1.00*mm;    //1.40*mm ?
-  nbOfLayers          = 2;		    //10
-  nbOfModules         = 4;		    //9
+  nbOfLayers          = 1;		    //10
+  nbOfModules         = 16;		    //9
   leadThickness       = 4.*mm;
   layerThickness      = 16. * mm; // 1.68*mm
   shieldThickness     = 10. *mm;
@@ -223,16 +223,16 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // put Lead in layer
   new G4PVPlacement(0,
-                    G4ThreeVector(0., 0., 2.5*mm), // rotation+position
+                    G4ThreeVector(0., 0., 3.*mm), // rotation+position
                     lvol_lead,                                       // logical volume
                     "lead",                                          // name
                     lvol_layer,                                      // mother
                     false,                                           // no boulean operat
                     0);
 
-  // put Lead in layer
+  // put Aluminium in layer
   new G4PVPlacement(0,
-                    G4ThreeVector(0., 0., 5. * mm), // rotation+position
+                    G4ThreeVector(0., 0., 5.5 * mm), // rotation+position
                     lvol_Al_layer,                  // logical volume
                     "Al_layer",                     // name
                     lvol_layer,                     // mother
@@ -258,7 +258,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // modules
   //
-  moduleThickness = layerThickness*nbOfLayers + milledLayer;       
+  moduleThickness = layerThickness*nbOfLayers;       
   sizeZ = moduleThickness;
   sizeY = scintLength;
   sizeX = scintLength;
