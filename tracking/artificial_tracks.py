@@ -14,12 +14,13 @@ def create_artificial_tracks(t,x0,sampling=1):
     traj.t = t
     traj.x0 = x0
     indices = traj.get_tracks()
+    tol = 10**(-10)
     for coord in indices:
         xmin = round(coord[0]-0.5*abs(t))
         xmax = round(coord[0]+0.5*abs(t))
-        if (coord[0]-0.5*abs(t))%1 == 0.5 and xmin != coord[0]:
+        if abs((coord[0]-0.5*abs(t))%1 - 0.5) < tol and xmin == round(coord[0]-0.5*abs(t)-0.1):
             xmin += 1
-        if (coord[0]+0.5*abs(t))%1 == 0.5 and xmax != coord[0]:
+        if abs((coord[0]+0.5*abs(t))%1 - 0.5) < tol and xmax == round(coord[0]+0.5*abs(t)+0.1):
             xmax -= 1
         for x in np.arange(max(xmin,1),min(xmax,24)+1,1):
             rand = np.random.uniform()
