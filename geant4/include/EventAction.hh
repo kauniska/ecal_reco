@@ -52,21 +52,21 @@ class EventAction : public G4UserEventAction
     
     void SumDeStep(G4int, G4int, G4int, G4double);
 	
-	void WriteScints(const G4Event*);
+	  void WriteScints(const G4Event*);
 			         	    
 
   private:  
     DetectorConstruction*   detector;
     PrimaryGeneratorAction* primary;
 	
-	G4int nbOfModules, nbOfLayers, kLayerMax;     
+	  G4int nbOfModules, nbOfLayers, kLayerMax;     
     std::vector<G4double>   EtotLayer;
     std::vector<G4double>   EvisLayer;
 	
-	G4double EtotCalor;
-	G4double EvisCalor;
+	  G4double EtotCalor;
+	  G4double EvisCalor;
 	
-	std::map<G4int, G4double> EvisScint;
+	  std::map<G4int, G4double> EvisScint;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
