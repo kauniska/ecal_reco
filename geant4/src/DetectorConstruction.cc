@@ -45,6 +45,9 @@
 #include "G4LogicalVolumeStore.hh"
 #include "G4SolidStore.hh"
 
+#include "G4SDManager.hh"
+#include "G4VSensitiveDetector.hh"
+#include "EcalSD.hh"
 #include "G4VisAttributes.hh"
 
 
@@ -484,6 +487,12 @@ void DetectorConstruction::ConstructSDandField()
         fFieldMessenger.Put( msg );
         
     }
+    // sensitive detectors -----------------------------------------------------
+    auto sdManager = G4SDManager::GetSDMpointer();
+    G4String SDname;
+    auto ecal = new EcalSD(SDname = "/EcalSD");
+    sdManager->AddNewDetector(ecal);
+    lvol_scint->SetSensitiveDetector(ecal);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
