@@ -45,6 +45,9 @@ HistoManager::HistoManager()
 
 HistoManager::~HistoManager()
 {
+  auto analysisManager = G4AnalysisManager::Instance();
+  analysisManager->Write();
+  analysisManager->CloseFile(false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -58,11 +61,19 @@ void HistoManager::Book()
   analysisManager->SetDefaultFileType("root");
   analysisManager->SetFileName(fFileName);
   analysisManager->SetVerboseLevel(1);
+
+  // create ROOT tree
+  analysisManager->CreateNtuple("events", "recorded info per event");
+  analysisManager->CreateNtupleDColumn(0, "E");
+  analysisManager->CreateNtupleIColumn(0, "pdg");
+  analysisManager->FinishNtuple(0);
+
+
   analysisManager->SetActivation(true);    // enable inactivation of histograms
 
   // Define histograms start values
   const G4int kMaxHisto = 6;
-  const G4String id[] = {"0", "1", "2", "3" , "4", "5"};
+  const G4String id[] = {"dummy", "Ecal_tot", "Evis_tot", "Etot_profile" , "Evis_rofile", "Evis_scint"};
   const G4String title[] = 
                 { "dummy",                    //0 
 				  "total Etot in Ecal",       //1

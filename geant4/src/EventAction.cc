@@ -105,6 +105,9 @@ void EventAction::EndOfEventAction(const G4Event*)
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();    
   analysisManager->FillH1(1,EtotCalor);
   analysisManager->FillH1(2,EvisCalor);
+
+  // analysisManager->FillNtupleDColumn(0, 0, 1);
+  // analysisManager->FillNtupleIColumn(0, 1, 2);
   
   G4double Ebeam = primary->GetParticleGun()->GetParticleEnergy();
   G4double Eleak = Ebeam - EtotCalor;
