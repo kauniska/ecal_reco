@@ -8,12 +8,13 @@ A layer has :
 
 class Layer:
     
-    def __init__(self,thickness,Z,A,rho,I):
+    def __init__(self,thickness,Z,A,rho,I,color):
         self.thickness = thickness
         self.Z = Z
         self.A = A
         self.rho = rho
         self.I = I
+        self.color = color
 
     #returns the electron number density which is needed in the bethe-bloch function
     def n(self):
@@ -36,7 +37,8 @@ class Aluminum(Layer):
         A = 26.981539
         rho = 2698.9
         I = 166*1.60217663*10**(-19)
-        super().__init__(thickness,Z,A,rho,I)
+        color = (163/255,163/255,163/255)
+        super().__init__(thickness,Z,A,rho,I,color)
     
     def print(self):
         print("Aluminum ", self.thickness, "mm")
@@ -47,7 +49,8 @@ class Lead(Layer):
         A = 207.2
         rho = 11350
         I = 823*1.60217663*10**(-19)
-        super().__init__(thickness,Z,A,rho,I)
+        color = (76/255,76/255,76/255)
+        super().__init__(thickness,Z,A,rho,I,color)
     
     def print(self):
         print("Lead ", self.thickness, "mm")
@@ -60,7 +63,8 @@ class Scintillator(Layer):
         A = 1.00784*frac_H + 12.011*frac_C
         rho = 1032
         I = 64.7*1.60217663*10**(-19)
-        super().__init__(thickness,Z,A,rho,I)
+        color = (225/255,236/255,242/255)
+        super().__init__(thickness,Z,A,rho,I,color)
     def print(self):
         print("Scintillator ", self.thickness, "mm")
 

@@ -19,5 +19,12 @@ class Particle:
     def beta(self):
         return (1-(self.mass/self.energy)**2)**0.5
     
+    def print(self):
+        print("Charge = ", self.charge, "e")
+        print("Mass = ", self.mass, "eV")
+        print("Energy = ", self.energy, "eV")
+        print("Position = ", self.pos, "mm")
+        print("Theta = ", self.theta, "rad")
+    
 
     
