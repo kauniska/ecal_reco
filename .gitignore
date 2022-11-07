@@ -1,3 +1,10 @@
 **/*.pyc
 **/*.DS_Store
 tests/.ipynb_checkpoints
+**/*.root
+**/Makefile
+**/*.cmake
+**/*.out
+**/*.o
+**/*.d
+**/*/CMakeFiles

@@ -44,6 +44,10 @@ class Track3D:
         self.x.precise_track()
         self.y.precise_track()
         
+    def find_track(self, sampling = 10, angle_sampling = 240):
+        self.x.find_track(sampling, angle_sampling)
+        self.y.find_track(sampling, angle_sampling)
+        
     def is_good_2D_fit(self):
         return (self.x.is_good_fit() and self.y.is_good_fit())
     
@@ -58,8 +62,12 @@ class Track3D:
         # fig.show()
         # fig.savefig('test.png')
         
-    def kalman_filter(self, sigma = 0.5):
-        fig, axs = plt.subplots(1, 2)
-        fig.set_size_inches(12, 6)
-        self.x.kalman_filter(sigma, axs[0])
-        self.y.kalman_filter(sigma, axs[1])
+    def kalman_filter(self, sigma = 0.5, plot = False):
+        if plot:
+            fig, axs = plt.subplots(1, 2)
+            fig.set_size_inches(12, 6)
+            self.x.kalman_filter(sigma, axs[0])
+            self.y.kalman_filter(sigma, axs[1])
+        else:
+            self.x.kalman_filter(sigma)
+            self.y.kalman_filter(sigma)

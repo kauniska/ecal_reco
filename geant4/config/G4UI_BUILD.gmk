@@ -1,0 +1,90 @@
+# -------------------------------------------------------------
+# Interfaces-specific CPPFLAGS for BUILD phase.
+#   John Allison, 6th July 1998.
+# Include this *after*  architecture.gmk
+# Include this *before* interactivity.gmk
+
+ifndef G4UI_NONE
+  G4UI_BUILD = 1
+  CPPFLAGS += -DG4UI_BUILD
+  INC_X11 = 1
+
+# The following sessions are built by default (no environment
+#   variables needed)...
+# TERMINAL_SESSION
+
+# Special case: if OPENGLXM vis driver requested, G4Xt must be built.
+ifdef G4VIS_BUILD_OPENGLXM_DRIVER
+  G4INTY_BUILD_XT = 1
+endif
+
+# Special case: if OIX/OIQt vis driver requested, G4Xt/G4Qt must be built.
+ifdef G4VIS_BUILD_OIX_DRIVER
+  G4INTY_BUILD_XT  = 1
+endif
+ifdef G4VIS_BUILD_OIQT_DRIVER
+  G4INTY_BUILD_QT  = 1
+endif
+
+ifdef G4UI_BUILD_XM_SESSION
+  G4UI_BUILD_BASIC_SESSION = 1
+  G4INTY_BUILD_XT = 1
+  INC_XM = 1
+  CPPFLAGS += -DG4UI_BUILD_XM_SESSION
+endif
+
+ifdef G4UI_BUILD_QT_SESSION
+  G4UI_BUILD_BASIC_SESSION = 1
+  G4INTY_BUILD_QT = 1
+  INC_QT   = 1
+  CPPFLAGS += -DG4UI_BUILD_QT_SESSION
+endif
+
+ifdef G4UI_BUILD_WT_SESSION
+  G4UI_BUILD_BASIC_SESSION = 1
+  G4INTY_BUILD_WT = 1
+  INC_WT   = 1
+  CPPFLAGS += -DG4UI_BUILD_WT_SESSION
+endif
+
+ifdef G4UI_BUILD_XAW_SESSION
+  G4UI_BUILD_BASIC_SESSION = 1
+  G4INTY_BUILD_XT = 1
+  INC_XAW = 1
+  CPPFLAGS += -DG4UI_BUILD_XAW_SESSION
+endif
+
+ifdef G4UI_BUILD_WIN32_SESSION
+  G4UI_BUILD_BASIC_SESSION = 1
+  G4INTY_BUILD_WIN32 = 1
+  CPPFLAGS += -DG4UI_BUILD_WIN32_SESSION
+endif
+
+########################### interfaces/XVT - not currently implemented #####
+
+############################################################################
+
+ifdef G4LIB_BUILD_SHARED
+
+   ifdef G4UI_BUILD_XM_SESSION
+     G4UI_USE_XM = 1
+   endif
+
+   ifdef G4UI_BUILD_QT_SESSION
+     G4UI_USE_QT = 1
+   endif
+
+   ifdef G4UI_BUILD_XAW_SESSION
+     G4UI_USE_XAW = 1
+   endif
+
+   ifdef G4UI_BUILD_WIN32_SESSION
+     G4UI_USE_WIN32 = 1
+   endif
+
+  include $(G4INSTALL)/config/G4UI_USE.gmk
+
+endif # G4LIB_BUILD_SHARED
+
+endif #G4UI_NONE
+

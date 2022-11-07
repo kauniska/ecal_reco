@@ -71,8 +71,8 @@ class Track:
         return [hit.timestamp + hit.timestamp_event for hit in self.hits]
     
     def get_plot(self, axs):
-        fit = np.round(self.get_tracks())
-        fit = [[int(f[0]), int(f[1])] for f in fit]
+        fit = self.get_tracks() #np.round(self.get_tracks())
+        # fit = [[int(f[0]), int(f[1])] for f in fit]
         hitsX = [hit.coord[0] for hit in self.hits]
         hitsZ = [hit.coord[1] for hit in self.hits]
         # axs.hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='magma')
@@ -118,7 +118,7 @@ class Track:
     def is_good_fit(self):
         return (self.chi2()/self.n_freedom < 2 * 3.841)
     
-    def find_track(self, sampling = 10, angle_sampling = 240, plot = False):
+    def find_track(self, sampling = 10, angle_sampling = 120, plot = False):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
 
         Args:
@@ -294,15 +294,15 @@ class Track:
         kalman_hits = [[int(np.round(x[0])), int(np.round(x[1]))] for x in xs]
         fit = self.get_tracks()
         
-        if axs is None:
-            fig, axs = plt.subplots(1, 1)
-        hitsX = [hit.coord[0] for hit in self.hits]
-        hitsZ = [hit.coord[1] for hit in self.hits]
-        axs.hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
-        axs.plot([f[0] for f in kalman_hits], [f[1] for f in kalman_hits], 'r--', label = 'Kalman')
-        axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-', label = 'Hough')
-        plt.xticks(np.linspace(1, 24, 6))
-        plt.yticks(np.linspace(1, 8, 8))
-        axs.set(xlabel='$x$', ylabel='$z$')
-        axs.legend()
+        if axs is not None:
+            # fig, axs = plt.subplots(1, 1)
+            hitsX = [hit.coord[0] for hit in self.hits]
+            hitsZ = [hit.coord[1] for hit in self.hits]
+            axs.hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
+            axs.plot([f[0] for f in kalman_hits], [f[1] for f in kalman_hits], 'r--', label = 'Kalman')
+            axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-', label = 'Hough')
+            plt.xticks(np.linspace(1, 24, 6))
+            plt.yticks(np.linspace(1, 8, 8))
+            axs.set(xlabel='$x$', ylabel='$z$')
+            axs.legend()
         indices = self.get_indices(fit, False)
