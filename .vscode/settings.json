@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "*.m": "matlab",
-        "plotHisto.C": "cpp"
-    }
-}

@@ -11,3 +11,5 @@ geant4/CMakeFiles
 geant4/CMakeCache.txt
 geant4/log
 geant4/ecal
+build/*
+.vscode/*
