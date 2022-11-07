@@ -33,13 +33,19 @@
 #include "G4UserEventAction.hh"
 #include "DetectorConstruction.hh"
 #include "globals.hh"
+#include "Constants.hh"
 
 #include <vector>
+#include <array>
 #include <map>
 
 class PrimaryGeneratorAction;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+// named constants
+const G4int kHad = 1;
+const G4int kDim = 2;
 
 class EventAction : public G4UserEventAction
 {
@@ -53,7 +59,7 @@ class EventAction : public G4UserEventAction
     void SumDeStep(G4int, G4int, G4int, G4double);
 	
 	  void WriteScints(const G4Event*);
-			         	    
+    std::vector<G4double>& GetEcalEdep() {return fEcalEdep;}
 
   private:  
     DetectorConstruction*   detector;
@@ -67,6 +73,16 @@ class EventAction : public G4UserEventAction
 	  G4double EvisCalor;
 	
 	  std::map<G4int, G4double> EvisScint;
+
+    // hit collections Ids
+    std::array<G4int, kDim> fCalHCID = {-1, -1};
+    // histograms Ids
+    std::array<std::array<G4int, kDim>, kDim> fDriftHistoID{{{{-1, -1}}, {{-1, -1}}}};
+    // std::array<T, N> is an aggregate that contains a C array.
+    // To initialize it, we need outer braces for the class itself
+    // and inner braces for the C array
+    // energy deposit in calorimeters cells
+    std::vector<G4double> fEcalEdep = std::vector<G4double>(int(kNofEcalCells), 0.);
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

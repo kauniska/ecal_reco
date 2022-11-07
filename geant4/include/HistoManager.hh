@@ -34,7 +34,7 @@
 #define HistoManager_h 1
 
 #include "globals.hh"
-
+#include "EventAction.hh"
 #include "G4AnalysisManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -42,13 +42,14 @@
 class HistoManager
 {
   public:
-   HistoManager();
+   HistoManager(EventAction* feventAction);
   ~HistoManager();
 
   private:
     void Book();
 
     G4String fFileName;
+    EventAction* fEventAction;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

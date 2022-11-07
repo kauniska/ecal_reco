@@ -46,11 +46,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction(DetectorConstruction* det, PrimaryGeneratorAction* kin)
-:G4UserRunAction(),fDetector(det), fPrimary(kin), fRun(0), fHistoManager(0)
+RunAction::RunAction(DetectorConstruction *det, EventAction* eventAction, PrimaryGeneratorAction *kin)
+    : G4UserRunAction(), fDetector(det), fEventAction(eventAction), fPrimary(kin), fRun(0), fHistoManager(0)
 { 
   // Book predefined histograms
-  fHistoManager = new HistoManager();
+  fHistoManager = new HistoManager(fEventAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

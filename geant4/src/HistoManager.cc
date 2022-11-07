@@ -35,8 +35,8 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HistoManager::HistoManager()
-  : fFileName("amsEcal")
+HistoManager::HistoManager(EventAction* eventAction)
+  : fFileName("ecal"), fEventAction(eventAction)
 {
   Book();
 }
@@ -66,6 +66,7 @@ void HistoManager::Book()
   analysisManager->CreateNtuple("events", "recorded info per event");
   analysisManager->CreateNtupleDColumn(0, "E");
   analysisManager->CreateNtupleIColumn(0, "pdg");
+  analysisManager->CreateNtupleDColumn(0, "HCEnergyVector", fEventAction->GetEcalEdep());
   analysisManager->FinishNtuple(0);
 
 
