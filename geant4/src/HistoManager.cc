@@ -67,6 +67,7 @@ void HistoManager::Book()
   analysisManager->CreateNtupleDColumn(0, "E");
   analysisManager->CreateNtupleIColumn(0, "pdg");
   analysisManager->CreateNtupleDColumn(0, "HCEnergyVector", fEventAction->GetEcalEdep());
+  analysisManager->CreateNtupleDColumn(0, "detid");
   analysisManager->FinishNtuple(0);
 
 
