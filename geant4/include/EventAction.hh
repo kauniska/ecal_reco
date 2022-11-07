@@ -75,12 +75,7 @@ class EventAction : public G4UserEventAction
 	  std::map<G4int, G4double> EvisScint;
 
     // hit collections Ids
-    std::array<G4int, kDim> fCalHCID = {-1, -1};
-    // histograms Ids
-    std::array<std::array<G4int, kDim>, kDim> fDriftHistoID{{{{-1, -1}}, {{-1, -1}}}};
-    // std::array<T, N> is an aggregate that contains a C array.
-    // To initialize it, we need outer braces for the class itself
-    // and inner braces for the C array
+    std::array<G4int, kDim> fEcalHCID = {-1, -1};
     // energy deposit in calorimeters cells
     std::vector<G4double> fEcalEdep = std::vector<G4double>(int(kNofEcalCells), 0.);
 };
