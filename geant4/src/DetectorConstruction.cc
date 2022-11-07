@@ -69,13 +69,13 @@ DetectorConstruction::DetectorConstruction()
   scintHeight         = 4.*mm;
   scintLength         = 384. * mm;
   gapSize             = 1. * mm;                // 662.175*mm
-  milledLayer         = 1.00*mm;    //1.40*mm ?
   nbOfLayers          = 1;		    //10
   nbOfModules         = 16;		    //9
   leadThickness       = 4.*mm;
-  layerThickness      = 16. * mm; // 1.68*mm
+  aluThickness        = 1.*mm;
+  layerThickness      = scintHeight + 2*aluThickness + leadThickness; // 1.68*mm
   shieldThickness     = 10. *mm;
-  moduleThickness     = 4*(leadThickness + 2*gapSize + scintHeight);
+  moduleThickness     = layerThickness;
   calorThickness      = moduleThickness * nbOfModules;
 }
 
@@ -190,7 +190,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // Al
   //
-  sizeZ = 1.*mm;
+  sizeZ = aluThickness;
   sizeY = scintLength + gapSize;
   sizeX = scintLength + gapSize;
 
@@ -215,41 +215,14 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                                    defaultMat,		//material
                                    "layer");		//name
 
-  // put alu 1 in layer
-  new G4PVPlacement(0,
-                    G4ThreeVector(0., 0., 0.), // rotation+position
-                    lvol_Al_layer,                      // logical volume
-                    "Al_layer",                         // name
-                    lvol_layer,                     // mother
-                    false,                          // no boulean operat
-                    0);
-
-  // put Lead in layer
-  new G4PVPlacement(0,
-                    G4ThreeVector(0., 0., 3.*mm), // rotation+position
-                    lvol_lead,                                       // logical volume
-                    "lead",                                          // name
-                    lvol_layer,                                      // mother
-                    false,                                           // no boulean operat
-                    0);
-
-  // put Aluminium in layer
-  new G4PVPlacement(0,
-                    G4ThreeVector(0., 0., 5.5 * mm), // rotation+position
-                    lvol_Al_layer,                  // logical volume
-                    "Al_layer",                     // name
-                    lvol_layer,                     // mother
-                    false,                          // no boulean operat
-                    0);
-
   // put scints within layer
   //
-  G4double Zcenter = 0.;
+  G4double Zcenter = -0.5 * layerThickness;
   G4double Xcenter = -0.5 * (sizeX - scintWidth);
 
   for (G4int k = 0; k < nbOfScints; k++)
   {
-    G4ThreeVector pos = G4ThreeVector(Xcenter + k * scintWidth, 0., -2.5);
+    G4ThreeVector pos = G4ThreeVector(Xcenter + k * scintWidth, 0., Zcenter + 0.5 * scintHeight);
     new G4PVPlacement(0,
                       pos,        // rotation+position
                       lvol_scint, // logical volume
@@ -258,6 +231,36 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                       false,      // no boulean operat
                       k + 1);
   }
+
+  Zcenter += scintHeight;
+  // put alu 1 in layer
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter + 0.5 * aluThickness), // rotation+position
+                    lvol_Al_layer,                      // logical volume
+                    "Al_layer",                         // name
+                    lvol_layer,                     // mother
+                    false,                          // no boulean operat
+                    0);
+
+  // put Lead in layer
+  Zcenter += aluThickness;
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter + 0.5 * leadThickness), // rotation+position
+                    lvol_lead,                                       // logical volume
+                    "lead",                                          // name
+                    lvol_layer,                                      // mother
+                    false,                                           // no boulean operat
+                    0);
+
+  // put Aluminium 2 in layer
+  Zcenter += leadThickness;
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter + 0.5 * aluThickness), // rotation+position
+                    lvol_Al_layer,                  // logical volume
+                    "Al_layer",                     // name
+                    lvol_layer,                     // mother
+                    false,                          // no boulean operat
+                    0);
 
   // modules
   //
@@ -452,10 +455,6 @@ void DetectorConstruction::PrintCalorParameters()
      << "\n      ---> diameter : " << G4BestUnit(scintDiameter,"Length")
      << "\n      ---> length   : " << G4BestUnit(scintLength,"Length")
      << "\n      ---> distance : " << G4BestUnit(scintWidth,"Length");
-     
-  G4cout  
-     << "\n ---> The milled Layer is " << G4BestUnit(milledLayer,"Length")  
-     << " thickness of " << absorberMat->GetName();
      
   G4cout 
    << "\n\n ---> Module thickness " << G4BestUnit(moduleThickness,"Length");

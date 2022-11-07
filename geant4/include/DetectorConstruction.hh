@@ -91,13 +91,13 @@ private:
   G4double leadThickness;
   G4LogicalVolume* lvol_lead;
   G4LogicalVolume *lvol_Al_layer;
+  G4double        aluThickness;
   G4double         gapSize;
 
       // modules
       //
       G4Material *moduleMat;
   G4int            nbOfLayers;
-  G4double         milledLayer;
   G4double         moduleThickness;    
   G4LogicalVolume* lvol_module;  
            
