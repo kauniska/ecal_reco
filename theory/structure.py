@@ -4,6 +4,7 @@ import numpy as np
 A layer has :
     A thickness measured in mm
     An atomic number Z, a mass number A and a density (kg m^-3) and a mean excitation energy I (J) depending on its material
+    and a color
 '''
 
 class Layer:
