@@ -32,7 +32,7 @@
 
 #include "G4UserEventAction.hh"
 #include "DetectorConstruction.hh"
-#include "globals.hh"
+#include "G4SDManager.hh"
 #include "Constants.hh"
 
 #include <vector>

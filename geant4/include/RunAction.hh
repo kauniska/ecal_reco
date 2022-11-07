@@ -35,6 +35,7 @@
 
 #include "G4UserRunAction.hh"
 #include "globals.hh"
+#include "G4String.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -63,6 +64,7 @@ private:
   Run *fRun;
   HistoManager *fHistoManager;
   EventAction *fEventAction = nullptr;
+  G4String fFileName;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

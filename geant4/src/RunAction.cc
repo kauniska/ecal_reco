@@ -47,17 +47,62 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, PrimaryGeneratorAction *kin)
-    : G4UserRunAction(), fDetector(det), fPrimary(kin), fRun(0), fHistoManager(0), fEventAction(eventAction)
-{ 
+    : G4UserRunAction(), fDetector(det), fPrimary(kin), fRun(0), fHistoManager(0), fEventAction(eventAction), fFileName("data")
+{
   // Book predefined histograms
-  fHistoManager = new HistoManager(fEventAction);
+  // fHistoManager = new HistoManager(fEventAction);
+  // Create or get analysis manager
+  // The choice of analysis technology is done via selection of a namespace
+  // in HistoManager.hh
+  G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
+  analysisManager->SetDefaultFileType("root");
+  analysisManager->SetFileName("data");
+  analysisManager->SetVerboseLevel(1);
+  // analysisManager->SetNtupleMerging(true);
+
+  // create ROOT tree
+  analysisManager->CreateNtuple("events", "recorded info per event");
+  analysisManager->CreateNtupleDColumn(0, "E");                                           // 0
+  analysisManager->CreateNtupleDColumn(0, "Edep");                                        // 1
+  analysisManager->CreateNtupleIColumn(0, "pdg", fvolTrackIMap[18]);                      // 2
+  analysisManager->CreateNtupleDColumn(0, "HCEnergyVector", fEventAction->GetEcalEdep()); // 3
+  analysisManager->CreateNtupleDColumn(0, "detid");                                       // 4
+  analysisManager->FinishNtuple(0);
+
+  analysisManager->SetActivation(false); // enable inactivation of histograms
+
+  // Define histograms start values
+  const G4int kMaxHisto = 6;
+  const G4String id[] = {"dummy", "Ecal_tot", "Evis_tot", "Etot_profile", "Evis_rofile", "Evis_scint"};
+  const G4String title[] =
+      {
+          "dummy",              // 0
+          "total Etot in Ecal", // 1
+          "total Evis in Ecal", // 2
+          "Etot profile",       // 3
+          "Evis profile",       // 4
+          "Evis per scint"      // 5
+      };
+
+  // Default values (to be reset via /analysis/h1/set command)
+  G4int nbins = 100;
+  G4double vmin = 0.;
+  G4double vmax = 100.;
+
+  // Create all histograms as inactivated
+  // as we have not yet set nbins, vmin, vmax
+  for (G4int k = 0; k < kMaxHisto; k++)
+  {
+    G4int ih = analysisManager->CreateH1(id[k], title[k], nbins, vmin, vmax);
+    analysisManager->SetH1Activation(ih, false);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::~RunAction()
 { 
-  delete fHistoManager;
+  // delete fHistoManager;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -71,7 +116,8 @@ G4Run* RunAction::GenerateRun()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::BeginOfRunAction(const G4Run*)
-{
+{ 
+  
   // save Rndm status
   ////  G4RunManager::GetRunManager()->SetRandomNumberStore(true);
   if (isMaster) G4Random::showEngineStatus();
@@ -86,26 +132,32 @@ void RunAction::BeginOfRunAction(const G4Run*)
   
   //histograms
   //        
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  if ( analysisManager->IsActive() ) {
-    analysisManager->OpenFile();
-  } 
+  // G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+  // if ( analysisManager->IsActive() ) {
+    
+  //   analysisManager->OpenFile();
+  // }
+  G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
+  analysisManager->OpenFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::EndOfRunAction(const G4Run*)
-{  
+{
+  auto analysisManager = G4AnalysisManager::Instance();
+  analysisManager->Write();
+  analysisManager->CloseFile();
   // print Run summary
   //
   if (isMaster) fRun->EndOfRun();    
       
   // save histograms
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();  
-  if ( analysisManager->IsActive() ) {    
-    analysisManager->Write();
-    analysisManager->CloseFile();
-  }  
+  // G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();  
+  // if ( analysisManager->IsActive() ) {    
+  //   analysisManager->Write();
+  //   analysisManager->CloseFile();
+  // }  
 
   // show Rndm status
   if (isMaster) G4Random::showEngineStatus();

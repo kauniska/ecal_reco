@@ -45,57 +45,57 @@ HistoManager::HistoManager(EventAction* eventAction)
 
 HistoManager::~HistoManager()
 {
-  auto analysisManager = G4AnalysisManager::Instance();
-  analysisManager->Write();
-  analysisManager->CloseFile(false);
+  // auto analysisManager = G4AnalysisManager::Instance();
+  // analysisManager->Write();
+  // analysisManager->CloseFile(false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void HistoManager::Book()
 {
-  // Create or get analysis manager
-  // The choice of analysis technology is done via selection of a namespace
-  // in HistoManager.hh
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->SetDefaultFileType("root");
-  analysisManager->SetFileName(fFileName);
-  analysisManager->SetVerboseLevel(1);
+  // // Create or get analysis manager
+  // // The choice of analysis technology is done via selection of a namespace
+  // // in HistoManager.hh
+  // G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+  // analysisManager->SetDefaultFileType("root");
+  // analysisManager->SetFileName(fFileName);
+  // analysisManager->SetVerboseLevel(1);
 
-  // create ROOT tree
-  analysisManager->CreateNtuple("events", "recorded info per event");
-  analysisManager->CreateNtupleDColumn(0, "E");
-  analysisManager->CreateNtupleIColumn(0, "pdg");
-  analysisManager->CreateNtupleDColumn(0, "HCEnergyVector", fEventAction->GetEcalEdep());
-  analysisManager->CreateNtupleDColumn(0, "detid");
-  analysisManager->FinishNtuple(0);
+  // // create ROOT tree
+  // analysisManager->CreateNtuple("events", "recorded info per event");
+  // analysisManager->CreateNtupleDColumn(0, "E"); // 0
+  // analysisManager->CreateNtupleIColumn(0, "pdg"); // 1
+  // analysisManager->CreateNtupleDColumn(0, "HCEnergyVector", fEventAction->GetEcalEdep()); // 2
+  // analysisManager->CreateNtupleDColumn(0, "detid"); // 3
+  // analysisManager->FinishNtuple(0);
 
 
-  analysisManager->SetActivation(true);    // enable inactivation of histograms
+  // analysisManager->SetActivation(true);    // enable inactivation of histograms
 
-  // Define histograms start values
-  const G4int kMaxHisto = 6;
-  const G4String id[] = {"dummy", "Ecal_tot", "Evis_tot", "Etot_profile" , "Evis_rofile", "Evis_scint"};
-  const G4String title[] = 
-                { "dummy",                    //0 
-				  "total Etot in Ecal",       //1
-                  "total Evis in Ecal",       //2
-                  "Etot profile",             //3
-                  "Evis profile",             //4
-                  "Evis per scint"            //5					  
-                 };
+  // // Define histograms start values
+  // const G4int kMaxHisto = 6;
+  // const G4String id[] = {"dummy", "Ecal_tot", "Evis_tot", "Etot_profile" , "Evis_rofile", "Evis_scint"};
+  // const G4String title[] = 
+  //               { "dummy",                    //0 
+	// 			  "total Etot in Ecal",       //1
+  //                 "total Evis in Ecal",       //2
+  //                 "Etot profile",             //3
+  //                 "Evis profile",             //4
+  //                 "Evis per scint"            //5					  
+  //                };
 				 
-  // Default values (to be reset via /analysis/h1/set command)               
-  G4int nbins = 100;
-  G4double vmin = 0.;
-  G4double vmax = 100.;
+  // // Default values (to be reset via /analysis/h1/set command)               
+  // G4int nbins = 100;
+  // G4double vmin = 0.;
+  // G4double vmax = 100.;
 
-  // Create all histograms as inactivated 
-  // as we have not yet set nbins, vmin, vmax
-  for (G4int k=0; k<kMaxHisto; k++) {
-    G4int ih = analysisManager->CreateH1(id[k], title[k], nbins, vmin, vmax);
-    analysisManager->SetH1Activation(ih, false);
-  }
+  // // Create all histograms as inactivated 
+  // // as we have not yet set nbins, vmin, vmax
+  // for (G4int k=0; k<kMaxHisto; k++) {
+  //   G4int ih = analysisManager->CreateH1(id[k], title[k], nbins, vmin, vmax);
+  //   analysisManager->SetH1Activation(ih, false);
+  // }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
