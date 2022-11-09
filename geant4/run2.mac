@@ -5,7 +5,7 @@
 /control/verbose 2
 /run/verbose 2
 #
-/ams/phys/addPhysics  local
+#/ams/phys/addPhysics  local
 /run/setCut 1 mm
 #
 /run/initialize
