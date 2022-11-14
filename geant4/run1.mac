@@ -12,9 +12,9 @@
 #
 /ams/gun/setDefault
 /gun/particle mu-
-/gun/energy 1 GeV
-/ams/gun/beam 10 cm
+/gun/energy 2 GeV
+/ams/gun/beam 30 cm
 #
-/run/printProgress 1000
+/run/printProgress 5000
 #
-/run/beamOn 10000
+/run/beamOn 100000
