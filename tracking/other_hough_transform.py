@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from track_reconstruction import max_overlap
 import pandas as pd
+import sys
+sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+from parameters import *
+
 # event = df_hits.iloc[interesting_events[600]]
 def new_method_tracks(hits):
     # hits = []
@@ -10,23 +14,21 @@ def new_method_tracks(hits):
     #     if h.is_sidex:
     #         hits.append(h)
     n_points = 100
-    tmax = 6.25
-    n_strips = 24
-    n_layers = 8
-    width = 1
-    thickness = 1
+    tmax = 5
+
     map = np.zeros((2*n_points,2*n_points))
     tneg = np.linspace(-tmax, 0, n_points)
     tpos = np.linspace(0, tmax, n_points)
     T = np.append(tneg,tpos)
-    x0_max = (n_strips+0.5)*width + tmax*(n_layers+0.5)*thickness
-    x0_min = 0.5*width - tmax*(n_layers+0.5)*thickness
+    x0_max = n_strips*width + tmax*2*n_layers*(thickness+thickness_screen)
+    x0_min = - tmax*2*n_layers*(thickness+thickness_screen)
     x = np.linspace(x0_min,x0_max,2*n_points)
     for h in hits:
-        x0u_neg = (h.coord[0]+0.5)*width - (h.coord[1]+0.5)*tneg*thickness
-        x0d_neg = (h.coord[0]-0.5)*width - (h.coord[1]-0.5)*tneg*thickness
-        x0u_pos = (h.coord[0]+0.5)*width - (h.coord[1]-0.5)*tpos*thickness
-        x0d_pos = (h.coord[0]-0.5)*width - (h.coord[1]+0.5)*tpos*thickness
+        pos = h.get_pos()
+        x0u_neg = pos[0] + width/2 - (pos[1] + thickness/2)*tneg
+        x0d_neg = pos[0] - width/2 - (pos[1] - thickness/2)*tneg
+        x0u_pos = pos[0] + width/2 - (pos[1] - thickness/2)*tpos
+        x0d_pos = pos[0] - width/2 - (pos[1] + thickness/2)*tpos
         x0d = np.concatenate((x0d_neg,x0d_pos))
         x0u = np.concatenate((x0u_neg,x0u_pos))
 
@@ -58,12 +60,8 @@ def new_method_tracks(hits):
     return t,x0
 
 def old_method_tracks(hits):
-    n_strips = 24
-    n_layers = 8
-    width = 1
-    thickness = 1
     n_points=100
-    max=6.25 # max=5 => angle scanning between [-78.7°,78,7°] 
+    max=5 # => angle scanning between [-78.7°,78,7°] 
     tneg=np.linspace(-max,0,n_points) # region over which we want to look for the angle
     tpos=np.linspace(0,max,n_points)
     n_hits=len(hits)
@@ -76,10 +74,11 @@ def old_method_tracks(hits):
         })
    
     for i in range(len(hits)):
-        x0['xu'][i][0:n_points]= (hits[i].coord[0]+0.5)*width - (hits[i].coord[1]+0.5)*tneg*thickness # Up boundary for x0 for hit number hit in region t<0
-        x0['xu'][i][n_points:2*n_points]=(hits[i].coord[0]+0.5)*width - (hits[i].coord[1]-0.5)*tpos*thickness # Up boundary for x0 for hit number hit in region t>0
-        x0['xd'][i][0:n_points]=(hits[i].coord[0]-0.5)*width - (hits[i].coord[1]-0.5)*tneg*thickness
-        x0['xd'][i][n_points:2*n_points]=(hits[i].coord[0]-0.5)*width - (hits[i].coord[1]+0.5)*tpos*thickness 
+        pos = hits[i].get_pos()
+        x0['xu'][i][0:n_points] = pos[0] + width/2 - (pos[1] + thickness/2)*tneg # Up boundary for x0 for hit number hit in region t<0
+        x0['xu'][i][n_points:2*n_points] = pos[0] + width/2 - (pos[1] - thickness/2)*tpos # Up boundary for x0 for hit number hit in region t>0
+        x0['xd'][i][0:n_points] = pos[0] - width/2 - (pos[1] - thickness/2)*tneg
+        x0['xd'][i][n_points:2*n_points] = pos[0] - width/2 - (pos[1] + thickness/2)*tpos
     ##### Now have to find the region of overlap
 
     T=np.append(tneg,tpos)

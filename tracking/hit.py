@@ -62,6 +62,7 @@ class Hit:
         z = (self.coord[1]-0.5)*thickness + (self.coord[1]-1)*(2*thickness_screen+thickness)
         if not self.is_sidex:
             z += thickness+thickness_screen
+        return np.array([x,z])
 
     def print(self):
         if self.is_sidex:

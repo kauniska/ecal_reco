@@ -2,8 +2,8 @@
 Geometric properties of the detector
 '''
 
-n_strips = 8
-n_layers = 24
+n_strips = 24
+n_layers = 8
 
 #Dimensions of the cells expressed in cm
 width = 1.6

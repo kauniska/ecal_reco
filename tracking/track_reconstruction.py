@@ -98,13 +98,18 @@ def chi_2(Hits,track,index_):
     else:
         return True
 
-# returns the physical position (in cm) of the cell, on the concerned side of the detector as a function of the (integer) coordinates
-def coord_to_pos(coord,x_plane):
-    x = (coord[0]-0.5)*width
-    z = (coord[1]-0.5)*thickness + (coord[1]-1)*(2*thickness_screen+thickness)
+# returns the physical position (in cm) of the center of the cell, on the concerned side of the detector as a function of the (integer) coordinates
+def coord_to_pos_x(coord):
+    return (coord-0.5)*width
+
+def coord_to_pos_z(coord,x_plane):
+    z = (coord-0.5)*thickness + (coord-1)*(2*thickness_screen+thickness)
     if not x_plane:
         z += thickness+thickness_screen
-    return np.array([x,z])
+    return z
+
+def coord_to_pos(coord,x_plane):
+    return np.array([coord_to_pos_x(coord[0]),coord_to_pos_z(coord[1],x_plane)])
 
 # returns the coordinates and the side of the cell as a function of physical position (in cm)
 def pos_to_coord(pos):
@@ -127,5 +132,62 @@ def pos_to_coord(pos):
     coord = np.array([round(x),round(z)])
 
     return coord,x_plane
+
+
+# Plot the fired hits on the chosen side with the right geometry
+def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1):
+    '''
+    If x_plane, the plot shows the fired hits on the xz-plane, else on the yz-plane
+    If plot_perpendicular, the hits on the other plane will be visible (in a darker color)
+    '''
+    if x_plane == None:
+        x_plane = hits[0].is_sidex
+    hits_x = []
+    hits_y = []
+    for hit in hits:
+        if hit.is_sidex:
+            hits_x.append(hit)
+        else:
+            hits_y.append(hit)
+
+    hit_color = (1,232/255,0)
+    passive_color = (80/255,80/255,80/255)
+    perpendicular_color = (1,232/255,0,0.25)
+
+    fig,ax = plt.subplots(figsize = (n_strips*width/2*scaling,2*n_layers*(thickness+thickness_screen)/2*scaling))
+    ax.set_facecolor((22/255,100/255,90/255))
+    ax.set_xlim([0,n_strips*width])
+    ax.set_ylim([0,2*n_layers*(thickness+thickness_screen)])
+
+    for i in range(2*n_layers):
+        ax.axhspan(i*(thickness+thickness_screen)+thickness, (i+1)*(thickness+thickness_screen), facecolor=passive_color, alpha=1)
+
+    if x_plane:
+        for hit in hits_x:
+            pos = hit.get_pos()
+            rectangle = plt.Rectangle((pos[0]-width/2,pos[1]-thickness/2), width, thickness, fc=hit_color, ec='k', lw=1)
+            ax.add_patch(rectangle)
+        if plot_perpendicular:
+            z_fired = np.zeros((n_layers,))
+            for hit in hits_y:
+                z_fired[hit.coord[1]-1] = 1
+            for i,z in enumerate(z_fired):
+                if z:
+                    ax.axhspan(coord_to_pos_z(i+1,False)-thickness/2, coord_to_pos_z(i+1,False)+thickness/2, facecolor=perpendicular_color, alpha=0.25)
+    else:
+        for hit in hits_y:
+            pos = hit.get_pos()
+            rectangle = plt.Rectangle((pos[0]-width/2,pos[1]-thickness/2), width, thickness, fc=hit_color, ec='k', lw=1)
+            ax.add_patch(rectangle)
+        if plot_perpendicular:
+            z_fired = np.zeros((n_layers,))
+            for hit in hits_x:
+                z_fired[hit.coord[1]] = 1
+            for i,z in enumerate(z_fired):
+                if z:
+                    ax.axhspan(coord_to_pos_z(i+1,True)-thickness/2, coord_to_pos_z(i+1,True)+thickness/2, facecolor=perpendicular_color, alpha=0.25)
+
+    return fig,ax
+
         
 

@@ -5,7 +5,10 @@ The methods are the chi^2.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from hit import Hit,thickness,width,thickness_screen
+from hit import Hit
+import sys
+sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+from parameters import *
 plt.ion()
 from filterpy.kalman import KalmanFilter
 
@@ -22,7 +25,7 @@ class Track:
             x0 (flaot): extrapolated coordinate of the crossing of the top of the box
             hits_index: index of the hits in the event when the data was recorded
         """
-        self.steps = 8
+        self.steps = n_layers
         if len(args) == 0:
             self.hits = []
             self.t = None
