@@ -10,6 +10,9 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+import sys
+sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+from parameters import *
 
 
 # Check that a is tofpet on the x side of the calorimeter
@@ -95,4 +98,34 @@ def chi_2(Hits,track,index_):
     else:
         return True
 
+# returns the physical position (in cm) of the cell, on the concerned side of the detector as a function of the (integer) coordinates
+def coord_to_pos(coord,x_plane):
+    x = (coord[0]-0.5)*width
+    z = (coord[1]-0.5)*thickness + (coord[1]-1)*(2*thickness_screen+thickness)
+    if not x_plane:
+        z += thickness+thickness_screen
+    return np.array([x,z])
+
+# returns the coordinates and the side of the cell as a function of physical position (in cm)
+def pos_to_coord(pos):
+    if pos[1] < 0 or pos[1] > 2*n_layers*(thickness+thickness_screen)\
+        or pos[0] < 0 or pos[0] > width*n_strips:
+        raise ValueError("Position out of bound")
+    elif pos[1] % (thickness+thickness_screen) > thickness:
+        raise ValueError("z-coordinate cooresponds to passive layer")
+
+    x = pos[0] // width + 1
+    z = pos[1] // (thickness+thickness_screen)
+
+    if pos[1] % 2*(thickness+thickness_screen) > thickness+thickness_screen:
+        x_plane = False
+        z = (z+1)/2
+    else :
+        x_plane = True
+        z = z/2 + 1
+
+    coord = np.array([round(x),round(z)])
+
+    return coord,x_plane
+        
 

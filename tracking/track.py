@@ -5,6 +5,7 @@ The methods are the chi^2.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from hit import Hit,thickness,width,thickness_screen
 plt.ion()
 from filterpy.kalman import KalmanFilter
 
@@ -73,19 +74,23 @@ class Track:
     def get_plot(self, axs):
         fit = self.get_tracks() #np.round(self.get_tracks())
         # fit = [[int(f[0]), int(f[1])] for f in fit]
-        hitsX = [hit.coord[0] for hit in self.hits]
-        hitsZ = [hit.coord[1] for hit in self.hits]
+        hitsX = [hit.get_pos()[0] for hit in self.hits]
+        hitsZ = [hit.get_pos()[1] for hit in self.hits]
+        bins_z = np.array([0])
+        for i in range(16):
+            bins_z = np.append(bins_z,[bins_z[-1]+thickness, bins_z[-1]+thickness_screen])
+            
+        axs[1].hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
         # axs.hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='magma')
-        axs.hist2d(hitsX, hitsZ, bins = [-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
         axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
-        plt.xticks(np.linspace(1, 24, 6))
-        plt.yticks(np.linspace(1, 8, 8))
+        plt.xticks(np.linspace(1, 24, 6)*width)
+        plt.yticks(np.linspace(1, 8, 8)*(thickness_screen+thickness))
         coords_x = []
         coords_z = []
         for i in self.hits_index:
             if self.hits[i].coord in fit:
-                coords_x.append(self.hits[i].coord[0])
-                coords_z.append(self.hits[i].coord[1])
+                coords_x.append(self.hits[i].get_pos()[0])
+                coords_z.append(self.hits[i].get_pos()[1])
         axs.plot(coords_x, coords_z, 'r*')
         axs.set(xlabel='$x$', ylabel='$z$')
         return axs
@@ -130,13 +135,13 @@ class Track:
             t: tan of the angle (0° is vertical)
             indices: indices of the hits considered
         """
-        maxi = 6  # max=5 => angle scanning between [-78.7°,78,7°]
-        T = np.linspace(-maxi, maxi, angle_sampling, False)
+        max=5 # => angle scanning between [-78.7°,78,7°]
+        T = np.linspace(-max, max, angle_sampling, False)
         x0s = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         txs = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         for n, hit in enumerate(self.hits):
-            zs = np.linspace(hit.coord[1] - 0.5, hit.coord[1] + 0.5, sampling)
-            xs = np.linspace(hit.coord[0] - 0.5, hit.coord[0] + 0.5, sampling)
+            zs = np.linspace(hit.get_pos()[1] - 0.5*thickness, hit.get_pos()[1] + 0.5*thickness, sampling)
+            xs = np.linspace(hit.get_pos()[0] - 0.5*width, hit.get_pos()[0] + 0.5*width, sampling)
             for i, z in enumerate(zs):
                 for j, x in enumerate(xs):
                     index_prefix = n * sampling * sampling * angle_sampling + \
@@ -164,12 +169,16 @@ class Track:
             axs[0].set(xlabel='$t$', ylabel='$x$')
             axs[0].legend()
 
-            hitsX = [hit.coord[0] for hit in self.hits]
-            hitsZ = [hit.coord[1] for hit in self.hits]
-            axs[1].hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
+            hitsX = [hit.get_pos()[0] for hit in self.hits]
+            hitsZ = [hit.get_pos()[1] for hit in self.hits]
+            bins_z = np.array([0])
+            for i in range(16):
+                bins_z = np.append(bins_z,[bins_z[-1]+thickness, bins_z[-1]+thickness_screen])
+                
+            axs[1].hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
             axs[1].plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
-            axs[1].set_xticks(np.linspace(1, 24, 6))
-            axs[1].set_yticks(np.linspace(1, 8, 8))
+            axs[1].set_xticks(np.linspace(1, 24, 6)*width)
+            axs[1].set_yticks(np.linspace(1, 8, 8)*(thickness+thickness_screen))
             axs[1].grid(True, which='major')
             axs[1].grid(False, which='minor')
             coords_x = []

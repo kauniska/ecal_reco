@@ -6,6 +6,11 @@ the timestamp of the hit, the global timestamp of the event and the value of the
 """
 from track_reconstruction import is_sidex
 from track_reconstruction import mapping_2D
+import numpy as np
+
+import sys
+sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+from parameters import *
 
 class Hit:
 
@@ -45,13 +50,27 @@ class Hit:
             self.value = args[4]
         else:
             raise ValueError("not the correct number of arguments given")
+    
+    
+    def get_pos(self):
+        '''
+        Returns the position of the center of the hit in cm. The bottom layer is in the x-direction. 
+        The origin of the z-axis is the bottom of the lowest sintillator plane (in x-direction).
+        The origin of the x(y)-axis is the left part of the cell at the extreme left of the x(y)-z plane 
+        '''
+        x = (self.coord[0]-0.5)*width
+        z = (self.coord[1]-0.5)*thickness + (self.coord[1]-1)*(2*thickness_screen+thickness)
+        if not self.is_sidex:
+            z += thickness+thickness_screen
 
     def print(self):
         if self.is_sidex:
             plane = "x"
         else:
             plane = "y"
-        print("Coordinates : " , self.coord, "on", plane , "plane")
+        pos = self.get_pos()
+        print("Coordinates : " , self.coord, " on ", plane , " plane")
+        print("Position = ", pos, " cm")
         print("Timestamp : ", self.timestamp)
         print("Timestamp event : ", self.timestamp_event)
         print("Value : ", self.value)
