@@ -43,7 +43,7 @@
 EcalSD::EcalSD(G4String name)
 : G4VSensitiveDetector(name)
 {
-  collectionName.insert("EcalCalorimeterColl");
+  collectionName.insert("EcalCalorimeterLayer");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -55,16 +55,15 @@ EcalSD::~EcalSD()
 
 void EcalSD::Initialize(G4HCofThisEvent* hce)
 {
-  fHitsCollection
-    = new EcalHitsCollection(SensitiveDetectorName,collectionName[0]);
+  fHitsCollection = new EcalHitsCollection(SensitiveDetectorName, collectionName[0]);
   if (fHCID<0) {
     fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
   }
   hce->AddHitsCollection(fHCID,fHitsCollection);
 
   // fill calorimeter hits with zero energy deposition
-  for (auto column=0;column<kNofEcalColumns;column++) {
-    for (auto row=0;row<kNofEcalRows;row++) {
+  for (auto layer = 0; layer < kNofEcalLayers; layer ++) {
+    for (auto bar = 0; bar < kNofEcalBars; bar++) {
       fHitsCollection->insert(new EcalHit());
     }
   }
@@ -77,16 +76,20 @@ G4bool EcalSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   auto edep = step->GetTotalEnergyDeposit();
   if (edep==0.) return true;
 
-  auto touchable = step->GetPreStepPoint()->GetTouchable();
-  auto rowNo = touchable->GetCopyNumber(2);
-  auto columnNo = touchable->GetCopyNumber(3);
-  auto hitID = kNofEcalRows*columnNo+rowNo;
-  auto hit = (*fHitsCollection)[hitID];
+  const G4VTouchable* touchable = step->GetPreStepPoint()->GetTouchable();
+  auto physical = touchable->GetVolume();
+  auto copyNo = physical->GetCopyNo();
+  G4int layerNo = touchable->GetCopyNumber(2);
+  G4int barNo = touchable->GetCopyNumber(3);
+  G4int hitID = kNofEcalLayers * layerNo + barNo;
+  EcalHit* hit = (*fHitsCollection)[hitID];
+  const G4ParticleDefinition* pd = step->GetTrack()->GetDefinition();
+  // G4cout << "ooo " << touchable->GetVolume()->GetName() << G4endl;
 
   // check if it is first touch
-  if (hit->GetColumnID()<0) {
-    hit->SetColumnID(columnNo);
-    hit->SetRowID(rowNo);
+  if (hit->GetBarID()<0) {
+    hit->SetBarID(barNo);
+    hit->SetLayerID(layerNo);
     auto depth = touchable->GetHistory()->GetDepth();
     auto transform = touchable->GetHistory()->GetTransform(depth-2);
     transform.Invert();
@@ -95,6 +98,9 @@ G4bool EcalSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   }
   // add energy deposition
   hit->AddEdep(edep);
+  hit->AddNHit(1);
+  hit->SetPD(pd);
+  hit->SetCopyNo(copyNo);
 
   return true;
 }

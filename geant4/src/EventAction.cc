@@ -97,18 +97,15 @@ void EventAction::BeginOfEventAction(const G4Event*)
 
   // Find hit collections and histogram Ids by names (just once)
   // and save them in the data members of this class
-  if (fEcalHCID[0] == -1)
+  if (fEcalHCID == -1)
   {
     auto sdManager = G4SDManager::GetSDMpointer();
     auto analysisManager = G4AnalysisManager::Instance();
     // hits collections name
-    G4String EcalName = "EcalSD/EcalCalorimeterColl";
+    G4String EcalName = "EcalSD/EcalCalorimeterLayer";
 
-    for (G4int iDet = 0; iDet < kDim; ++iDet)
-    {
-      // hit collections IDs
-      fEcalHCID[iDet] = sdManager->GetCollectionID(EcalName);
-    }
+
+    fEcalHCID = sdManager->GetCollectionID(EcalName);
   }
 }
 
@@ -166,38 +163,54 @@ void EventAction::EndOfEventAction(const G4Event* event)
 	 analysisManager->FillH1(5,iScint+0.5,Evis);
   }
 
-  // Em/Had Calorimeters hits
+  // Ecalorimeters hits
   G4int totalCalHit = 0;
   G4double totalCalEdep = 0.;
 
-  for (G4int iDet = 0; iDet < kDim; ++iDet)
-  {
-   auto hc = GetHC(event, fEcalHCID[iDet]);
-   if (!hc)
-      return;
+   auto hc = GetHC(event, fEcalHCID);
+   if (!hc) return;
 
-   totalCalHit = 0;
-   totalCalEdep = 0.;
-   for (unsigned long i = 0; i < hc->GetSize(); ++i)
-   {
-      G4double edep = 0.;
-      // The EM and Had calorimeter hits are of different types
-      if (iDet == 0)
-      {
-        auto hit = static_cast<EcalHit *>(hc->GetHit(i));
-        edep = hit->GetEdep();
-      }
-      if (edep > 0.)
-      {
-        totalCalHit++;
-        totalCalEdep += edep;
-      }
-      fEcalEdep[i] = edep;
-   }
-   // columns 2, 3
-   analysisManager->FillNtupleDColumn(0, 1, totalCalEdep);
-   analysisManager->AddNtupleRow();
+  totalCalHit = 0;
+  totalCalEdep = 0.;
+  for (unsigned long i = 0; i < hc->GetSize(); ++i) {
+    G4double edep = 0.;
+
+    auto hit = static_cast<EcalHit *>(hc->GetHit(i));
+    edep = hit->GetEdep();
+
+    if (edep > 0.) {
+      totalCalHit++;
+      totalCalEdep += edep;
+    }
+
+    fEcalEdep[i] = edep;
+    fEcalHits[i] = hit->GetHits();
+    fEcalLayerID[i] = hit->GetLayerID();
+    fEcalBarID[i] = hit->GetBarID();
+    fEcalPDG[i] = hit->GetPDG();
+    fEcalCopyNo[i] = hit->GetCopyNo();
+    fEcalParticleNames[i] = hit->GetParticleName();
   }
+
+  for (unsigned long i = 0; i < hc->GetSize(); ++i) {
+    G4double edep = 0.;
+    G4int Nhits = 0;
+    G4int l = -1;
+    G4int r = -1;
+    auto hit = static_cast<EcalHit *>(hc->GetHit(i));
+    edep = hit->GetEdep();
+    Nhits = hit->GetHits();
+    l = hit->GetBarID(); // layer ID
+    r = hit->GetLayerID();
+
+    if (edep > 0. && l > -1 && r > -1) {
+      fEcalEdepMatrix[l][r] += edep;
+      fEcalHitsMatrix[l][r] += Nhits;
+    }
+  }
+  // columns 2, 3
+  analysisManager->FillNtupleDColumn(0, 1, totalCalEdep);
+  analysisManager->AddNtupleRow(0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -41,10 +41,11 @@
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
+#include "G4ParticleDefinition.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4ThreadLocal G4Allocator<EcalHit>* EcalHitAllocator;
+    G4ThreadLocal G4Allocator<EcalHit> *EcalHitAllocator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -53,8 +54,8 @@ EcalHit::EcalHit()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EcalHit::EcalHit(G4int columnID,G4int rowID)
-: fColumnID(columnID), fRowID(rowID)
+EcalHit::EcalHit(G4int barID,G4int layerID)
+: fBarID(barID), fLayerID(layerID)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -62,35 +63,73 @@ EcalHit::EcalHit(G4int columnID,G4int rowID)
 EcalHit::~EcalHit()
 {}
 
-// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "G4Electron.hh"
+#include "G4Positron.hh"
+#include "G4Gamma.hh"
+#include "G4OpticalPhoton.hh"
 
-// EcalHit::EcalHit(const EcalHit &right)
-// : G4VHit(),
-//   fColumnID(right.fColumnID),
-//   fRowID(right.fRowID),
-//   fEdep(right.fEdep),
-//   fPos(right.fPos),
-//   fRot(right.fRot)
-// {}
-
-// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-// const EcalHit& EcalHit::operator=(
-//         const EcalHit &right)
-// {
-//   fColumnID = right.fColumnID;
-//   fRowID = right.fRowID;
-//   fEdep = right.fEdep;
-//   fPos = right.fPos;
-//   fRot = right.fRot;
-//   return *this;
-// }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4bool EcalHit::operator==(const EcalHit &right) const
+G4int EcalHit::GetPDG() const
 {
-  return ( fColumnID==right.fColumnID && fRowID==right.fRowID );
+  G4int tmp = -1;
+  if (fPD != nullptr) {
+    // G4cout << "ooo " << fPD->GetParticleDefinitionID() << " " << fPD->GetParticleName() << G4endl;
+    tmp = fPD->GetParticleDefinitionID();
+  } else {
+    return -2;
+  }
+
+  if (tmp == 407) { // mu-
+    return 1;
+  } else if (tmp == 324){ //e-
+    return 2;
+  } else if (tmp == 323) { //e+
+    return 3;
+  } else if (tmp == 344) { // gamma
+    return 4;
+  } else if (tmp == 428) { //pi0
+    return 5;
+  } else if (tmp == 426) { // pi+
+    return 6;
+  } else if (tmp == 427) { // pi-
+    return 7;
+  } else if (tmp == 406) { // mu+
+    return 8;
+  } else { // anything else
+    G4cout << "STRANGE PARTICLE " << fPD->GetParticleDefinitionID() << " " << fPD->GetParticleName() << G4endl;
+    return 9;
+  }
+}
+
+    // //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    // EcalHit::EcalHit(const EcalHit &right)
+    // : G4VHit(),
+    //   fBarID(right.fBarID),
+    //   fLayerID(right.fLayerID),
+    //   fEdep(right.fEdep),
+    //   fPos(right.fPos),
+    //   fRot(right.fRot)
+    // {}
+
+    // //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    // const EcalHit& EcalHit::operator=(
+    //         const EcalHit &right)
+    // {
+    //   fBarID = right.fBarID;
+    //   fLayerID = right.fLayerID;
+    //   fEdep = right.fEdep;
+    //   fPos = right.fPos;
+    //   fRot = right.fRot;
+    //   return *this;
+    // }
+
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    G4bool
+    EcalHit::operator==(const EcalHit &right) const
+{
+  return ( fBarID==right.fBarID && fLayerID==right.fLayerID );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -121,8 +160,8 @@ const std::map<G4String,G4AttDef>* EcalHit::GetAttDefs() const
     (*store)["HitType"]
       = G4AttDef("HitType","Hit Type","Physics","","G4String");
 
-    (*store)["Column"]
-      = G4AttDef("Column","Column ID","Physics","","G4int");
+    (*store)["Bar"]
+      = G4AttDef("Bar","Bar ID","Physics","","G4int");
 
     (*store)["Row"]
       = G4AttDef("Row","Row ID","Physics","","G4int");
@@ -147,10 +186,10 @@ std::vector<G4AttValue>* EcalHit::CreateAttValues() const
   values
     ->push_back(G4AttValue("HitType","EcalHit",""));
   values
-    ->push_back(G4AttValue("Column",G4UIcommand::ConvertToString(fColumnID),
+    ->push_back(G4AttValue("Bar",G4UIcommand::ConvertToString(fBarID),
                            ""));
   values
-    ->push_back(G4AttValue("Row",G4UIcommand::ConvertToString(fRowID),""));
+    ->push_back(G4AttValue("Row",G4UIcommand::ConvertToString(fLayerID),""));
   values
     ->push_back(G4AttValue("Energy",G4BestUnit(fEdep,"Energy"),""));
   values
@@ -163,7 +202,7 @@ std::vector<G4AttValue>* EcalHit::CreateAttValues() const
 
 void EcalHit::Print()
 {
-  G4cout << "  Cell[" << fRowID << ", " << fColumnID << "] "
+  G4cout << "  Cell[" << fLayerID << ", " << fBarID << "] "
     << fEdep/MeV << " (MeV) " << fPos << G4endl;
 }
 

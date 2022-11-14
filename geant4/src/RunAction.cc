@@ -64,9 +64,14 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   analysisManager->CreateNtuple("events", "recorded info per event");
   analysisManager->CreateNtupleDColumn(0, "E");                                           // 0
   analysisManager->CreateNtupleDColumn(0, "Edep");                                        // 1
-  analysisManager->CreateNtupleIColumn(0, "pdg", fvolTrackIMap[18]);                      // 2
-  analysisManager->CreateNtupleDColumn(0, "HCEnergyVector", fEventAction->GetEcalEdep()); // 3
-  analysisManager->CreateNtupleDColumn(0, "detid");                                       // 4
+  analysisManager->CreateNtupleIColumn(0, "pdg", fEventAction->GetEcalPDG());                      // 2
+  analysisManager->CreateNtupleDColumn(0, "EcalEdep", fEventAction->GetEcalEdep()); // 3
+  analysisManager->CreateNtupleIColumn(0, "layerID", fEventAction->GetEcalLayers()); // 4
+  // analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalBars()); // 5
+  analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalCopyNo()); // 5
+  analysisManager->CreateNtupleIColumn(0, "Nhits", fEventAction->GetEcalHits()); // 6
+  // analysisManager->CreateNtupleIColumn(0, "copyNo", fEventAction->GetEcalCopyNo()); // 7
+
   analysisManager->FinishNtuple(0);
 
   analysisManager->SetActivation(false); // enable inactivation of histograms

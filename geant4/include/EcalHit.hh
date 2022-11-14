@@ -37,6 +37,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4Transform3D.hh"
 #include "G4RotationMatrix.hh"
+#include "G4ParticleDefinition.hh"
 
 class G4AttDef;
 class G4AttValue;
@@ -67,14 +68,14 @@ class EcalHit : public G4VHit
     std::vector<G4AttValue>* CreateAttValues() const override;
     void Print() override;
 
-    void SetColumnID(G4int z) { fColumnID = z; }
-    G4int GetColumnID() const { return fColumnID; }
+    void SetBarID(G4int z) { fBarID = z; } // before it was column
+    G4int GetBarID() const { return fBarID; }
 
-    void SetRowID(G4int z) { fRowID = z; }
-    G4int GetRowID() const { return fRowID; }
+    void SetLayerID(G4int z) { fLayerID = z; } // before it was row
+    G4int GetLayerID() const { return fLayerID; }
 
     void SetEdep(G4double de) { fEdep = de; }
-    void AddEdep(G4double de) { fEdep += de; }
+    void AddEdep(G4double de) { fEdep += de;}
     G4double GetEdep() const { return fEdep; }
 
     void SetPos(G4ThreeVector xyz) { fPos = xyz; }
@@ -83,12 +84,25 @@ class EcalHit : public G4VHit
     void SetRot(G4RotationMatrix rmat) { fRot = rmat; }
     G4RotationMatrix GetRot() const { return fRot; }
 
+    void AddNHit(G4int nhit) {fHits += nhit;}
+    G4int GetHits() const {return fHits;}
+
+    void SetPD(const G4ParticleDefinition *pd) { fPD = pd; }
+    G4int GetPDG() const;
+    G4String GetParticleName() const {return (fPD != nullptr ? fPD->GetParticleName(): "--");};
+
+    void SetCopyNo(G4int cNo) {fCopyNo = cNo;}
+    G4int GetCopyNo() {return fCopyNo;}
+
   private:
-    G4int fColumnID = -1;
-    G4int fRowID = -1;
+    G4int fBarID = -1; // used to be Column, along x and y
+    G4int fLayerID = -1; // used to be Row, along z (vertical)
     G4double fEdep = 0.;
     G4ThreeVector fPos;
     G4RotationMatrix fRot;
+    G4int fHits = 0;
+    const G4ParticleDefinition* fPD;
+    G4int fCopyNo = -1;
 };
 
 using EcalHitsCollection = G4THitsCollection<EcalHit>;

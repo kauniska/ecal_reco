@@ -491,6 +491,7 @@ void DetectorConstruction::ConstructSDandField()
     G4String SDname;
     auto ecal = new EcalSD(SDname = "/EcalSD");
     sdManager->AddNewDetector(ecal);
+    // lvol_scint->SetSensitiveDetector(ecal);
     lvol_scint->SetSensitiveDetector(ecal);
 }
 
