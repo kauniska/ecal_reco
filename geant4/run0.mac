@@ -11,7 +11,7 @@
 /ams/gun/setDefault
 /gun/particle mu-
 /gun/energy 2 GeV
-/ams/gun/beam 3 mm
+/ams/gun/beam 30 cm
 #
 /control/execute vis.mac
 #
