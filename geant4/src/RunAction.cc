@@ -70,6 +70,11 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   // analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalBars()); // 5
   analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalCopyNo()); // 5
   analysisManager->CreateNtupleIColumn(0, "Nhits", fEventAction->GetEcalHits()); // 6
+  analysisManager->CreateNtupleDColumn(0, "theta"); // 7
+  analysisManager->CreateNtupleDColumn(0, "phi"); // 8
+  analysisManager->CreateNtupleDColumn(0, "x0"); // 9
+  analysisManager->CreateNtupleDColumn(0, "y0"); // 10
+
   // analysisManager->CreateNtupleIColumn(0, "copyNo", fEventAction->GetEcalCopyNo()); // 7
 
   analysisManager->FinishNtuple(0);

@@ -50,11 +50,19 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetRndmBeam(G4double val) { beam = val;} 
     void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() {return particleGun;};
+    G4double GetTheta() const { return theta;}
+    G4double GetPhi() const { return phi;}
+    G4double GetX0() const { return x0;}
+    G4double GetY0() const { return y0;}
     
   private:
     G4ParticleGun*         particleGun;
     DetectorConstruction*  Detector;
     G4double               beam;          //lateral beam extension
+    G4double theta = 0.; // angle from vertical
+    G4double phi = 0.; // xy plane angle
+    G4double x0 = 0.; // x position at the top
+    G4double y0 = 0.; // y position at the top
     
     PrimaryGeneratorMessenger* gunMessenger; 
 };
