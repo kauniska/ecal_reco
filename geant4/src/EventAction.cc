@@ -100,7 +100,7 @@ void EventAction::BeginOfEventAction(const G4Event*)
   if (fEcalHCID == -1)
   {
     auto sdManager = G4SDManager::GetSDMpointer();
-    auto analysisManager = G4AnalysisManager::Instance();
+    // auto analysisManager = G4AnalysisManager::Instance();
     // hits collections name
     G4String EcalName = "EcalSD/EcalCalorimeterLayer";
 

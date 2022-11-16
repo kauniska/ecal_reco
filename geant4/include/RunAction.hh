@@ -62,7 +62,6 @@ private:
   DetectorConstruction *fDetector;
   PrimaryGeneratorAction *fPrimary;
   Run *fRun;
-  HistoManager *fHistoManager;
   EventAction *fEventAction = nullptr;
   G4String fFileName;
 };
