@@ -42,14 +42,13 @@
 class HistoManager
 {
   public:
-   HistoManager(EventAction* feventAction);
+   HistoManager();
   ~HistoManager();
 
   private:
     void Book();
 
     G4String fFileName;
-    EventAction* fEventAction;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

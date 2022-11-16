@@ -35,8 +35,8 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HistoManager::HistoManager(EventAction* eventAction)
-  : fFileName("ecal"), fEventAction(eventAction)
+HistoManager::HistoManager()
+  : fFileName("ecal")
 {
   Book();
 }
