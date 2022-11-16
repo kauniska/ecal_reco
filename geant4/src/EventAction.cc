@@ -209,11 +209,12 @@ void EventAction::EndOfEventAction(const G4Event* event)
     }
   }
   // columns 2, 3
-  analysisManager->FillNtupleDColumn(0, 1, totalCalEdep);
+  analysisManager->FillNtupleDColumn(0, 0, primary->GetEnergy() / GeV);
+  analysisManager->FillNtupleDColumn(0, 1, totalCalEdep / GeV);
   analysisManager->FillNtupleDColumn(0, 7, primary->GetTheta());
   analysisManager->FillNtupleDColumn(0, 8, primary->GetPhi());
-  analysisManager->FillNtupleDColumn(0, 9, primary->GetX0());
-  analysisManager->FillNtupleDColumn(0, 10, primary->GetY0());
+  analysisManager->FillNtupleDColumn(0, 9, primary->GetX0() / cm);
+  analysisManager->FillNtupleDColumn(0, 10, primary->GetY0() / cm);
   analysisManager->AddNtupleRow(0);
 }
 

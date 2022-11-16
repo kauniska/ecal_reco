@@ -93,10 +93,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     {
       G4ThreeVector position = particleGun->GetParticlePosition();    
       G4double maxXY = 0.49*(Detector->GetCalorSizeXY());
-      // G4double x0 = 2 * 24 * (G4UniformRand() - 0.5); // x at the top of the ecal
-      // G4double y0 = 2 * 24 * (G4UniformRand() - 0.5); // y at the top of the ecal
-      x0 = position.x() + (G4UniformRand() - 0.5) * beam;
-      y0 = position.y() + (G4UniformRand() - 0.5) * beam;
+      x0 = 2 * maxXY * (G4UniformRand() - 0.5); // x at the top of the ecal
+      y0 = 2 * maxXY * (G4UniformRand() - 0.5); // y at the top of the ecal
+      // x0 = position.x() + (G4UniformRand() - 0.5) * beam;
+      // y0 = position.y() + (G4UniformRand() - 0.5) * beam;
       G4double z0 = position.z();
       if (std::abs(x0) > maxXY) {
         x0 = maxXY;
@@ -106,13 +106,19 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }
       theta = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5); // angle to vertical
       phi = 2. * M_PI / 2. * (G4UniformRand() - 0.5);
-      // G4cout << "theta " << theta << ", phi " << phi << G4endl;
       particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
       particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
       particleGun->GeneratePrimaryVertex(anEvent);
       // particleGun->SetParticlePosition(position);      
     }
-  else  particleGun->GeneratePrimaryVertex(anEvent);
+    else {
+      particleGun->GeneratePrimaryVertex(anEvent);
+    }
+
+    G4double max_energy = 100; // in GeV
+    G4double min_energy = 0.5;// in GeV
+    energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy/min_energy)));
+    particleGun->SetParticleEnergy(energy);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

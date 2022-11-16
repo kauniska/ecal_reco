@@ -32,6 +32,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
+#include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
 class DetectorConstruction;
@@ -54,6 +55,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double GetPhi() const { return phi;}
     G4double GetX0() const { return x0;}
     G4double GetY0() const { return y0;}
+    G4double GetEnergy() const { return energy;}
     
   private:
     G4ParticleGun*         particleGun;
@@ -63,6 +65,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double phi = 0.; // xy plane angle
     G4double x0 = 0.; // x position at the top
     G4double y0 = 0.; // y position at the top
+    G4double energy = 2. * GeV; // energy of particle
     
     PrimaryGeneratorMessenger* gunMessenger; 
 };
