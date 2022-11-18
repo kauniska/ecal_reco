@@ -181,6 +181,8 @@ void Run::EndOfRun()
   
   G4double meanEtot,meanEtot2,varianceEtot,rmsEtot,resEtot;  
   G4double meanEvis,meanEvis2,varianceEvis,rmsEvis,resEvis;
+
+  bool print = false;
   
   for (G4int i1=1; i1<kLayerMax; i1++) {
     //total energy
@@ -203,7 +205,8 @@ void Run::EndOfRun()
 
     //print
     //
-    G4cout
+    if (print){
+      G4cout
       << "\n   layer " << i1 << ": "
       << std::setprecision(5)
       << std::setw(6) << G4BestUnit(meanEtot,"Energy") << " +- "
@@ -217,9 +220,10 @@ void Run::EndOfRun()
       << std::setprecision(4)
       << std::setw(5) << G4BestUnit( rmsEvis,"Energy") << "  ("
       << std::setprecision(2) 
-      << std::setw(3) << resEvis  << " %)"; 
+      << std::setw(3) << resEvis  << " %)";
+      }
   }
-  G4cout << G4endl;
+  if (print) G4cout << G4endl;
 
   //calorimeter: total energy
   meanEtot  = EtotCalor /nbEvents;
@@ -239,6 +243,7 @@ void Run::EndOfRun()
       
   //print
   //
+  if (print) {
   G4cout
     << "\n   total calor : "
     << std::setprecision(5)
@@ -257,6 +262,7 @@ void Run::EndOfRun()
                      
   G4cout << "\n------------------------------------------------------------"
          << G4endl;
+  }
 
   //leakage
   G4double meanEleak,meanEleak2,varianceEleak,rmsEleak,ratio;
@@ -273,6 +279,7 @@ void Run::EndOfRun()
       
   //print
   //
+  if (print) {
   G4cout
     << "\n   Leakage : "
     << std::setprecision(5)
@@ -293,6 +300,7 @@ void Run::EndOfRun()
   //normalize histograms
   G4double factor = 1./nbEvents;
   analysisManager->ScaleH1(5,factor);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
