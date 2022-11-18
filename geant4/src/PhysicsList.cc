@@ -52,7 +52,7 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList()
   emName = G4String("local");
   emPhysicsList = new PhysListEmStandard(emName);
   
-  SetDefaultCutValue(1*mm);
+  SetDefaultCutValue(1*um);
   G4LossTableManager::Instance();
 }
 
