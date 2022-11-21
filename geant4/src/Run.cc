@@ -145,9 +145,12 @@ void Run::Merge(const G4Run* run)
 
 void Run::EndOfRun()
 {
+  bool print = false;
   //calorimeter
   //
-  fDetector->PrintCalorParameters();
+  if (print) {
+    fDetector->PrintCalorParameters();
+  }
  
   //run conditions
   //   
@@ -172,17 +175,17 @@ void Run::EndOfRun()
    
   // energy in layers
   //
-  G4cout.precision(prec);	 
-  G4cout << "\n             " 
-         << "total Energy          (rms/mean)      "
-         << "visible Energy        (rms/mean)" << G4endl;
+  if (print) {
+    G4cout.precision(prec);	 
+    G4cout << "\n             " 
+           << "total Energy          (rms/mean)      "
+           << "visible Energy        (rms/mean)" << G4endl;
+  }
   
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   
   G4double meanEtot,meanEtot2,varianceEtot,rmsEtot,resEtot;  
   G4double meanEvis,meanEvis2,varianceEvis,rmsEvis,resEvis;
-
-  bool print = false;
   
   for (G4int i1=1; i1<kLayerMax; i1++) {
     //total energy
