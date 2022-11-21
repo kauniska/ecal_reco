@@ -15,4 +15,4 @@
 #
 #/control/execute vis.mac
 #
-/run/beamOn 1
+/run/beamOn 100
