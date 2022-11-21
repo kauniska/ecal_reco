@@ -39,11 +39,6 @@ def fit_artificial_track(t,x0,sampling=1):
     fit_track = Track(hits)
     return fit_track.t, fit_track.x0
 
-def length_crossed(x_bound,z_bound,t,x0):
-    '''
-    Computes the length of the tracks inside a rectangular cell with x_bound as x boundaries and z_bound as z boundaries
-    '''
-
 
 def create_artificial_tracks_geom(t,x0,sidex,sampling=1):
     ''' 

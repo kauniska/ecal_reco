@@ -11,6 +11,8 @@ sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
 from parameters import *
 plt.ion()
 from filterpy.kalman import KalmanFilter
+from track_reconstruction import coord_to_pos_z,coord_to_pos_x
+from physics import overlap_length
 
 class Track:
     def __init__(self, *args):
@@ -155,8 +157,8 @@ class Track:
 
         H, ts, xs = np.histogram2d(txs, x0s, bins=[angle_sampling, angle_sampling])
         id_t, id_x0 = np.unravel_index(np.argmax(H, axis=None), H.shape)
-        self.t = ts[id_t]
-        self.x0 = xs[id_x0]
+        self.t = ts[id_t] + (ts[1]-ts[0])/2
+        self.x0 = xs[id_x0] + (xs[1]-xs[0])/2
 
         fit = self.get_tracks()
         self.hits_index = self.get_indices(None, False)
@@ -229,7 +231,37 @@ class Track:
         Returns:
             list of coordinates (x, z)
         """
-        return [[self.x(z), z] for z in np.linspace(1, self.steps, self.steps)]
+        # return [[self.x(z), z] for z in np.linspace(1, self.steps, self.steps)] #Former version : only one x per z
+        coords = []
+
+        tol = 10**(-10)
+
+        xmin = min(self.x0,2*self.t*n_layers*(thickness+thickness_screen)+self.x0)
+        xmin = max(xmin,0)
+        xmax = max(self.x0,2*self.t*n_layers*(thickness+thickness_screen)+self.x0)
+        xmax = min(xmax,n_strips*width)
+
+        coord_x_min = round(xmin//width + 1)
+        coord_x_max = round(xmax//width + 1)
+
+        z_i = []
+        for i in range(n_layers):
+            z_center = coord_to_pos_z(i+1,self.hits[0].is_sidex)
+            z_i.append([z_center-thickness/2,z_center+thickness/2])
+
+        for j in range(coord_x_min,coord_x_max+1):
+            if self.t == 0:
+                z_min = 0
+                z_max = 2*n_layers*(thickness+thickness_screen)
+            else:
+                z_max = max((coord_to_pos_x(j)-width/2-self.x0)/self.t,(coord_to_pos_x(j)+width/2-self.x0)/self.t)
+                z_min = min((coord_to_pos_x(j)-width/2-self.x0)/self.t,(coord_to_pos_x(j)+width/2-self.x0)/self.t)
+            for i,z in enumerate(z_i):
+                if overlap_length(z,[z_min,z_max]) > tol:
+                    coords.append([j,i+1])
+
+        return coords
+        
     
     def get_hits_coords(self):
         """Gets the list of coordinates of the hits
@@ -265,9 +297,64 @@ class Track:
         dr_mod = [np.sqrt(dr_u[i]*dr_u[i] + dr_d[i]*dr_d[i]) for i in range(len(dr_u))]
         return dr_mod
 
+    '''
     def kalman_filter(self, sigma = 1, axs = None):
         # define the different vectors and matrices
         f = KalmanFilter(dim_x=4, dim_z=2)
+        # physical state vector
+        f.x = np.array([[0.], # x
+                        [0.], # z
+                        [1.], # v_x
+                        [1.]]) #v_z
+        #  propagation matrix
+        f.F = np.array([[1., 0., self.t, 0.],
+                        [0., 1., 0., self.t],
+                        [0., 0., 1., 0.],
+                        [0., 0., 0., 1.]])
+        # measurement matrix
+        f.H = np.array([[1., 0., 0., 0.],
+                        [0., 1., 0., 0.]])
+        # covariance matrix # TODO: find right value
+        f.P = np.array([[1/sigma, 0., 0., 0.],
+                        [0., 1/sigma, 0., 0.],
+                        [0., 0., 1/sigma, 0.],
+                        [0., 0., 0., 1/sigma]])
+        # measurement noise matrix
+        f.R = np.array([[0.5, 0.], # x
+                        [0., 0.5]]) # z
+        #  process noise, # TODO: find right value
+        f.Q = np.array([[1., 0., 0., 0.],
+                        [0., 1., 0., 0.],
+                        [0., 0., 1., 0.],
+                        [0., 0., 0., 1.]])
+        
+        #iterate over the hit coordinates
+        hits = self.get_hits_coords()
+        hits.sort(key = lambda x: x[1])
+        # for h in hits:
+            # f.predict()
+            # f.update(np.array(h))
+        (mu, cov, _, _) = f.batch_filter(hits)
+        (xs, P, K, Pp) = f.rts_smoother(mu, cov)
+        kalman_hits = [[int(np.round(x[0])), int(np.round(x[1]))] for x in xs]
+        fit = self.get_tracks()
+        
+        if axs is not None:
+            # fig, axs = plt.subplots(1, 1)
+            hitsX = [hit.coord[0] for hit in self.hits]
+            hitsZ = [hit.coord[1] for hit in self.hits]
+            axs.hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
+            axs.plot([f[0] for f in kalman_hits], [f[1] for f in kalman_hits], 'r--', label = 'Kalman')
+            axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-', label = 'Hough')
+            plt.xticks(np.linspace(1, 24, 6))
+            plt.yticks(np.linspace(1, 8, 8))
+            axs.set(xlabel='$x$', ylabel='$z$')
+            axs.legend()
+        indices = self.get_indices(fit, False)
+        '''
+    def kalman_filter(self, sigma = 1, axs = None):
+            # define the different vectors and matrices
+        f = KalmanFilter(dim_x=2, dim_z=2)
         # physical state vector
         f.x = np.array([[0.], # x
                         [0.], # z
