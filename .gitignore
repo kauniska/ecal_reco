@@ -13,3 +13,4 @@ geant4/log
 geant4/ecal
 build/*
 .vscode/*
+geant4/build/*
