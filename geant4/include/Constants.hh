@@ -31,7 +31,7 @@
 #define Constants_h 1
 
 #include "globals.hh"
-constexpr G4int kNofEcalLayers = 8;
+constexpr G4int kNofEcalLayers = 16;
 constexpr G4int kNofEcalBars = 24;
 constexpr G4int kNofEcalCells = kNofEcalLayers * kNofEcalBars;
 
