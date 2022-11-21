@@ -65,9 +65,12 @@ class EventAction : public G4UserEventAction
     std::vector<G4int>& GetEcalPDG() {return fEcalPDG;}
     std::vector<G4int>& GetEcalCopyNo() {return fEcalCopyNo;}
     std::vector<G4String>& GetEcalParticleNames() {return fEcalParticleNames;}
+    void AddNsec(const G4int& n) {fNsec += n;}
+    G4int GetNsec() {return fNsec;}
+    void SetProcessID(const G4int&);
+    G4int GetProcessID() {return fProcessID;};
 
-  private :
-    DetectorConstruction *detector;
+  private : DetectorConstruction *detector;
     PrimaryGeneratorAction* primary;
 	
 	  G4int nbOfModules, nbOfLayers, kLayerMax;     
@@ -76,6 +79,7 @@ class EventAction : public G4UserEventAction
 	
 	  G4double EtotCalor;
 	  G4double EvisCalor;
+    G4int fNsec = 0;
 	
 	  std::map<G4int, G4double> EvisScint;
 
@@ -92,6 +96,7 @@ class EventAction : public G4UserEventAction
     std::vector<G4String> fEcalParticleNames = std::vector<G4String>(int(kNofEcalCells), "-");
     std::vector<std::vector<G4double> > fEcalEdepMatrix = std::vector<std::vector<G4double> >(int(kNofEcalLayers), std::vector<G4double>(int(kNofEcalBars), -1));
     std::vector<std::vector<G4int> > fEcalHitsMatrix = std::vector<std::vector<G4int> >(int(kNofEcalLayers), std::vector<G4int>(int(kNofEcalBars), -1));
+    G4int fProcessID = -1;
 };
 
 

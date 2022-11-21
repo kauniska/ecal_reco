@@ -40,17 +40,54 @@
 #include "G4PhysicalConstants.hh"
 #include "G4Track.hh"
 #include "G4Positron.hh"
+#include "G4VProcess.hh"
+#include "G4String.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TrackingAction::TrackingAction(DetectorConstruction* det)
-:G4UserTrackingAction(),detector(det)
+TrackingAction::TrackingAction(DetectorConstruction* det, EventAction* eA)
+:G4UserTrackingAction(),detector(det), fEventAction(eA)
 { }
  
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TrackingAction::PreUserTrackingAction(const G4Track*)
-{ }
+void TrackingAction::PreUserTrackingAction(const G4Track* track)
+{
+  // we only consider muons and neutral pions
+  if (track->GetParticleDefinition()->GetParticleName() == "mu-"\
+    || track->GetParticleDefinition()->GetParticleName() == "mu+"\
+    || track->GetParticleDefinition()->GetParticleName() == "pi0")
+    //|| track->GetParticleDefinition()->GetParticleName() == "e-"\
+    //|| track->GetParticleDefinition()->GetParticleName() == "e+")
+  {
+    const G4VProcess *proc = track->GetCreatorProcess();
+    if (proc != nullptr) // nullptr if created by gun
+    {
+      G4String name = proc->GetProcessName();
+      // In order: electron ionisation, muon ionisation, electron Bremsstrahlung, photoelectric effect, compton effect
+      G4int proc_id = -1;
+      if (name == "muPairProd")
+      {
+        proc_id = 0;
+      } else if (name == "annihil") {
+        proc_id = 1;
+      } else if (name == "conv") {
+        proc_id = 2;
+      } else if (name == "muIoni") {
+        proc_id = 3;
+      } else {
+        G4cout << "Unidentified process : " << name << " " << proc->GetProcessSubType() << G4endl;
+        proc_id = 4;
+      }
+      // add to event
+      if (proc_id != -1) {
+        G4cout << "Identified process : " << name << " " << proc->GetProcessSubType() << G4endl;
+        fEventAction->SetProcessID(proc_id);
+      }
+    }
+  }
+  // G4cout << track->GetCreatorProcess()->GetProcessName() << G4endl;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

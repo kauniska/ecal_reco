@@ -68,7 +68,7 @@ G4VHitsCollection *GetHC(const G4Event *event, G4int collId)
 }
 
 EventAction::EventAction(DetectorConstruction* det,PrimaryGeneratorAction* prim)
-:detector(det), primary(prim)
+:detector(det), primary(prim), fNsec(0)
 {
   nbOfModules = detector->GetNbModules();	 	
   nbOfLayers  = detector->GetNbLayers();
@@ -80,9 +80,16 @@ EventAction::EventAction(DetectorConstruction* det,PrimaryGeneratorAction* prim)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EventAction::~EventAction()
-{
-}
+{}
 
+void EventAction::SetProcessID(const G4int &p)
+{
+  if (fProcessID != -1 && fProcessID != p)
+  {
+    G4cout << "ovewriting process ID from " << fProcessID << " to " << p << G4endl;
+  }
+  fProcessID = p;
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::BeginOfEventAction(const G4Event*)
@@ -215,6 +222,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
   analysisManager->FillNtupleDColumn(0, 8, primary->GetPhi());
   analysisManager->FillNtupleDColumn(0, 9, primary->GetX0() / cm);
   analysisManager->FillNtupleDColumn(0, 10, primary->GetY0() / cm);
+  analysisManager->FillNtupleIColumn(0, 11, fNsec);
+  analysisManager->FillNtupleIColumn(0, 12, fProcessID);
   analysisManager->AddNtupleRow(0);
 }
 

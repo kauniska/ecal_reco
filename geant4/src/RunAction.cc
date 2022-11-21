@@ -56,7 +56,7 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   // in HistoManager.hh
   G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
   analysisManager->SetDefaultFileType("root");
-  analysisManager->SetFileName("data");
+  analysisManager->SetFileName(fFileName);
   analysisManager->SetVerboseLevel(1);
   // analysisManager->SetNtupleMerging(true);
 
@@ -74,6 +74,8 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   analysisManager->CreateNtupleDColumn(0, "phi"); // 8
   analysisManager->CreateNtupleDColumn(0, "x0"); // 9
   analysisManager->CreateNtupleDColumn(0, "y0"); // 10
+  analysisManager->CreateNtupleIColumn(0, "n_sec"); // 11
+  analysisManager->CreateNtupleIColumn(0, "ProcessID"); // 12
 
   // analysisManager->CreateNtupleIColumn(0, "copyNo", fEventAction->GetEcalCopyNo()); // 7
 
