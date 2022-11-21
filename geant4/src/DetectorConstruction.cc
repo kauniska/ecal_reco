@@ -54,9 +54,9 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
-:scintMat(0),lvol_scint(0), absorberMat(0),lvol_layer(0),
- moduleMat(0),lvol_module(0), calorimeterMat(0),lvol_calorimeter(0),
- worldMat(0),pvol_world(0), defaultMat(0)
+: scintMat(0),lvol_scint(0), absorberMat(0),lvol_layer(0),
+  moduleMat(0),lvol_module(0), calorimeterMat(0),lvol_calorimeter(0),
+  worldMat(0),pvol_world(0), defaultMat(0)
 {
   // materials
   DefineMaterials();
@@ -119,8 +119,8 @@ void DetectorConstruction::DefineMaterials()
   //
   G4Material* Sci = 
   new G4Material("Scintillator", density= 1.032*g/cm3, ncomponents=2);
-  Sci->AddElement(C, natoms=8);
-  Sci->AddElement(H, natoms=8);
+  Sci->AddElement(C, natoms=9);
+  Sci->AddElement(H, natoms=10);
   
   Sci->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
 
@@ -388,15 +388,14 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                     1);
 
   // world
-  sizeZ = 2.*calorThickness;
-  sizeY = 2.*scintLength;
-  sizeX = 2.*scintLength;
-  
-  worldSizeZ = sizeZ;
-  
+  worldSizeZ = 10.*calorThickness;
+  sizeY = 10.*scintLength;
+  sizeX = 10.*scintLength;
+  // worldSizeZ = 100. * km;
+
   G4Box*      
   svol_world = new G4Box("world",			//name
-                  0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
+                  0.5*sizeX, 0.5*sizeY, 0.5*worldSizeZ);	//size
 
   lvol_world = new G4LogicalVolume(svol_world,		//solid
                                    worldMat,		//material
