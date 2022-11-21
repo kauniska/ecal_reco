@@ -29,6 +29,9 @@
 
 #include "DetectorConstruction.hh"
 
+#include "EcalSD.hh"
+#include "Constants.hh"
+
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4Material.hh"
@@ -39,15 +42,12 @@
 #include "G4PVReplica.hh"
 #include "G4Transform3D.hh"
 #include "G4RotationMatrix.hh"
-
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4SolidStore.hh"
-
 #include "G4SDManager.hh"
 #include "G4VSensitiveDetector.hh"
-#include "EcalSD.hh"
 #include "G4VisAttributes.hh"
 
 
@@ -64,13 +64,13 @@ DetectorConstruction::DetectorConstruction()
   // default parameter values of calorimeter
   //
   scintDiameter       = 1.13*mm; 	//1.08*mm
-  nbOfScints          = 24;		//490
+  nbOfScints          = kNofEcalBars;		//490
   scintWidth          = 16.*mm;	//1.35*mm
   scintHeight         = 4.*mm;
   scintLength         = 384. * mm;
   gapSize             = 1. * mm;                // 662.175*mm
   nbOfLayers          = 1;		    //10
-  nbOfModules         = 16;		    //9
+  nbOfModules         = kNofEcalLayers;		    //9
   leadThickness       = 4.*mm;
   aluThickness        = 1.*mm;
   layerThickness      = scintHeight + 2*aluThickness + leadThickness; // 1.68*mm
