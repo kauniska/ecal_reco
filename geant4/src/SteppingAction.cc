@@ -85,8 +85,11 @@ void SteppingAction::UserSteppingAction(const G4Step* step )
                                  iModule = touch1->GetCopyNumber(2);}
 
  // sum edep
- //
  eventAct->SumDeStep(iModule, iLayer, iScint, edep);         
+
+// get number of secondaries
+ size_t n_secondaries = step->GetSecondaryInCurrentStep()->size();
+ eventAct->AddNsec(n_secondaries);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
