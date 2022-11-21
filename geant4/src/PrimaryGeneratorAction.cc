@@ -97,7 +97,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       // x0 = position.x() + (G4UniformRand() - 0.5) * beam;
       // y0 = position.y() + (G4UniformRand() - 0.5) * beam;
       G4double z0 = position.z();
-      G4cout << "position particle gun z: " << z0 / cm << G4endl;
       // G4double z0 = 100. * km;
       if (std::abs(x0) > maxXY) {
         x0 = maxXY;
