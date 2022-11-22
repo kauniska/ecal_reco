@@ -1,7 +1,8 @@
 {
     "files.associations": {
         "*.m": "matlab",
-        "plotHisto.C": "cpp"
+        "plotHisto.C": "cpp",
+        "plots.C": "cpp"
     },
     "python.analysis.extraPaths": [
         "./utils",
