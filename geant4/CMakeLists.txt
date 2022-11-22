@@ -40,7 +40,7 @@ target_link_libraries(ecal ${Geant4_LIBRARIES} )
 # relies on these scripts being in the current working directory.
 #
 set(ecal_SCRIPTS
-    geantino.mac mips.mac rndmSeed.mac run0.mac run1.mac run2.mac vis.mac vis_color.mac
+    macfiles/geantino.mac macfiles/mips.mac macfiles/rndmSeed.mac macfiles/run0.mac macfiles/run1.mac macfiles/run2.mac macfiles/vis.mac macfiles/vis_color.mac
   )
 
 foreach(_script ${ecal_SCRIPTS})
