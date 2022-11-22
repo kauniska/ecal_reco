@@ -24,7 +24,7 @@
 /vis/viewer/set/auxiliaryEdge true
 /vis/viewer/set/lineSegmentsPerCircle 100
 
-/control/execute vis_color.mac
+/control/execute macfiles/vis_color.mac
 
 # Draw coordinate axes:
 /vis/scene/add/axes 0 0 0 0.5 m

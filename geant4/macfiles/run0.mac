@@ -13,6 +13,6 @@
 /gun/energy 2 GeV
 /ams/gun/beam 30 cm
 #
-/control/execute vis.mac
+/control/execute macfiles/vis.mac
 #
 /run/beamOn 1
