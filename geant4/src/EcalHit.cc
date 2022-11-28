@@ -70,34 +70,59 @@ EcalHit::~EcalHit()
 
 G4int EcalHit::GetPDG() const
 {
-  G4int tmp = -1;
-  if (fPD != nullptr) {
-    // G4cout << "ooo " << fPD->GetParticleDefinitionID() << " " << fPD->GetParticleName() << G4endl;
-    tmp = fPD->GetParticleDefinitionID();
+  if (fPDs.size() == 0) {
+    return -2; // if no particle interaction
+  }
+  bool there_is_muon = false;
+  bool there_is_electron = false;
+  for (auto pd : fPDs) {
+    if (pd != nullptr) {
+      if (pd->GetParticleDefinitionID() == 407 || pd->GetParticleDefinitionID() == 406) {
+        there_is_muon = true;
+      } else if (pd->GetParticleDefinitionID() == 324 || pd->GetParticleDefinitionID() == 323) {
+        there_is_electron = true;
+      }
+    }
+  }
+  if (there_is_muon && there_is_electron) {
+    return -5; // special code
+  } else if (there_is_muon) {
+    return 407;
+  } else if (there_is_electron) {
+    return 324;
   } else {
-    return -2;
+    return fPDs[0]->GetParticleDefinitionID();
   }
-
-  if (tmp == 407) { // mu-
-    return 1;
-  } else if (tmp == 324){ //e-
-    return 2;
-  } else if (tmp == 323) { //e+
-    return 3;
-  } else if (tmp == 344) { // gamma
-    return 4;
-  } else if (tmp == 428) { //pi0
-    return 5;
-  } else if (tmp == 426) { // pi+
-    return 6;
-  } else if (tmp == 427) { // pi-
-    return 7;
-  } else if (tmp == 406) { // mu+
-    return 8;
-  } else { // anything else
-    G4cout << "STRANGE PARTICLE " << fPD->GetParticleDefinitionID() << " " << fPD->GetParticleName() << G4endl;
-    return 9;
-  }
+  // G4int tmp = -1;
+  // if (fPD != nullptr) {
+    // G4cout << "ooo " << fPD->GetParticleDefinitionID() << " " << fPD->GetParticleName() << G4endl;
+    // G4cout << fPD->GetParticleName() << G4endl;
+    // return fPD->GetParticleDefinitionID();
+  // } else {
+    // return -2;
+  // }
+  // if (fPD->GetParticleName() != "e-")  G4cout << fPD->GetParticleName() << G4endl;
+  // if (tmp == 407) { // mu-
+  //   G4cout << "here" << G4endl;
+  //   return 1;
+  // } else if (tmp == 324){ //e-
+  //   return 2;
+  // } else if (tmp == 323) { //e+
+  //   return 3;
+  // } else if (tmp == 344) { // gamma
+  //   return 4;
+  // } else if (tmp == 428) { //pi0
+  //   return 5;
+  // } else if (tmp == 426) { // pi+
+  //   return 6;
+  // } else if (tmp == 427) { // pi-
+  //   return 7;
+  // } else if (tmp == 406) { // mu+
+  //   return 8;
+  // } else { // anything else
+  //   G4cout << "UNKOWN PARTICLE " << fPD->GetParticleDefinitionID() << " " << fPD->GetParticleName() << G4endl;
+  //   return 9;
+  // }
 }
 
     // //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
