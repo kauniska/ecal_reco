@@ -7,5 +7,6 @@
     "python.analysis.extraPaths": [
         "./utils",
         "./tracking"
-    ]
+    ],
+    "cmake.sourceDirectory": "${workspaceFolder}/geant4"
 }
