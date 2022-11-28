@@ -53,6 +53,13 @@ TrackingAction::TrackingAction(DetectorConstruction* det, EventAction* eA)
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track)
 {
+  // if decay, we're done
+  if (track->GetCreatorProcess() != nullptr) {
+    if (track->GetCreatorProcess()->GetProcessName() == "Decay") {
+      fEventAction->SetProcessID(0);
+      return;
+    }
+  }
   // we only consider muons and neutral pions
   if (track->GetParticleDefinition()->GetParticleName() == "mu-"\
     || track->GetParticleDefinition()->GetParticleName() == "mu+"\
@@ -64,20 +71,20 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
     if (proc != nullptr) // nullptr if created by gun
     {
       G4String name = proc->GetProcessName();
-      // In order: electron ionisation, muon ionisation, electron Bremsstrahlung, photoelectric effect, compton effect
-      G4int proc_id = -1;
+          // In order: electron ionisation, muon ionisation, electron Bremsstrahlung, photoelectric effect, compton effect
+          G4int proc_id = -1;
       if (name == "muPairProd")
       {
-        proc_id = 0;
-      } else if (name == "annihil") {
         proc_id = 1;
-      } else if (name == "conv") {
+      } else if (name == "annihil") {
         proc_id = 2;
-      } else if (name == "muIoni") {
+      } else if (name == "conv") {
         proc_id = 3;
+      } else if (name == "muIoni") {
+        proc_id = 4;
       } else {
         G4cout << "Unidentified process : " << name << " " << proc->GetProcessSubType() << G4endl;
-        proc_id = 4;
+        proc_id = 5;
       }
       // add to event
       if (proc_id != -1) {

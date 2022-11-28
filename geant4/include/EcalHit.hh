@@ -87,10 +87,8 @@ class EcalHit : public G4VHit
     void AddNHit(G4int nhit) {fHits += nhit;}
     G4int GetHits() const {return fHits;}
 
-    void SetPD(const G4ParticleDefinition *pd) { fPD = pd; }
+    void SetPD(const G4ParticleDefinition *pd) { fPDs.push_back(pd); }
     G4int GetPDG() const;
-    G4String GetParticleName() const {return (fPD != nullptr ? fPD->GetParticleName(): "--");};
-
     void SetCopyNo(G4int cNo) {fCopyNo = cNo;}
     G4int GetCopyNo() {return fCopyNo;}
 
@@ -101,7 +99,7 @@ class EcalHit : public G4VHit
     G4ThreeVector fPos;
     G4RotationMatrix fRot;
     G4int fHits = 0;
-    const G4ParticleDefinition* fPD;
+    std::vector<const G4ParticleDefinition*> fPDs;
     G4int fCopyNo = -1;
 };
 
