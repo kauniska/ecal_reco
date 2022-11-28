@@ -196,7 +196,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
     fEcalBarID[i] = hit->GetBarID();
     fEcalPDG[i] = hit->GetPDG();
     fEcalCopyNo[i] = hit->GetCopyNo();
-    fEcalParticleNames[i] = hit->GetParticleName();
   }
 
   for (unsigned long i = 0; i < hc->GetSize(); ++i) {
@@ -218,8 +217,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
   // columns 2, 3
   analysisManager->FillNtupleDColumn(0, 0, primary->GetEnergy() / GeV);
   analysisManager->FillNtupleDColumn(0, 1, totalCalEdep / GeV);
-  analysisManager->FillNtupleDColumn(0, 7, primary->GetTheta());
-  analysisManager->FillNtupleDColumn(0, 8, primary->GetPhi());
+  analysisManager->FillNtupleDColumn(0, 7, primary->GetTx());
+  analysisManager->FillNtupleDColumn(0, 8, primary->GetTy());
   analysisManager->FillNtupleDColumn(0, 9, primary->GetX0() / cm);
   analysisManager->FillNtupleDColumn(0, 10, primary->GetY0() / cm);
   analysisManager->FillNtupleIColumn(0, 11, fNsec);
