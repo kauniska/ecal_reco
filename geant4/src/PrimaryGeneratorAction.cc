@@ -63,6 +63,16 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+G4double PrimaryGeneratorAction::GetX0() const
+{
+  return x0 + (Detector->GetCalorSizeXY() - 1.) / 2.; // + Detector->GetCalorThickness() * sin(theta) * cos(phi);
+}
+
+G4double PrimaryGeneratorAction::GetY0() const
+{
+  return y0 + (Detector->GetCalorSizeXY() - 1.) / 2.; // + Detector->GetCalorThickness() * sin(theta) * sin(phi);
+}
+
 void PrimaryGeneratorAction::SetDefaultKinematic()
 {
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -97,6 +107,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       // x0 = position.x() + (G4UniformRand() - 0.5) * beam;
       // y0 = position.y() + (G4UniformRand() - 0.5) * beam;
       G4double z0 = position.z();
+      // G4double z0 = -Detector->GetCalorThickness() / 2.;
       // G4double z0 = 100. * km;
       if (std::abs(x0) > maxXY) {
         x0 = maxXY;
@@ -106,8 +117,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }
       theta = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5); // angle to vertical
       phi = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5);
+      theta = 0.;
+      phi = 0.;
+      x0 = 0.;
+      y0 = 5.;
+      z0 = 10. * cm;
       particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
       particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
+      // particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., -1));
       particleGun->GeneratePrimaryVertex(anEvent);
       // particleGun->SetParticlePosition(position);      
     }
@@ -116,9 +133,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
 
     G4double max_energy = 100; // in GeV
-    G4double min_energy = 0.5;// in GeV
+    G4double min_energy = 1;// in GeV
     energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy/min_energy)));
-    particleGun->SetParticleEnergy(energy);
+    // particleGun->SetParticleEnergy(energy);
+    particleGun->SetParticleEnergy(0.107 * GeV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

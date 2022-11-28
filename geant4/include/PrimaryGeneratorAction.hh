@@ -53,8 +53,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ParticleGun* GetParticleGun() {return particleGun;};
     G4double GetTheta() const { return theta;}
     G4double GetPhi() const { return phi;}
-    G4double GetX0() const { return x0;}
-    G4double GetY0() const { return y0;}
+    G4double GetTx() const { return tan(theta) * cos(phi);}
+    G4double GetTy() const { return tan(theta) * sin(phi); }
+    G4double GetX0() const;
+    G4double GetY0() const;
     G4double GetEnergy() const { return energy;}
     
   private:
