@@ -58,9 +58,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double GetX0() const;
     G4double GetY0() const;
     G4double GetEnergy() const { return energy;}
-    
-  private:
-    G4ParticleGun*         particleGun;
+    G4double GetSizeXY() const;
+    G4double GetSizeZ() const;
+
+  private : G4ParticleGun *particleGun;
     DetectorConstruction*  Detector;
     G4double               beam;          //lateral beam extension
     G4double theta = 0.; // angle from vertical

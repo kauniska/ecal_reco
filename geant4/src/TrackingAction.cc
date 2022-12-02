@@ -57,6 +57,7 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
   if (track->GetCreatorProcess() != nullptr) {
     if (track->GetCreatorProcess()->GetProcessName() == "Decay") {
       fEventAction->SetProcessID(0);
+      fEventAction->SetDecayPosition(track->GetPosition());
       return;
     }
   }

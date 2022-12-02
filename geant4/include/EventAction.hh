@@ -69,8 +69,9 @@ class EventAction : public G4UserEventAction
     G4int GetNsec() {return fNsec;}
     void SetProcessID(const G4int&);
     G4int GetProcessID() {return fProcessID;};
+    void SetDecayPosition(const G4ThreeVector& pos) {fPosDecay = pos;}
 
-  private : DetectorConstruction *detector;
+    private : DetectorConstruction *detector;
     PrimaryGeneratorAction* primary;
 	
 	  G4int nbOfModules, nbOfLayers, kLayerMax;     
@@ -97,6 +98,7 @@ class EventAction : public G4UserEventAction
     std::vector<std::vector<G4double> > fEcalEdepMatrix = std::vector<std::vector<G4double> >(int(kNofEcalLayers), std::vector<G4double>(int(kNofEcalBars), -1));
     std::vector<std::vector<G4int> > fEcalHitsMatrix = std::vector<std::vector<G4int> >(int(kNofEcalLayers), std::vector<G4int>(int(kNofEcalBars), -1));
     G4int fProcessID = -1;
+    G4ThreeVector fPosDecay;
 };
 
 

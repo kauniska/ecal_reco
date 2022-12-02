@@ -76,6 +76,11 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   analysisManager->CreateNtupleDColumn(0, "y0"); // 10
   analysisManager->CreateNtupleIColumn(0, "n_sec"); // 11
   analysisManager->CreateNtupleIColumn(0, "ProcessID"); // 12
+  analysisManager->CreateNtupleDColumn(0, "x_decay"); // 13
+  analysisManager->CreateNtupleDColumn(0, "y_decay"); // 14
+  analysisManager->CreateNtupleDColumn(0, "z_decay"); // 15
+  analysisManager->CreateNtupleDColumn(0, "size_XY"); // 16
+  analysisManager->CreateNtupleDColumn(0, "size_Z"); // 17
 
   // analysisManager->CreateNtupleIColumn(0, "copyNo", fEventAction->GetEcalCopyNo()); // 7
 

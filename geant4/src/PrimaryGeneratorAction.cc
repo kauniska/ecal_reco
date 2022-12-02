@@ -73,6 +73,16 @@ G4double PrimaryGeneratorAction::GetY0() const
   return y0 + (Detector->GetCalorSizeXY() - 1.) / 2.; // + Detector->GetCalorThickness() * sin(theta) * sin(phi);
 }
 
+G4double PrimaryGeneratorAction::GetSizeXY() const
+{
+  return Detector->GetCalorSizeXY();
+}
+
+G4double PrimaryGeneratorAction::GetSizeZ() const
+{
+  return Detector->GetCalorThickness();
+}
+
 void PrimaryGeneratorAction::SetDefaultKinematic()
 {
   // G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();

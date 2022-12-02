@@ -223,6 +223,11 @@ void EventAction::EndOfEventAction(const G4Event* event)
   analysisManager->FillNtupleDColumn(0, 10, primary->GetY0() / cm);
   analysisManager->FillNtupleIColumn(0, 11, fNsec);
   analysisManager->FillNtupleIColumn(0, 12, fProcessID);
+  analysisManager->FillNtupleDColumn(0, 13, fPosDecay[0] / cm);
+  analysisManager->FillNtupleDColumn(0, 14, fPosDecay[1] / cm);
+  analysisManager->FillNtupleDColumn(0, 15, fPosDecay[2] / cm);
+  analysisManager->FillNtupleDColumn(0, 16, primary->GetSizeXY() / cm);
+  analysisManager->FillNtupleDColumn(0, 17, primary->GetSizeZ() / cm);
   analysisManager->AddNtupleRow(0);
 }
 
