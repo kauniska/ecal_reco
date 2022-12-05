@@ -11,7 +11,7 @@ sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
 from parameters import *
 plt.ion()
 from filterpy.kalman import KalmanFilter
-from track_reconstruction import coord_to_pos_z,coord_to_pos_x
+from track_reconstruction import coord_to_pos_z,coord_to_pos_x,coord_to_pos
 from physics import overlap_length
 
 class Track:
@@ -271,6 +271,14 @@ class Track:
         """
         return [hit.coord for hit in self.hits]
 
+    def get_hits_pos(self):
+        """Gets the list of coordinates of the hits
+
+        Returns:
+            list of [x, z]: coordinates of all hits
+        """
+        return [hit.get_pos() for hit in self.hits]
+
     def get_time_interval(self):
         last_hit = self.hits[np.argmax(self.hits_index, axis=0)]
         if last_hit.coord[1] < 8: # because if last hit is on the last level, we don't know if it left the detector
@@ -297,111 +305,103 @@ class Track:
         dr_mod = [np.sqrt(dr_u[i]*dr_u[i] + dr_d[i]*dr_d[i]) for i in range(len(dr_u))]
         return dr_mod
 
-    '''
+    
     def kalman_filter(self, sigma = 1, axs = None):
+        # Find starting position :
+        hits = self.get_hits_coords()
+        hits.sort(key = lambda x: -x[1])
+        coord_init = hits[0]
+        pos_init = coord_to_pos(coord_init,self.hits[0].is_sidex)
+
         # define the different vectors and matrices
         f = KalmanFilter(dim_x=4, dim_z=2)
         # physical state vector
-        f.x = np.array([[0.], # x
-                        [0.], # z
-                        [1.], # v_x
-                        [1.]]) #v_z
+        f.x = np.array([[pos_init[0]], # x
+                        [pos_init[1]], # z
+                        [-self.t], # v_x
+                        [-1.]]) #v_z
         #  propagation matrix
-        f.F = np.array([[1., 0., self.t, 0.],
-                        [0., 1., 0., self.t],
+        f.F = np.array([[1., 0., Delta_z, 0.],
+                        [0., 1., 0., Delta_z],
                         [0., 0., 1., 0.],
                         [0., 0., 0., 1.]])
         # measurement matrix
         f.H = np.array([[1., 0., 0., 0.],
                         [0., 1., 0., 0.]])
         # covariance matrix # TODO: find right value
-        f.P = np.array([[1/sigma, 0., 0., 0.],
-                        [0., 1/sigma, 0., 0.],
-                        [0., 0., 1/sigma, 0.],
-                        [0., 0., 0., 1/sigma]])
-        # measurement noise matrix
-        f.R = np.array([[0.5, 0.], # x
-                        [0., 0.5]]) # z
-        #  process noise, # TODO: find right value
-        f.Q = np.array([[1., 0., 0., 0.],
-                        [0., 1., 0., 0.],
+        f.P = np.array([[width, 0., 0., 0.],
+                        [0., thickness, 0., 0.],
                         [0., 0., 1., 0.],
                         [0., 0., 0., 1.]])
+        # measurement noise matrix
+        f.R = np.array([[0.01, 0.], # x
+                        [0., 0.01]]) # z
+        #  process noise, # TODO: find right value
+        d = Delta_z*(1+self.t**2)**0.5
+        X_0 = 4/3*total_height
+        theta = 13.6/1000*(d/X_0)**0.5*(1+0.038*np.log(d/X_0))
+        print("d = ", d)
+        f.Q = np.array([[theta**2*d**2, 0., theta**2*d, 0.],
+                        [0., theta**2*d**2, 0., theta**2*d],
+                        [theta**2*d, 0., theta**2, 0.],
+                        [0., theta**2*d, 0., theta**2]])
         
         #iterate over the hit coordinates
-        hits = self.get_hits_coords()
-        hits.sort(key = lambda x: x[1])
+        
         # for h in hits:
             # f.predict()
             # f.update(np.array(h))
         (mu, cov, _, _) = f.batch_filter(hits)
         (xs, P, K, Pp) = f.rts_smoother(mu, cov)
-        kalman_hits = [[int(np.round(x[0])), int(np.round(x[1]))] for x in xs]
+        kalman_hits = [[coord_to_pos_x(int(np.round(x[0]))), coord_to_pos_z(int(np.round(x[1])),self.hits[0].is_sidex)] for x in xs]
         fit = self.get_tracks()
         
-        if axs is not None:
-            # fig, axs = plt.subplots(1, 1)
-            hitsX = [hit.coord[0] for hit in self.hits]
-            hitsZ = [hit.coord[1] for hit in self.hits]
-            axs.hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
-            axs.plot([f[0] for f in kalman_hits], [f[1] for f in kalman_hits], 'r--', label = 'Kalman')
-            axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-', label = 'Hough')
-            plt.xticks(np.linspace(1, 24, 6))
-            plt.yticks(np.linspace(1, 8, 8))
-            axs.set(xlabel='$x$', ylabel='$z$')
-            axs.legend()
-        indices = self.get_indices(fit, False)
-        '''
-    def kalman_filter(self, sigma = 1, axs = None):
+        return kalman_hits
+        # if axs is not None:
+        #     # fig, axs = plt.subplots(1, 1)
+        #     hitsX = [hit.coord[0] for hit in self.hits]
+        #     hitsZ = [hit.coord[1] for hit in self.hits]
+        #     axs.hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
+        #     axs.plot([f[0] for f in kalman_hits], [f[1] for f in kalman_hits], 'r--', label = 'Kalman')
+        #     axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-', label = 'Hough')
+        #     plt.xticks(np.linspace(1, 24, 6))
+        #     plt.yticks(np.linspace(1, 8, 8))
+        #     axs.set(xlabel='$x$', ylabel='$z$')
+        #     axs.legend()
+        # indices = self.get_indices(fit, False)
+        
+    '''
+    def kalman_filter(self, sigma = 1):
             # define the different vectors and matrices
         f = KalmanFilter(dim_x=2, dim_z=2)
         # physical state vector
-        f.x = np.array([[0.], # x
-                        [0.], # z
-                        [1.], # v_x
-                        [1.]]) #v_z
+        f.x = np.array([[0.],  # x
+                        [1.]]) # t
         #  propagation matrix
-        f.F = np.array([[1., 0., self.t, 0.],
-                        [0., 1., 0., self.t],
-                        [0., 0., 1., 0.],
-                        [0., 0., 0., 1.]])
+        f.F = np.array([[1., 2*(thickness+thickness_screen)],
+                        [0., 1.]])
         # measurement matrix
-        f.H = np.array([[1., 0., 0., 0.],
-                        [0., 1., 0., 0.]])
-        # covariance matrix # TODO: find right value
-        f.P = np.array([[1/sigma, 0., 0., 0.],
-                        [0., 1/sigma, 0., 0.],
-                        [0., 0., 1/sigma, 0.],
-                        [0., 0., 0., 1/sigma]])
+        f.H = np.array([[1., 0.], 
+                        [0., 0.]])
+        # covariance matrix # TODO: find right value
+        f.P = np.array([[(width/2)**2, 0.],
+                        [0., 1.]])
         # measurement noise matrix
-        f.R = np.array([[0.5, 0.], # x
-                        [0., 0.5]]) # z
+        f.R = np.array([[(width/2)**2, 0.],
+                        [0., 1.]]) # z
         #  process noise, # TODO: find right value
-        f.Q = np.array([[1., 0., 0., 0.],
-                        [0., 1., 0., 0.],
-                        [0., 0., 1., 0.],
-                        [0., 0., 0., 1.]])
+        f.Q = np.array([[0., 0.],
+                        [0., 0.]])
         
         #iterate over the hit coordinates
-        hits = self.get_hits_coords()
+        hits = self.get_hits_pos()
         hits.sort(key = lambda x: x[1])
         # for h in hits:
             # f.predict()
             # f.update(np.array(h))
         (mu, cov, _, _) = f.batch_filter(hits)
         (xs, P, K, Pp) = f.rts_smoother(mu, cov)
-        kalman_hits = [[int(np.round(x[0])), int(np.round(x[1]))] for x in xs]
-        fit = self.get_tracks()
-        
-        if axs is not None:
-            # fig, axs = plt.subplots(1, 1)
-            hitsX = [hit.coord[0] for hit in self.hits]
-            hitsZ = [hit.coord[1] for hit in self.hits]
-            axs.hist2d(hitsX, hitsZ, bins=[-0.5 + np.linspace(0, 25, 26), -0.5 + np.linspace(0, 9, 10)], cmap='magma')
-            axs.plot([f[0] for f in kalman_hits], [f[1] for f in kalman_hits], 'r--', label = 'Kalman')
-            axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-', label = 'Hough')
-            plt.xticks(np.linspace(1, 24, 6))
-            plt.yticks(np.linspace(1, 8, 8))
-            axs.set(xlabel='$x$', ylabel='$z$')
-            axs.legend()
-        indices = self.get_indices(fit, False)
+        kalman_hits = [[x[0], x[1]] for x in xs]
+        # fit = self.get_tracks()
+        return kalman_hits
+        '''
