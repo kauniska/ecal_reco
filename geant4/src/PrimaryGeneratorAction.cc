@@ -95,7 +95,7 @@ void PrimaryGeneratorAction::SetDefaultKinematic()
   x0 = 2 * 24 * (G4UniformRand() - 0.5); // x at the top of the ecal
   y0 = 2 * 24 * (G4UniformRand() - 0.5); // y at the top of the ecal
   particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
-  particleGun->SetParticleEnergy(2.*GeV);
+  particleGun->SetParticleEnergy(100.*GeV);
   G4double position = 0.5*(Detector->GetWorldSizeZ());
   particleGun->SetParticlePosition(G4ThreeVector(x0 * mm, y0 * mm, position));
 
@@ -148,9 +148,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       // particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., -1));
       G4double max_energy = 100; // in GeV
       G4double min_energy = 1;   // in GeV
-      energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy)));
+      energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy))); // for cosmics
+      energy = 107. * MeV; // for decays
+      // energy = 100. * GeV; // for MIPs
       particleGun->SetParticleEnergy(energy);
-      particleGun->SetParticleEnergy(106 * MeV);
       particleGun->GeneratePrimaryVertex(anEvent);
     }
     else {
