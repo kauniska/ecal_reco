@@ -143,8 +143,8 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
         -scaling : relative size of the plot
         -hits_next : if given, they will be considered as hits from product of muon decay in a next event. The hits will have another color
     '''
-    passive_color = (80/255,80/255,80/255)
-    active_color = (22/255,100/255,90/255)
+    passive_color = (80/255,80/255,80/255)      # Color of the passive layers
+    active_color = (22/255,100/255,90/255)      # Color of the active layers
     if x_plane == None:
         x_plane = hits[0].is_sidex
     hits_x = []
@@ -154,8 +154,8 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
             hits_x.append(hit)
         else:
             hits_y.append(hit)
-    hit_color = (1,232/255,0)
-    perpendicular_color = (1,232/255,0,0.25)
+    hit_color = (1,232/255,0)                   # Color of the hits for the first event
+    perpendicular_color = (1,232/255,0,0.25)    # Color of the hits in perpendicular plane for the first event
 
     if hits_next != None:
         hits_x_next = []
@@ -165,9 +165,10 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
                 hits_x_next.append(hit)
             else:
                 hits_y_next.append(hit)   
-    hit_color_next = (250/255,100/255,0) 
-    perpendicular_color_next = (250/255,100/255,0.25)    
+        hit_color_next = (250/255,100/255,0)                # Color of the hits for the second event
+        perpendicular_color_next = (250/255,100/255,0.25)   # Color of the hits in perpendicular plane fort the next event
 
+    # Plot of the background
     fig,ax = plt.subplots(figsize = (n_strips*width/2*scaling,2*n_layers*(thickness+thickness_screen)/2*scaling))
     ax.set_facecolor(active_color)
     ax.set_xlim([0,n_strips*width])
@@ -176,6 +177,7 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
     for i in range(2*n_layers):
         ax.axhspan(i*(thickness+thickness_screen)+thickness, (i+1)*(thickness+thickness_screen), facecolor=passive_color, alpha=1)
 
+    # Plot of the hits if the x plane representation is chosen
     if x_plane:
         for hit in hits_x:
             pos = hit.get_pos()
@@ -193,6 +195,7 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
             for i,z in enumerate(z_fired):
                 if z:
                     ax.axhspan(coord_to_pos_z(i+1,False)-thickness/2, coord_to_pos_z(i+1,False)+thickness/2, facecolor=perpendicular_color, alpha=0.25)
+            # Plot of the hits of the second event 
             if hits_next != None:
                 z_next_fired = np.zeros((n_layers,))
                 for hit in hits_y_next:
@@ -200,6 +203,7 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
                 for i,z in enumerate(z_next_fired):
                     if z:
                         ax.axhspan(coord_to_pos_z(i+1,False)-thickness/2, coord_to_pos_z(i+1,False)+thickness/2, facecolor=perpendicular_color_next, alpha=0.25)
+    # Plot of the hits if the y plane representation is chosen
     else:
         for hit in hits_y:
             pos = hit.get_pos()
@@ -217,6 +221,7 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
             for i,z in enumerate(z_fired):
                 if z:
                     ax.axhspan(coord_to_pos_z(i+1,True)-thickness/2, coord_to_pos_z(i+1,True)+thickness/2, facecolor=perpendicular_color, alpha=0.25)
+            # Plot of the hits of the second event 
             if hits_next != None:
                 z_next_fired = np.zeros((n_layers,))
                 for hit in hits_x_next:
