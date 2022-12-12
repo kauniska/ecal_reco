@@ -8,7 +8,7 @@ def dr(hit_ref, hits):
     dr_u =  dr[:,1]
     dr_d =  dr[:,0]
     ## eval module
-    dr_mod =  np.sqrt(dr_u*dr_u + dr_d*dr_d)
+    dr_mod =  (dr_u*dr_u + dr_d*dr_d)**0.5
     return dr_mod
 
 def overlap_length(int1,int2):
@@ -33,7 +33,7 @@ def dist_line_pt(t,x0,point):
     returns   : 
         - d     :   distance between the line and the point
     """
-    d = abs(point[1]*t-point[0]+x0)/(t^2+1)**0.5
+    d = abs(point[1]*t-point[0]+x0)/(t**2+1)**0.5
     return d
 
 def dist_line_rect(t,x0,center,height,width):

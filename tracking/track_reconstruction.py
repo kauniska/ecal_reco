@@ -135,11 +135,16 @@ def pos_to_coord(pos):
 
 
 # Plot the fired hits on the chosen side with the right geometry
-def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1):
+def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hits_next = None):
     '''
-    If x_plane, the plot shows the fired hits on the xz-plane, else on the yz-plane
-    If plot_perpendicular, the hits on the other plane will be visible (in a darker color)
+    Arguments :
+        -x_plane : if True the plot shows the fired hits on the xz-plane, else on the yz-plane
+        -plot_perpendicular : if True the hits on the other plane will be visible (in a darker color)
+        -scaling : relative size of the plot
+        -hits_next : if given, they will be considered as hits from product of muon decay in a next event. The hits will have another color
     '''
+    passive_color = (80/255,80/255,80/255)
+    active_color = (22/255,100/255,90/255)
     if x_plane == None:
         x_plane = hits[0].is_sidex
     hits_x = []
@@ -149,13 +154,22 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1):
             hits_x.append(hit)
         else:
             hits_y.append(hit)
-
     hit_color = (1,232/255,0)
-    passive_color = (80/255,80/255,80/255)
     perpendicular_color = (1,232/255,0,0.25)
 
+    if hits_next != None:
+        hits_x_next = []
+        hits_y_next = []
+        for hit in hits_next:
+            if hit.is_sidex:
+                hits_x_next.append(hit)
+            else:
+                hits_y_next.append(hit)   
+    hit_color_next = (250/255,100/255,0) 
+    perpendicular_color_next = (250/255,100/255,0.25)    
+
     fig,ax = plt.subplots(figsize = (n_strips*width/2*scaling,2*n_layers*(thickness+thickness_screen)/2*scaling))
-    ax.set_facecolor((22/255,100/255,90/255))
+    ax.set_facecolor(active_color)
     ax.set_xlim([0,n_strips*width])
     ax.set_ylim([0,2*n_layers*(thickness+thickness_screen)])
 
@@ -167,6 +181,11 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1):
             pos = hit.get_pos()
             rectangle = plt.Rectangle((pos[0]-width/2,pos[1]-thickness/2), width, thickness, fc=hit_color, ec='k', lw=1)
             ax.add_patch(rectangle)
+            if hits_next != None:
+                for hit in hits_x_next:
+                    pos = hit.get_pos()
+                    rectangle = plt.Rectangle((pos[0]-width/2,pos[1]-thickness/2), width, thickness, fc=hit_color_next, ec='k', lw=1)
+                    ax.add_patch(rectangle)
         if plot_perpendicular:
             z_fired = np.zeros((n_layers,))
             for hit in hits_y:
@@ -174,11 +193,23 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1):
             for i,z in enumerate(z_fired):
                 if z:
                     ax.axhspan(coord_to_pos_z(i+1,False)-thickness/2, coord_to_pos_z(i+1,False)+thickness/2, facecolor=perpendicular_color, alpha=0.25)
+            if hits_next != None:
+                z_next_fired = np.zeros((n_layers,))
+                for hit in hits_y_next:
+                    z_next_fired[hit.coord[1]-1] = 1
+                for i,z in enumerate(z_next_fired):
+                    if z:
+                        ax.axhspan(coord_to_pos_z(i+1,False)-thickness/2, coord_to_pos_z(i+1,False)+thickness/2, facecolor=perpendicular_color_next, alpha=0.25)
     else:
         for hit in hits_y:
             pos = hit.get_pos()
             rectangle = plt.Rectangle((pos[0]-width/2,pos[1]-thickness/2), width, thickness, fc=hit_color, ec='k', lw=1)
             ax.add_patch(rectangle)
+            if hits_next != None:
+                for hit in hits_y_next:
+                    pos = hit.get_pos()
+                    rectangle = plt.Rectangle((pos[0]-width/2,pos[1]-thickness/2), width, thickness, fc=hit_color_next, ec='k', lw=1)
+                    ax.add_patch(rectangle)
         if plot_perpendicular:
             z_fired = np.zeros((n_layers,))
             for hit in hits_x:
@@ -186,6 +217,13 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1):
             for i,z in enumerate(z_fired):
                 if z:
                     ax.axhspan(coord_to_pos_z(i+1,True)-thickness/2, coord_to_pos_z(i+1,True)+thickness/2, facecolor=perpendicular_color, alpha=0.25)
+            if hits_next != None:
+                z_next_fired = np.zeros((n_layers,))
+                for hit in hits_x_next:
+                    z_next_fired[hit.coord[1]-1] = 1
+                for i,z in enumerate(z_next_fired):
+                    if z:
+                        ax.axhspan(coord_to_pos_z(i+1,True)-thickness/2, coord_to_pos_z(i+1,True)+thickness/2, facecolor=perpendicular_color_next, alpha=0.25)
 
     return fig,ax
 
