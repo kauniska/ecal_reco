@@ -39,6 +39,8 @@
 #include "G4ParticleDefinition.hh"
 #include "Randomize.hh"
 
+#define G4ExpoRand() CLHEP::RandExponential::shoot(2.7)
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* det)
@@ -146,10 +148,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       // particleGun->SetParticlePosition(position);
       particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
       // particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., -1));
-      G4double max_energy = 100; // in GeV
-      G4double min_energy = 1;   // in GeV
-      energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy))); // for cosmics
-      energy = 107. * MeV; // for decays
+      // G4double max_energy = 100; // in GeV
+      // G4double min_energy = 1;   // in GeV
+      // energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy))); // old, for cosmics
+      energy = 4 * GeV + 0.14 * GeV * G4ExpoRand(); // for cosmics
+      // energy = 107. * MeV; // for decays
       // energy = 100. * GeV; // for MIPs
       particleGun->SetParticleEnergy(energy);
       particleGun->GeneratePrimaryVertex(anEvent);
