@@ -45,7 +45,7 @@
 
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-    G4ThreadLocal G4Allocator<EcalHit> *EcalHitAllocator;
+G4ThreadLocal G4Allocator<EcalHit> *EcalHitAllocator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -151,8 +151,7 @@ G4int EcalHit::GetPDG() const
 
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-    G4bool
-    EcalHit::operator==(const EcalHit &right) const
+G4bool EcalHit::operator==(const EcalHit &right) const
 {
   return ( fBarID==right.fBarID && fLayerID==right.fLayerID );
 }

@@ -15,6 +15,6 @@
 /gun/energy 2 GeV
 /ams/gun/beam 30 cm
 #
-/run/printProgress 1000
+/run/printProgress 2000
 #
 /run/beamOn 100000

@@ -56,9 +56,11 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
   // if decay, we're done
   if (track->GetCreatorProcess() != nullptr) {
     if (track->GetCreatorProcess()->GetProcessName() == "Decay") {
+      // G4cout << track->GetParticleDefinition()->GetParticleName() << G4endl;
       fEventAction->SetProcessID(0);
       fEventAction->SetDecayPosition(track->GetPosition());
-      return;
+      // G4cout << "vol " << (track->GetVolume() != detector->GetPvolWorld()) << G4endl;
+       return;
     }
   }
   // we only consider muons and neutral pions

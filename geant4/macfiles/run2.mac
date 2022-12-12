@@ -15,6 +15,6 @@
 /gun/energy 10 GeV
 /ams/gun/beam 300 mm
 #
-/run/printProgress 100
+/run/printProgress 1000
 #
-/run/beamOn 500
+/run/beamOn 5000

@@ -85,29 +85,29 @@ G4double PrimaryGeneratorAction::GetSizeZ() const
 
 void PrimaryGeneratorAction::SetDefaultKinematic()
 {
-  // G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  // G4String particleName;
-  // G4ParticleDefinition* particle = particleTable->FindParticle(particleName="mu-");
-  // particleGun->SetParticleDefinition(particle);
-  // theta = 2. * M_PI / 2. * (G4UniformRand() - 0.5); // angle to vertical
-  // phi = 2. * M_PI / 2. * (G4UniformRand() - 0.5);
-  // G4cout << "theta " << theta << ", phi " << phi << G4endl;
-  // x0 = 2 * 24 * (G4UniformRand() - 0.5); // x at the top of the ecal
-  // y0 = 2 * 24 * (G4UniformRand() - 0.5); // y at the top of the ecal
-  // particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
-  // particleGun->SetParticleEnergy(2.*GeV);
-  // G4double position = 0.5*(Detector->GetWorldSizeZ());
-  // particleGun->SetParticlePosition(G4ThreeVector(x0 * mm, y0 * mm, position));
-
-  G4ThreeVector position = particleGun->GetParticlePosition();
-  x0 = 0.; // x at the top of the ecal
-  y0 = 0.; // y at the top of the ecal
-  G4double z0 = position.z();
-  theta = 0.; // angle to vertical
-  phi = 0.;
-  particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
+  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+  G4String particleName;
+  G4ParticleDefinition* particle = particleTable->FindParticle(particleName="mu-");
+  particleGun->SetParticleDefinition(particle);
+  theta = 2. * M_PI / 2. * (G4UniformRand() - 0.5); // angle to vertical
+  phi = 2. * M_PI / 2. * (G4UniformRand() - 0.5);
+  G4cout << "theta " << theta << ", phi " << phi << G4endl;
+  x0 = 2 * 24 * (G4UniformRand() - 0.5); // x at the top of the ecal
+  y0 = 2 * 24 * (G4UniformRand() - 0.5); // y at the top of the ecal
   particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
-  particleGun->SetParticleEnergy(106 * MeV);
+  particleGun->SetParticleEnergy(2.*GeV);
+  G4double position = 0.5*(Detector->GetWorldSizeZ());
+  particleGun->SetParticlePosition(G4ThreeVector(x0 * mm, y0 * mm, position));
+
+  // G4ThreeVector position = particleGun->GetParticlePosition();
+  // x0 = 0.; // x at the top of the ecal
+  // y0 = 0.; // y at the top of the ecal
+  // G4double z0 = position.z();
+  // theta = 0.; // angle to vertical
+  // phi = 0.;
+  // particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
+  // particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
+  // particleGun->SetParticleEnergy(106 * MeV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -137,11 +137,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }
       theta = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5); // angle to vertical
       phi = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5);
-      theta = 0.;
-      phi = 0.;
-      x0 = 0.;
-      y0 = 5.;
-      z0 = 10. * cm;
+      theta = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+      phi = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+      x0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm;;
+      y0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm;;
+      z0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm; // 2 * parenthesis is uniform distribution between -1 and +1
       particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
       // particleGun->SetParticlePosition(position);
       particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
@@ -149,7 +149,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double max_energy = 100; // in GeV
       G4double min_energy = 1;   // in GeV
       energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy)));
-      // particleGun->SetParticleEnergy(energy);
+      particleGun->SetParticleEnergy(energy);
       particleGun->SetParticleEnergy(106 * MeV);
       particleGun->GeneratePrimaryVertex(anEvent);
     }
