@@ -60,31 +60,42 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   analysisManager->SetVerboseLevel(1);
   // analysisManager->SetNtupleMerging(true);
 
-  // create ROOT tree
-  analysisManager->CreateNtuple("events", "recorded info per event");
-  analysisManager->CreateNtupleDColumn(0, "E");                                           // 0
-  analysisManager->CreateNtupleDColumn(0, "Edep");                                        // 1
-  analysisManager->CreateNtupleIColumn(0, "pdg", fEventAction->GetEcalPDG());                      // 2
-  analysisManager->CreateNtupleDColumn(0, "EcalEdep", fEventAction->GetEcalEdep()); // 3
-  analysisManager->CreateNtupleIColumn(0, "layerID", fEventAction->GetEcalLayers()); // 4
+  // create ROOT tree for detector data
+  analysisManager->CreateNtuple("detector", "recorded info per event");
+  analysisManager->CreateNtupleDColumn(0, "E");                                      // 0
+  analysisManager->CreateNtupleIColumn(0, "pdg", fEventAction->GetEcalPDG());        // 2 0
+  analysisManager->CreateNtupleDColumn(0, "EcalEdep", fEventAction->GetEcalEdep());  // 3 1
+  analysisManager->CreateNtupleIColumn(0, "layerID", fEventAction->GetEcalLayers()); // 4 2
   // analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalBars()); // 5
-  analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalCopyNo()); // 5
-  analysisManager->CreateNtupleIColumn(0, "Nhits", fEventAction->GetEcalHits()); // 6
-  analysisManager->CreateNtupleDColumn(0, "tx"); // 7
-  analysisManager->CreateNtupleDColumn(0, "ty"); // 8
-  analysisManager->CreateNtupleDColumn(0, "x0"); // 9
-  analysisManager->CreateNtupleDColumn(0, "y0"); // 10
-  analysisManager->CreateNtupleIColumn(0, "n_sec"); // 11
-  analysisManager->CreateNtupleIColumn(0, "ProcessID"); // 12
-  analysisManager->CreateNtupleDColumn(0, "x_decay"); // 13
-  analysisManager->CreateNtupleDColumn(0, "y_decay"); // 14
-  analysisManager->CreateNtupleDColumn(0, "z_decay"); // 15
-  analysisManager->CreateNtupleDColumn(0, "size_XY"); // 16
-  analysisManager->CreateNtupleDColumn(0, "size_Z"); // 17
-
-  // analysisManager->CreateNtupleIColumn(0, "copyNo", fEventAction->GetEcalCopyNo()); // 7
-
+  analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalCopyNo()); // 5 3
+  analysisManager->CreateNtupleIColumn(0, "Nhits", fEventAction->GetEcalHits());   // 6 4
   analysisManager->FinishNtuple(0);
+
+  // create ROOT tree for run data
+  analysisManager->CreateNtuple("run", "recorded info per event");
+  analysisManager->CreateNtupleDColumn(1, "E");                                           // 0
+  analysisManager->CreateNtupleDColumn(1, "Edep");                                        // 1
+  analysisManager->CreateNtupleDColumn(1, "tx"); // 7 2
+  analysisManager->CreateNtupleDColumn(1, "ty"); // 8 3
+  analysisManager->CreateNtupleDColumn(1, "x0"); // 9 4
+  analysisManager->CreateNtupleDColumn(1, "y0"); // 10 5
+  analysisManager->CreateNtupleIColumn(1, "n_sec"); // 11 6
+  analysisManager->CreateNtupleIColumn(1, "ProcessID"); // 12 7
+  analysisManager->CreateNtupleDColumn(1, "x_decay"); // 13 8
+  analysisManager->CreateNtupleDColumn(1, "y_decay"); // 14 9
+  analysisManager->CreateNtupleDColumn(1, "z_decay"); // 15 10
+  analysisManager->CreateNtupleDColumn(1, "size_XY"); // 16 11
+  analysisManager->CreateNtupleDColumn(1, "size_Z"); // 17 12
+  analysisManager->FinishNtuple(1);
+
+  // create ROOT tree for electron decay data
+  analysisManager->CreateNtuple("electrons", "electron info");
+  analysisManager->CreateNtupleDColumn(2, "E", fEventAction->GetElectronEnergies()); // 0
+  analysisManager->CreateNtupleDColumn(2, "Vertex_E", fEventAction->GetVertexEnergies());
+  analysisManager->CreateNtupleIColumn(2, "muID", fEventAction->GetMuonIDs()); // 1
+  analysisManager->CreateNtupleIColumn(2, "e_layer", fEventAction->GetElectronLayers());   // 0
+  analysisManager->CreateNtupleIColumn(2, "e_row", fEventAction->GetElectronRows());   // 0
+  analysisManager->FinishNtuple(2);
 
   analysisManager->SetActivation(false); // enable inactivation of histograms
 

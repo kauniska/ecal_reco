@@ -71,7 +71,19 @@ class EventAction : public G4UserEventAction
     G4int GetProcessID() {return fProcessID;};
     void SetDecayPosition(const G4ThreeVector& pos) {fPosDecay = pos;}
 
-    private : DetectorConstruction *detector;
+    std::vector<G4double>& GetElectronEnergies() { return fElectronEnergies;}
+    std::vector<G4double>& GetVertexEnergies() { return fVertexEnergies;}
+    std::vector<G4int> &GetElectronLayers() { return fElectronLayers; }
+    std::vector<G4int> &GetElectronRows() { return fElectronRows; }
+    std::vector<G4int> &GetMuonIDs() { return fMuonIDs; }
+    void SetElectronEnergy(G4int parentID, G4double E);
+    void SetVertexEnergy(G4int parentID, G4double E);
+    void SetElectronLayer(G4int parentID, G4int layer);
+    void SetElectronRow(G4int parentID, G4int row);
+    void SetMuonID(G4int ID);
+
+  private:
+    DetectorConstruction *detector;
     PrimaryGeneratorAction* primary;
 	
 	  G4int nbOfModules, nbOfLayers, kLayerMax;     
@@ -94,6 +106,11 @@ class EventAction : public G4UserEventAction
     std::vector<G4int> fEcalBarID = std::vector<G4int>(int(kNofEcalCells), -1);
     std::vector<G4int> fEcalPDG = std::vector<G4int>(int(kNofEcalCells), -1);
     std::vector<G4int> fEcalCopyNo = std::vector<G4int>(int(kNofEcalCells), -1);
+    std::vector<G4double> fElectronEnergies;// = std::vector<G4double>(int(kNofSecParticles), -1);
+    std::vector<G4double> fVertexEnergies; // = std::vector<G4double>(int(kNofSecParticles), -1);
+    std::vector<G4int> fElectronLayers;// = std::vector<G4int>(int(kNofEcalCells), -1);
+    std::vector<G4int> fElectronRows;// = std::vector<G4int>(int(kNofEcalCells), -1);
+    std::vector<G4int> fMuonIDs;// = std::vector<G4int>(int(kNofEcalCells), -1);
     std::vector<G4String> fEcalParticleNames = std::vector<G4String>(int(kNofEcalCells), "-");
     std::vector<std::vector<G4double> > fEcalEdepMatrix = std::vector<std::vector<G4double> >(int(kNofEcalLayers), std::vector<G4double>(int(kNofEcalBars), -1));
     std::vector<std::vector<G4int> > fEcalHitsMatrix = std::vector<std::vector<G4int> >(int(kNofEcalLayers), std::vector<G4int>(int(kNofEcalBars), -1));

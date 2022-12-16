@@ -53,14 +53,18 @@ TrackingAction::TrackingAction(DetectorConstruction* det, EventAction* eA)
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track)
 {
+  
   // if decay, we're done
   if (track->GetCreatorProcess() != nullptr) {
     if (track->GetCreatorProcess()->GetProcessName() == "Decay") {
-      // G4cout << track->GetParticleDefinition()->GetParticleName() << G4endl;
       fEventAction->SetProcessID(0);
       fEventAction->SetDecayPosition(track->GetPosition());
-      // G4cout << "vol " << (track->GetVolume() != detector->GetPvolWorld()) << G4endl;
-       return;
+      if (track->GetParticleDefinition()->GetParticleName() == "e-")
+      {
+        fEventAction->SetElectronEnergy(track->GetParentID(), track->GetTotalEnergy() / MeV);
+        fEventAction->SetVertexEnergy(track->GetParentID(), track->GetVertexKineticEnergy() / MeV);
+      }
+      return;
     }
   }
   // we only consider muons and neutral pions

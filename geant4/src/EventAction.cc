@@ -137,6 +137,51 @@ void EventAction::SumDeStep(G4int iModule, G4int iLayer, G4int iScint,
   }	  
 }
 
+void EventAction::SetElectronEnergy(G4int parentID, G4double E)
+{
+  int index = -1;
+  for (int i = 0; i < fMuonIDs.size(); i++) {
+    if (parentID == fMuonIDs[i]) {
+      index = i; // we don't do anything if muon already in list
+    }
+  }
+  if (index == -1) {
+    fMuonIDs.push_back(parentID);
+    fElectronEnergies.push_back(E);
+  } else {
+    fElectronEnergies[index] = E;
+  }
+}
+
+void EventAction::SetVertexEnergy(G4int parentID, G4double E)
+{
+  int index = -1;
+  for (int i = 0; i < fMuonIDs.size(); i++)
+  {
+    if (parentID == fMuonIDs[i])
+    {
+      index = i; // we don't do anything if muon already in list
+    }
+  }
+  if (index == -1)
+  {
+    fMuonIDs.push_back(parentID);
+    fVertexEnergies.push_back(E);
+  }
+  else if (index >= fVertexEnergies.size()) {
+    fVertexEnergies.push_back(E);
+  } else  {
+    fVertexEnergies[index] = E;
+  }
+}
+
+void EventAction::SetElectronLayer(G4int parentID, G4int layer)
+{}
+void EventAction::SetElectronRow(G4int parentID, G4int row)
+{}
+void EventAction::SetMuonID(G4int ID)
+{}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::EndOfEventAction(const G4Event* event)
@@ -154,9 +199,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
   analysisManager->FillH1(1,EtotCalor);
   analysisManager->FillH1(2,EvisCalor);
 
-  // analysisManager->FillNtupleDColumn(0, 0, 1);
-  // analysisManager->FillNtupleIColumn(0, 1, 2);
-  
   G4double Ebeam = primary->GetParticleGun()->GetParticleEnergy();
   G4double Eleak = Ebeam - EtotCalor;
   run->SumEvents_2(EtotCalor,EvisCalor,Eleak);
@@ -190,7 +232,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
       totalCalEdep += edep;
     }
 
-    fEcalEdep[i] = edep;
+    fEcalEdep[i] = edep / MeV;
     fEcalHits[i] = hit->GetHits();
     fEcalLayerID[i] = hit->GetLayerID();
     fEcalBarID[i] = hit->GetBarID();
@@ -214,21 +256,23 @@ void EventAction::EndOfEventAction(const G4Event* event)
       fEcalHitsMatrix[l][r] += Nhits;
     }
   }
-  // columns 2, 3
-  analysisManager->FillNtupleDColumn(0, 0, primary->GetEnergy() / GeV);
-  analysisManager->FillNtupleDColumn(0, 1, totalCalEdep / GeV);
-  analysisManager->FillNtupleDColumn(0, 7, primary->GetTx());
-  analysisManager->FillNtupleDColumn(0, 8, primary->GetTy());
-  analysisManager->FillNtupleDColumn(0, 9, primary->GetX0() / cm);
-  analysisManager->FillNtupleDColumn(0, 10, primary->GetY0() / cm);
-  analysisManager->FillNtupleIColumn(0, 11, fNsec);
-  analysisManager->FillNtupleIColumn(0, 12, fProcessID);
-  analysisManager->FillNtupleDColumn(0, 13, fPosDecay[0] / cm);
-  analysisManager->FillNtupleDColumn(0, 14, fPosDecay[1] / cm);
-  analysisManager->FillNtupleDColumn(0, 15, fPosDecay[2] / cm);
-  analysisManager->FillNtupleDColumn(0, 16, primary->GetSizeXY() / cm);
-  analysisManager->FillNtupleDColumn(0, 17, primary->GetSizeZ() / cm);
+
+  analysisManager->FillNtupleDColumn(1, 0, primary->GetEnergy() / MeV);
+  analysisManager->FillNtupleDColumn(1, 1, totalCalEdep / MeV);
+  analysisManager->FillNtupleDColumn(1, 2, primary->GetTx());
+  analysisManager->FillNtupleDColumn(1, 3, primary->GetTy());
+  analysisManager->FillNtupleDColumn(1, 4, primary->GetX0() / cm);
+  analysisManager->FillNtupleDColumn(1, 5, primary->GetY0() / cm);
+  analysisManager->FillNtupleIColumn(1, 6, fNsec);
+  analysisManager->FillNtupleIColumn(1, 7, fProcessID);
+  analysisManager->FillNtupleDColumn(1, 8, fPosDecay[0] / cm);
+  analysisManager->FillNtupleDColumn(1, 9, fPosDecay[1] / cm);
+  analysisManager->FillNtupleDColumn(1, 10, fPosDecay[2] / cm);
+  analysisManager->FillNtupleDColumn(1, 11, primary->GetSizeXY() / cm);
+  analysisManager->FillNtupleDColumn(1, 12, primary->GetSizeZ() / cm);
   analysisManager->AddNtupleRow(0);
+  analysisManager->AddNtupleRow(1);
+  analysisManager->AddNtupleRow(2);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -34,5 +34,6 @@
 constexpr G4int kNofEcalLayers = 16;
 constexpr G4int kNofEcalBars = 24;
 constexpr G4int kNofEcalCells = kNofEcalLayers * kNofEcalBars;
+constexpr G4int kNofSecParticles = 1000;
 
 #endif
