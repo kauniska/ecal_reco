@@ -196,8 +196,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
   }
   
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();    
-  analysisManager->FillH1(1,EtotCalor);
-  analysisManager->FillH1(2,EvisCalor);
+  analysisManager->FillH1(1,EtotCalor / MeV);
+  analysisManager->FillH1(2,EvisCalor / MeV);
 
   G4double Ebeam = primary->GetParticleGun()->GetParticleEnergy();
   G4double Eleak = Ebeam - EtotCalor;
@@ -209,7 +209,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
      G4int kScint = it->first;
 	 G4int iScint = kScint%1000;
      G4double Evis = it->second;
-	 analysisManager->FillH1(5,iScint+0.5,Evis);
+	 analysisManager->FillH1(5,iScint+0.5,Evis / MeV);
   }
 
   // Ecalorimeters hits
