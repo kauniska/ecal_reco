@@ -162,7 +162,10 @@ class Track:
 
         fit = self.get_tracks()
         self.hits_index = self.get_indices(None, False)
-        self.reduced_chi2 = self.chi2() / self.n_freedom
+        if self.n_freedom > 0:
+            self.reduced_chi2 = self.chi2() / self.n_freedom
+        else:
+            self.reduced_chi2 = 0
         if plot:
             fig, axs = plt.subplots(1, 2)
             fig.set_size_inches(12, 3, forward=True)
@@ -245,9 +248,10 @@ class Track:
         coord_x_max = round(xmax//width + 1)
 
         z_i = []
-        for i in range(n_layers):
-            z_center = coord_to_pos_z(i+1,self.hits[0].is_sidex)
-            z_i.append([z_center-thickness/2,z_center+thickness/2])
+        if (len(self.hits) > 0):
+            for i in range(n_layers):
+                z_center = coord_to_pos_z(i+1,self.hits[0].is_sidex)
+                z_i.append([z_center-thickness/2,z_center+thickness/2])
 
         for j in range(coord_x_min,coord_x_max+1):
             if self.t == 0:
