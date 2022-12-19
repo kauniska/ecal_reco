@@ -114,53 +114,69 @@ void PrimaryGeneratorAction::SetDefaultKinematic()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void PrimaryGeneratorAction::SetRandomCosmic()
+{
+  G4double maxXY = 0.49 * (Detector->GetCalorSizeXY());
+  x0 = 2. * maxXY * (G4UniformRand() - 0.5) / 2.; // x at the top of the ecal
+  y0 = 2. * maxXY * (G4UniformRand() - 0.5) / 2.; // y at the top of the ecal
+  z0 = particleGun->GetParticlePosition().z();
+  if (std::abs(x0) > maxXY)
+  {
+    x0 = maxXY;
+  }
+  if (std::abs(y0) > maxXY)
+  {
+    y0 = maxXY;
+  }
+  theta = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5); // angle to vertical
+  phi = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5);
+  // G4double max_energy = 100; // in GeV
+  // G4double min_energy = 1;   // in GeV
+  // energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy))); // old, for cosmics
+  energy = 4 * GeV + 0.14 * GeV * G4ExpoRand(); // for cosmics
+}
+
+void PrimaryGeneratorAction::SetDecay()
+{
+  x0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm;;
+  y0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm;;
+  z0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm; // 2 * parenthesis is uniform distribution between -1 and +1
+  theta = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+  phi = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+  energy = 107. * MeV; // for decays
+}
+
+void PrimaryGeneratorAction::SetMIP()
+{
+  G4ThreeVector position = particleGun->GetParticlePosition();
+  G4double maxXY = 0.49 * (Detector->GetCalorSizeXY());
+  x0 = 2. * maxXY * (G4UniformRand() - 0.5) / 2.; // x at the top of the ecal
+  y0 = 2. * maxXY * (G4UniformRand() - 0.5) / 2.; // y at the top of the ecal
+  z0 = position.z();
+  if (std::abs(x0) > maxXY)
+  {
+    x0 = maxXY;
+  }
+  if (std::abs(y0) > maxXY)
+  {
+    y0 = maxXY;
+  }
+  theta = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+  phi = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+  energy = 4. * GeV; // for MIPs
+}
+
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 {
   //this function is called at the begining of event
   //
   //randomize beam, if requested.
   //
-  if (beam > 0.) 
-    {
-      G4ThreeVector position = particleGun->GetParticlePosition();    
-      G4double maxXY = 0.49*(Detector->GetCalorSizeXY());
-      x0 = 2. * maxXY * (G4UniformRand() - 0.5) / 2.; // x at the top of the ecal
-      y0 = 2. * maxXY * (G4UniformRand() - 0.5) / 2.; // y at the top of the ecal
-      // x0 = position.x() + (G4UniformRand() - 0.5) * beam;
-      // y0 = position.y() + (G4UniformRand() - 0.5) * beam;
-      G4double z0 = position.z();
-      // G4double z0 = -Detector->GetCalorThickness() / 2.;
-      // G4double z0 = 100. * km;
-      if (std::abs(x0) > maxXY) {
-        x0 = maxXY;
-      }
-      if (std::abs(y0) > maxXY) {
-        y0 = maxXY;
-      }
-      theta = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5); // angle to vertical
-      phi = 2. * atan(maxXY / z0) * (G4UniformRand() - 0.5);
-      theta = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
-      phi = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
-      x0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm;;
-      y0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm;;
-      z0 = 5.5 * 2 * (G4UniformRand() - 0.5) * cm; // 2 * parenthesis is uniform distribution between -1 and +1
-      particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-      // particleGun->SetParticlePosition(position);
-      particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
-      // particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., -1));
-      // G4double max_energy = 100; // in GeV
-      // G4double min_energy = 1;   // in GeV
-      // energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy))); // old, for cosmics
-      // energy = 4 * GeV + 0.14 * GeV * G4ExpoRand(); // for cosmics
-      // energy = 107. * MeV; // for decays
-      energy = 4. * GeV; // for MIPs
-      particleGun->SetParticleEnergy(energy);
-      particleGun->GeneratePrimaryVertex(anEvent);
-    }
-    else {
-      particleGun->GeneratePrimaryVertex(anEvent);
-    }
-
+  SetMIP();
+  particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
+  particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
+  particleGun->SetParticleEnergy(energy);
+  particleGun->GeneratePrimaryVertex(anEvent);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

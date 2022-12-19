@@ -48,7 +48,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   public:
     void SetDefaultKinematic();
-    void SetRndmBeam(G4double val) { beam = val;} 
+    void SetRandomCosmic();
+    void SetDecay();
+    void SetMIP();
+    void SetRndmBeam(G4double val) { beam = val; }
     void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() {return particleGun;};
     G4double GetTheta() const { return theta;}
@@ -68,6 +71,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double phi = 0.; // xy plane angle
     G4double x0 = 0.; // x position at the top
     G4double y0 = 0.; // y position at the top
+    G4double z0 = 0.; // z position a the top
     G4double energy = 2. * GeV; // energy of particle
     
     PrimaryGeneratorMessenger* gunMessenger; 
