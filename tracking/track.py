@@ -318,7 +318,7 @@ class Track:
         # physical state vector
         f.x = np.array([[pos_init[0]], # x
                         [pos_init[1]], # z
-                        [-self.t], # v_x
+                        [0], # v_x
                         [-1.]]) #v_z
         #  propagation matrix
         f.F = np.array([[1., 0., Delta_z, 0.],
@@ -329,18 +329,19 @@ class Track:
         f.H = np.array([[1., 0., 0., 0.],
                         [0., 1., 0., 0.]])
         # covariance matrix # TODO: find right value
-        f.P = np.array([[width, 0., 0., 0.],
-                        [0., thickness, 0., 0.],
+        f.P = np.array([[1., 0., 0., 0.],
+                        [0., 1., 0., 0.],
                         [0., 0., 1., 0.],
                         [0., 0., 0., 1.]])
         # measurement noise matrix
-        f.R = np.array([[0.01, 0.], # x
-                        [0., 0.01]]) # z
+        f.R = np.array([[width, 0.], # x
+                        [0., thickness]]) # z
+       
         #  process noise, # TODO: find right value
         d = Delta_z*(1+self.t**2)**0.5
         X_0 = 4/3*total_height
-        theta = 13.6/1000*(d/X_0)**0.5*(1+0.038*np.log(d/X_0))
-        print("d = ", d)
+        theta = 13.6/1000*(d/X_0)**0.5*(1+0.038*np.log(d/X_0))  # Formula for mean deflection when diffusion through matter 
+ 
         f.Q = np.array([[theta**2*d**2, 0., theta**2*d, 0.],
                         [0., theta**2*d**2, 0., theta**2*d],
                         [theta**2*d, 0., theta**2, 0.],
