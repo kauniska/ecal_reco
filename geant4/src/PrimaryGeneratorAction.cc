@@ -161,7 +161,8 @@ void PrimaryGeneratorAction::SetMIP()
   {
     y0 = maxXY;
   }
-  theta = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+  G4double max_theta = atan(maxXY/(z0-Detector->GetCalorThickness()/2.));
+  theta = max_theta * 2 * (G4UniformRand() - 0.5);
   phi = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
   energy = 4. * GeV; // for MIPs
 }
