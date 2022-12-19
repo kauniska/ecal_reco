@@ -344,7 +344,6 @@ class Track:
         d = Delta_z*(1+self.t**2)**0.5
         X_0 = 4/3*total_height
         theta = 13.6/1000*(d/X_0)**0.5*(1+0.038*np.log(d/X_0))
-        print("d = ", d)
         f.Q = np.array([[theta**2*d**2, 0., theta**2*d, 0.],
                         [0., theta**2*d**2, 0., theta**2*d],
                         [theta**2*d, 0., theta**2, 0.],
