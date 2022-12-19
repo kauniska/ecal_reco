@@ -152,8 +152,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       // G4double min_energy = 1;   // in GeV
       // energy = 1.0 * GeV * exp(log(min_energy) + G4UniformRand() * (log(max_energy / min_energy))); // old, for cosmics
       // energy = 4 * GeV + 0.14 * GeV * G4ExpoRand(); // for cosmics
-      energy = 107. * MeV; // for decays
-      // energy = 100. * GeV; // for MIPs
+      // energy = 107. * MeV; // for decays
+      energy = 4. * GeV; // for MIPs
       particleGun->SetParticleEnergy(energy);
       particleGun->GeneratePrimaryVertex(anEvent);
     }
