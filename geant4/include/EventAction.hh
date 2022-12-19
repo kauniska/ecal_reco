@@ -71,6 +71,9 @@ class EventAction : public G4UserEventAction
     G4int GetProcessID() {return fProcessID;};
     void SetDecayPosition(const G4ThreeVector& pos) {fPosDecay = pos;}
 
+    std::vector<G4double>& GetEdepElectron() { return fEdepElectron;}
+    std::vector<G4double>& GetEdepMuons() { return fEdepMuon;}  
+
     std::vector<G4double>& GetElectronEnergies() { return fElectronEnergies;}
     std::vector<G4double>& GetVertexEnergies() { return fVertexEnergies;}
     std::vector<G4int> &GetElectronLayers() { return fElectronLayers; }
@@ -106,6 +109,8 @@ class EventAction : public G4UserEventAction
     std::vector<G4int> fEcalBarID = std::vector<G4int>(int(kNofEcalCells), -1);
     std::vector<G4int> fEcalPDG = std::vector<G4int>(int(kNofEcalCells), -1);
     std::vector<G4int> fEcalCopyNo = std::vector<G4int>(int(kNofEcalCells), -1);
+    std::vector<G4double> fEdepElectron = std::vector<G4double>(int(kNofEcalCells), 0.);
+    std::vector<G4double> fEdepMuon = std::vector<G4double>(int(kNofEcalCells), 0.);
     std::vector<G4double> fElectronEnergies;// = std::vector<G4double>(int(kNofSecParticles), -1);
     std::vector<G4double> fVertexEnergies; // = std::vector<G4double>(int(kNofSecParticles), -1);
     std::vector<G4int> fElectronLayers;// = std::vector<G4int>(int(kNofEcalCells), -1);

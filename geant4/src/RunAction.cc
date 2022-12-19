@@ -69,6 +69,8 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   // analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalBars()); // 5
   analysisManager->CreateNtupleIColumn(0, "barID", fEventAction->GetEcalCopyNo()); // 5 3
   analysisManager->CreateNtupleIColumn(0, "Nhits", fEventAction->GetEcalHits());   // 6 4
+  analysisManager->CreateNtupleDColumn(0, "Edep_e", fEventAction->GetEdepElectron()); // 7 5
+  analysisManager->CreateNtupleDColumn(0, "Edep_mu", fEventAction->GetEdepMuons()); // 7 5
   analysisManager->FinishNtuple(0);
 
   // create ROOT tree for run data

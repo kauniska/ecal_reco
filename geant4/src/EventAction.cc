@@ -224,7 +224,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
   for (unsigned long i = 0; i < hc->GetSize(); ++i) {
     G4double edep = 0.;
 
-    auto hit = static_cast<EcalHit *>(hc->GetHit(i));
+    EcalHit* hit = static_cast<EcalHit *>(hc->GetHit(i));
     edep = hit->GetEdep();
 
     if (edep > 0.) {
@@ -233,6 +233,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
     }
 
     fEcalEdep[i] = edep / MeV;
+    fEdepElectron[i] = hit->GetElectronEdep() / MeV;
+    fEdepMuon[i] = hit->GetMuonEdep() / MeV;
     fEcalHits[i] = hit->GetHits();
     fEcalLayerID[i] = hit->GetLayerID();
     fEcalBarID[i] = hit->GetBarID();
