@@ -95,8 +95,6 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
   analysisManager->CreateNtupleDColumn(2, "E", fEventAction->GetElectronEnergies()); // 0
   analysisManager->CreateNtupleDColumn(2, "Vertex_E", fEventAction->GetVertexEnergies());
   analysisManager->CreateNtupleIColumn(2, "muID", fEventAction->GetMuonIDs()); // 1
-  analysisManager->CreateNtupleIColumn(2, "e_layer", fEventAction->GetElectronLayers());   // 0
-  analysisManager->CreateNtupleIColumn(2, "e_row", fEventAction->GetElectronRows());   // 0
   analysisManager->FinishNtuple(2);
 
   analysisManager->SetActivation(false); // enable inactivation of histograms

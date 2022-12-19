@@ -71,8 +71,6 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
   if (track->GetParticleDefinition()->GetParticleName() == "mu-"\
     || track->GetParticleDefinition()->GetParticleName() == "mu+"\
     || track->GetParticleDefinition()->GetParticleName() == "pi0")
-    //|| track->GetParticleDefinition()->GetParticleName() == "e-"\
-    //|| track->GetParticleDefinition()->GetParticleName() == "e+")
   {
     const G4VProcess *proc = track->GetCreatorProcess();
     if (proc != nullptr) // nullptr if created by gun

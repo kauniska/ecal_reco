@@ -139,14 +139,12 @@ void EventAction::SumDeStep(G4int iModule, G4int iLayer, G4int iScint,
 
 void EventAction::SetElectronEnergy(G4int parentID, G4double E)
 {
-  int index = -1;
-  for (int i = 0; i < fMuonIDs.size(); i++) {
-    if (parentID == fMuonIDs[i]) {
-      index = i; // we don't do anything if muon already in list
-    }
-  }
+  G4int index = SetMuonID(parentID); // return -1 if new muon, return index of muon otherwise
   if (index == -1) {
     fMuonIDs.push_back(parentID);
+    fElectronEnergies.push_back(E);
+  }  else if (index >= fElectronEnergies.size()) {
+    G4cout << "shouldn't happen" << G4endl;
     fElectronEnergies.push_back(E);
   } else {
     fElectronEnergies[index] = E;
@@ -155,32 +153,29 @@ void EventAction::SetElectronEnergy(G4int parentID, G4double E)
 
 void EventAction::SetVertexEnergy(G4int parentID, G4double E)
 {
-  int index = -1;
-  for (int i = 0; i < fMuonIDs.size(); i++)
-  {
-    if (parentID == fMuonIDs[i])
-    {
-      index = i; // we don't do anything if muon already in list
-    }
-  }
-  if (index == -1)
-  {
+  G4int index = SetMuonID(parentID); // return -1 if new muon, return index of muon otherwise
+  if (index == -1) {
     fMuonIDs.push_back(parentID);
     fVertexEnergies.push_back(E);
-  }
-  else if (index >= fVertexEnergies.size()) {
+  } else if (index >= fVertexEnergies.size()) {
     fVertexEnergies.push_back(E);
   } else  {
     fVertexEnergies[index] = E;
   }
 }
 
-void EventAction::SetElectronLayer(G4int parentID, G4int layer)
-{}
-void EventAction::SetElectronRow(G4int parentID, G4int row)
-{}
-void EventAction::SetMuonID(G4int ID)
-{}
+G4int EventAction::SetMuonID(G4int ID)
+{
+  int index = -1;
+  for (int i = 0; i < fMuonIDs.size(); i++)
+  {
+    if (ID == fMuonIDs[i])
+    {
+      index = i; // we don't do anything if muon already in list
+    }
+  }
+  return index;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
