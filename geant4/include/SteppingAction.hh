@@ -58,7 +58,7 @@ class SteppingAction : public G4UserSteppingAction
     G4LogicalVolume* lvol_world;
     G4LogicalVolume* lvol_module;
     G4LogicalVolume* lvol_layer;
-    G4LogicalVolume* lvol_fiber;
+    G4LogicalVolume* lvol_scint;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

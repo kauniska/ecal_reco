@@ -32,6 +32,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
+#include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
 class DetectorConstruction;
@@ -50,11 +51,24 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetRndmBeam(G4double val) { beam = val;} 
     void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() {return particleGun;};
-    
-  private:
-    G4ParticleGun*         particleGun;
+    G4double GetTheta() const { return theta;}
+    G4double GetPhi() const { return phi;}
+    G4double GetTx() const { return tan(theta) * cos(phi);}
+    G4double GetTy() const { return tan(theta) * sin(phi); }
+    G4double GetX0() const;
+    G4double GetY0() const;
+    G4double GetEnergy() const { return energy;}
+    G4double GetSizeXY() const;
+    G4double GetSizeZ() const;
+
+  private : G4ParticleGun *particleGun;
     DetectorConstruction*  Detector;
     G4double               beam;          //lateral beam extension
+    G4double theta = 0.; // angle from vertical
+    G4double phi = 0.; // xy plane angle
+    G4double x0 = 0.; // x position at the top
+    G4double y0 = 0.; // y position at the top
+    G4double energy = 2. * GeV; // energy of particle
     
     PrimaryGeneratorMessenger* gunMessenger; 
 };

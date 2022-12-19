@@ -29,6 +29,9 @@
 
 #include "DetectorConstruction.hh"
 
+#include "EcalSD.hh"
+#include "Constants.hh"
+
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4Material.hh"
@@ -39,36 +42,41 @@
 #include "G4PVReplica.hh"
 #include "G4Transform3D.hh"
 #include "G4RotationMatrix.hh"
-
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4SolidStore.hh"
-
+#include "G4SDManager.hh"
+#include "G4VSensitiveDetector.hh"
 #include "G4VisAttributes.hh"
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
-:fiberMat(0),lvol_fiber(0), absorberMat(0),lvol_layer(0),
- moduleMat(0),lvol_module(0), calorimeterMat(0),lvol_calorimeter(0),
- worldMat(0),pvol_world(0), defaultMat(0)
+: scintMat(0),lvol_scint(0), absorberMat(0),lvol_layer(0),
+  moduleMat(0),lvol_module(0), calorimeterMat(0),lvol_calorimeter(0),
+  worldMat(0),pvol_world(0), defaultMat(0)
 {
   // materials
   DefineMaterials();
   
   // default parameter values of calorimeter
   //
-  fiberDiameter       = 1.13*mm; 	//1.08*mm
-  nbOfFibers          = 490;		//490
-  distanceInterFibers = 1.35*mm;	//1.35*mm
-  layerThickness      = 1.73*mm;	//1.68*mm  
-  milledLayer         = 1.00*mm;    //1.40*mm ?
-  nbOfLayers          = 10;		    //10
-  nbOfModules         = 9;		    //9
-     
-  fiberLength         = (nbOfFibers+0.5)*distanceInterFibers;	//662.175*mm
+  scintDiameter       = 1.13*mm; 	//1.08*mm
+  nbOfScints          = kNofEcalBars;		//490
+  scintWidth          = 16.*mm;	//1.35*mm
+  scintHeight         = 4.*mm;
+  scintLength         = 384. * mm;
+  gapSize             = 1. * mm;                // 662.175*mm
+  nbOfLayers          = 1;		    //10
+  nbOfModules         = kNofEcalLayers;		    //9
+  leadThickness       = 4.*mm;
+  aluThickness        = 1.*mm;
+  layerThickness      = scintHeight + 2*aluThickness + leadThickness; // 1.68*mm
+  shieldThickness     = 10. *mm;
+  moduleThickness     = layerThickness;
+  calorThickness      = moduleThickness * nbOfModules;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -99,17 +107,20 @@ void DetectorConstruction::DefineMaterials()
 
   // Lead
   //
-  G4Material* Pb = new G4Material("Lead", 82., 207.20*g/mole, density= 0.98*11.20*g/cm3);
+  G4Material* Pb =   
+  new G4Material("Lead", 82., 207.20*g/mole, density= 0.98*11.20*g/cm3);
 
-  // Aluminium
-  G4Material* Al = new G4Material("Aluminium", 13., 26.98 * g / mole, density = 2.7 * g / cm3);
+  //Aluminium
+  //
+  G4Material* Al =
+      new G4Material("aluminium", 13.,26.98 * g / mole, density = 2.7 * g / cm3);
 
   // Scintillator
   //
   G4Material* Sci = 
   new G4Material("Scintillator", density= 1.032*g/cm3, ncomponents=2);
-  Sci->AddElement(C, natoms=8);
-  Sci->AddElement(H, natoms=8);
+  Sci->AddElement(C, natoms=9);
+  Sci->AddElement(H, natoms=10);
   
   Sci->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
 
@@ -132,12 +143,12 @@ void DetectorConstruction::DefineMaterials()
   //attribute materials
   //
   defaultMat     = Vacuum;  
-  fiberMat       = Sci;
+  scintMat       = Sci;
   absorberMat    = Pb;
-  gapMat         = Al;
   moduleMat      = defaultMat;
   calorimeterMat = defaultMat;
   worldMat       = defaultMat;
+  shieldingMat   = Al;
 
   // print table
   //      
@@ -155,59 +166,110 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
   G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
   
-  // fibers
+  // scints
   //
-  G4Tubs*
-  svol_fiber = new G4Tubs("fiber",			//name
-                         0*mm, 0.5*fiberDiameter,	//r1, r2
-			 0.5*fiberLength,		//half-length 
-			 0., twopi);			//theta1, theta2
+  G4Box* svol_scint = new G4Box("scint",			//name
+                         0.5 * scintWidth, 0.5 * scintLength, 0.5 * scintHeight);
 			 
-  lvol_fiber = new G4LogicalVolume(svol_fiber,		//solid
-                                   fiberMat,		//material
-                                   "fiber");		//name
-				   
+  lvol_scint = new G4LogicalVolume(svol_scint,		//solid
+                                   scintMat,		//material
+                                   "scint");		//name
+
+  // Lead
+  //
+  G4double sizeZ = leadThickness;
+  G4double sizeY = scintLength + gapSize;
+  G4double sizeX = scintLength + gapSize;
+
+  G4Box* svol_lead = new G4Box("lead",                                // name
+                             0.5 * sizeX, 0.5 * sizeY, 0.5 * sizeZ); // size
+
+  lvol_lead = new G4LogicalVolume(svol_lead,  // solid
+                                   absorberMat, // material
+                                   "lead");    // name
+
+  // Al
+  //
+  sizeZ = aluThickness;
+  sizeY = scintLength + gapSize;
+  sizeX = scintLength + gapSize;
+
+  G4Box* svol_Al_layer = new G4Box("Al_layer",                                // name
+                             0.5 * sizeX, 0.5 * sizeY, 0.5 * sizeZ); // size
+
+  lvol_Al_layer = new G4LogicalVolume(svol_Al_layer,  // solid
+                                   absorberMat, // material
+                                   "Al_layer");    // name
+
   // layer
   //
-  G4double sizeX = layerThickness;
-  G4double sizeY = distanceInterFibers*nbOfFibers;
-  G4double sizeZ = fiberLength;
+  sizeZ = layerThickness;
+  sizeY = scintWidth*nbOfScints;
+  sizeX = scintLength;
   
-  G4Box*      
-  svol_layer = new G4Box("layer",			//name
+  G4Box* svol_layer = new G4Box("layer",			//name
                   0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
 
 
   lvol_layer = new G4LogicalVolume(svol_layer,		//solid
-                                   absorberMat,		//material
+                                   defaultMat,		//material
                                    "layer");		//name
 
-  // put fibers within layer
+  // put scints within layer
   //
-  G4double Xcenter = 0.;
-  G4double Ycenter = -0.5*(sizeY + distanceInterFibers);
-  
-  for (G4int k=0; k<nbOfFibers; k++) {
-    Ycenter += distanceInterFibers;
-    new G4PVPlacement(0,		   		//no rotation
-      		  G4ThreeVector(Xcenter,Ycenter,0.),    //position
-                      lvol_fiber,     		   	//logical volume	
-                      "fiber",	   			//name
-                      lvol_layer,        		//mother
-                      false,             		//no boulean operat
-                      k+1);               		//copy number
+  G4double Zcenter = -0.5 * layerThickness;
+  G4double Xcenter = -0.5 * (sizeX - scintWidth);
 
+  for (G4int k = 0; k < nbOfScints; k++)
+  {
+    G4ThreeVector pos = G4ThreeVector(Xcenter + k * scintWidth, 0., Zcenter + 0.5 * scintHeight);
+    new G4PVPlacement(0,
+                      pos,        // rotation+position
+                      lvol_scint, // logical volume
+                      "scint",    // name
+                      lvol_layer, // mother
+                      false,      // no boulean operat
+                      k + 1);
   }
-				   
+
+  Zcenter += scintHeight;
+  // put alu 1 in layer
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter + 0.5 * aluThickness), // rotation+position
+                    lvol_Al_layer,                      // logical volume
+                    "Al_layer",                         // name
+                    lvol_layer,                     // mother
+                    false,                          // no boulean operat
+                    0);
+
+  // put Lead in layer
+  Zcenter += aluThickness;
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter + 0.5 * leadThickness), // rotation+position
+                    lvol_lead,                                       // logical volume
+                    "lead",                                          // name
+                    lvol_layer,                                      // mother
+                    false,                                           // no boulean operat
+                    0);
+
+  // put Aluminium 2 in layer
+  Zcenter += leadThickness;
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter + 0.5 * aluThickness), // rotation+position
+                    lvol_Al_layer,                  // logical volume
+                    "Al_layer",                     // name
+                    lvol_layer,                     // mother
+                    false,                          // no boulean operat
+                    0);
+
   // modules
   //
-  moduleThickness = layerThickness*nbOfLayers + milledLayer;       
-  sizeX = moduleThickness;
-  sizeY = fiberLength;
-  sizeZ = fiberLength;
+  moduleThickness = layerThickness*nbOfLayers;       
+  sizeZ = moduleThickness;
+  sizeY = scintLength;
+  sizeX = scintLength;
   
-  G4Box*      
-  svol_module = new G4Box("module",			//name
+  G4Box* svol_module = new G4Box("module",			//name
                   0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
 
   lvol_module = new G4LogicalVolume(svol_module,	//solid
@@ -216,31 +278,43 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
 
   // put layers within module
   //
-  Xcenter = -0.5*(nbOfLayers+1)*layerThickness;
-  Ycenter =  0.25*distanceInterFibers;
+  Zcenter = -0.5*(nbOfLayers+1)*layerThickness;
+  G4double Ycenter =  0.25*scintWidth;
   
   for (G4int k=0; k<nbOfLayers; k++) {
-    Xcenter += layerThickness;
+    Zcenter += layerThickness;
     Ycenter  = - Ycenter;
     new G4PVPlacement(0,		   		//no rotation
-      		  G4ThreeVector(Xcenter,Ycenter,0.),    //position
+      		  G4ThreeVector(0.,Ycenter,Zcenter),    //position
                       lvol_layer,     		   	//logical volume	
                       "layer",	   			//name
                       lvol_module,        		//mother
                       false,             		//no boulean operat
                       k+1);               		//copy number
 
-  }				   				   
+  }
+
+  // create top and bottom shielding plates
+  sizeY = scintLength + shieldThickness;
+  sizeX = scintLength + shieldThickness;
+  G4Box *svol_topPlate = new G4Box("topPlate", 0.5 * sizeX, 0.5 * sizeY, 0.5 * shieldThickness);
+  lvol_topPlate = new G4LogicalVolume(svol_topPlate, shieldingMat, "topPlate");
+
+  // create side shielding plates
+  sizeZ = calorThickness;
+  sizeX = scintLength + shieldThickness;
+  G4Box* svol_sidePlateXZ = new G4Box("sidePlateXZ", 0.5 * sizeX, 0.5 * shieldThickness, 0.5 * sizeZ);
+  lvol_sidePlateXZ = new G4LogicalVolume(svol_sidePlateXZ, shieldingMat, "sidePlateXZ");
+  sizeY = scintLength;
+  G4Box* svol_sidePlateYZ = new G4Box("sidePlateYZ", 0.5 * shieldThickness, 0.5 * sizeY, 0.5 * sizeZ);
+  lvol_sidePlateYZ = new G4LogicalVolume(svol_sidePlateYZ, shieldingMat, "sidePlateYZ");
 
   // calorimeter
-  //
-  calorThickness = moduleThickness*nbOfModules;
-  sizeX = calorThickness;
-  sizeY = fiberLength;
-  sizeZ = fiberLength;
+  sizeZ = calorThickness + shieldThickness;
+  sizeY = scintLength + shieldThickness;
+  sizeX = scintLength + shieldThickness;
   
-  G4Box*      
-  svol_calorimeter = new G4Box("calorimeter",		//name
+  G4Box* svol_calorimeter = new G4Box("calorimeter",		//name
                   0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
 
 
@@ -249,15 +323,12 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                                    "calorimeter");		//name  
 
   // put modules inside calorimeter
-  //  
-  Xcenter = -0.5*(calorThickness + moduleThickness);
-  
-
+  Zcenter = -0.5*(calorThickness + moduleThickness);
   for (G4int k=0; k<nbOfModules; k++) {
-    Xcenter += moduleThickness;		  
+    Zcenter += moduleThickness;		  
     G4RotationMatrix rotm;                    //rotation matrix to place modules    
-    if ((k+1)%2 == 0) rotm.rotateX(90*deg);
-	G4Transform3D transform(rotm, G4ThreeVector(Xcenter,0.,0.));    
+    if ((k+1)%2 == 0) rotm.rotateZ(90*deg);
+	  G4Transform3D transform(rotm, G4ThreeVector(0.,0.,Zcenter));    
     new G4PVPlacement(transform,		   		//rotation+position
                       lvol_module,	     		//logical volume	
                       "module", 	   		    //name
@@ -265,18 +336,66 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
                       false,             		//no boulean operat
                       k+1);               		//copy number
   }
+  // put top and bottom shielding plates
+  Zcenter = 0.5 * (calorThickness + shieldThickness);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., Zcenter), // top
+                    lvol_topPlate,
+                    "topPlate",
+                    lvol_calorimeter,
+                    false,
+                    0);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., 0., -Zcenter), // bottom
+                    lvol_topPlate,
+                    "topPlate",
+                    lvol_calorimeter,
+                    false,
+                    1);
+
+  // put in XZ sides plates
+  Ycenter = 0.5 * (scintLength + gapSize + shieldThickness);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., Ycenter, 0.), // bottom
+                    lvol_sidePlateXZ,
+                    "sidePlateXZ",
+                    lvol_calorimeter,
+                    false,
+                    0);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0., -Ycenter, 0.), // bottom
+                    lvol_sidePlateXZ,
+                    "sidePlateXZ",
+                    lvol_calorimeter,
+                    false,
+                    1);
+
+  // put in YZ sides plates
+  Xcenter = 0.5 * (scintLength + gapSize + shieldThickness);
+  new G4PVPlacement(0,
+                    G4ThreeVector(Xcenter, 0., 0.), // bottom
+                    lvol_sidePlateYZ,
+                    "sidePlateYZ",
+                    lvol_calorimeter,
+                    false,
+                    0);
+  new G4PVPlacement(0,
+                    G4ThreeVector(-Xcenter, 0., 0.), // bottom
+                    lvol_sidePlateYZ,
+                    "sidePlateYZ",
+                    lvol_calorimeter,
+                    false,
+                    1);
 
   // world
-  //
-  sizeX = 1.2*calorThickness;
-  sizeY = 1.2*fiberLength;
-  sizeZ = 1.2*fiberLength;
-  
-  worldSizeX = sizeX;
-  
+  worldSizeZ = 10.*calorThickness;
+  sizeY = 10.*scintLength;
+  sizeX = 10.*scintLength;
+  // worldSizeZ = 100. * km;
+
   G4Box*      
   svol_world = new G4Box("world",			//name
-                  0.5*sizeX, 0.5*sizeY, 0.5*sizeZ);	//size
+                  0.5*sizeX, 0.5*sizeY, 0.5*worldSizeZ);	//size
 
   lvol_world = new G4LogicalVolume(svol_world,		//solid
                                    worldMat,		//material
@@ -304,7 +423,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructCalorimeter()
   
   // Visualization attributes
   //
-  lvol_fiber->SetVisAttributes (G4VisAttributes::GetInvisible());  
+  lvol_scint->SetVisAttributes (G4VisAttributes::GetInvisible());  
   lvol_layer->SetVisAttributes (G4VisAttributes::GetInvisible());
   lvol_world->SetVisAttributes (G4VisAttributes::GetInvisible());
     
@@ -328,24 +447,20 @@ void DetectorConstruction::PrintCalorParameters()
      << " thickness of " << absorberMat->GetName();    
      
   G4cout 
-     << "\n ---> A Layer includes " << nbOfFibers << " fibers of " 
-     << fiberMat->GetName();
+     << "\n ---> A Layer includes " << nbOfScints << " scints of " 
+     << scintMat->GetName();
      
   G4cout 
-     << "\n      ---> diameter : " << G4BestUnit(fiberDiameter,"Length")
-     << "\n      ---> length   : " << G4BestUnit(fiberLength,"Length")
-     << "\n      ---> distance : " << G4BestUnit(distanceInterFibers,"Length");
-     
-  G4cout  
-     << "\n ---> The milled Layer is " << G4BestUnit(milledLayer,"Length")  
-     << " thickness of " << absorberMat->GetName();
+     << "\n      ---> diameter : " << G4BestUnit(scintDiameter,"Length")
+     << "\n      ---> length   : " << G4BestUnit(scintLength,"Length")
+     << "\n      ---> distance : " << G4BestUnit(scintWidth,"Length");
      
   G4cout 
    << "\n\n ---> Module thickness " << G4BestUnit(moduleThickness,"Length");
   
   G4cout 
    << "\n\n ---> Total calor thickness " << G4BestUnit(calorThickness,"Length")
-   <<   "\n      Tranverse size        " << G4BestUnit(fiberLength,"Length");
+   <<   "\n      Tranverse size        " << G4BestUnit(scintLength,"Length");
 
   G4cout << "\n-------------------------------------------------------------\n";
   G4cout << G4endl;
@@ -370,6 +485,13 @@ void DetectorConstruction::ConstructSDandField()
         fFieldMessenger.Put( msg );
         
     }
+    // sensitive detectors -----------------------------------------------------
+    auto sdManager = G4SDManager::GetSDMpointer();
+    G4String SDname;
+    auto ecal = new EcalSD(SDname = "/EcalSD");
+    sdManager->AddNewDetector(ecal);
+    // lvol_scint->SetSensitiveDetector(ecal);
+    lvol_scint->SetSensitiveDetector(ecal);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

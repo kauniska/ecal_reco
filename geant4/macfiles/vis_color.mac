@@ -1,0 +1,37 @@
+/control/alias CPb "0 0.1 0.1 0.1 0.5"
+/control/alias Cscint "0  0  0.5  0  1"
+/control/alias CAl "0 0.5 0.5 0 0.1"
+/control/alias Ctransparent "0 0.1 0.1 0.1 0.1"
+
+
+/vis/viewer/set/style surface
+
+/vis/viewer/set/lightsThetaPhi 60 120 deg
+
+/vis/geometry/set/visibility calorimeter -1 1 
+/vis/geometry/set/colour calorimeter  {Ctransparent}
+/vis/geometry/set/colour module {Ctransparent}
+/vis/geometry/set/colour layer {Ctransparent}
+/vis/geometry/set/colour lead {CPb}
+/vis/geometry/set/colour Al_layer {CAl}
+/vis/geometry/set/colour scint {Cscint}
+
+# Draw smooth trajectories at end of event, showing trajectory points
+# as markers 2 pixels wide:
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set e- green
+/vis/modeling/trajectories/drawByParticleID-0/set e+ green
+/vis/modeling/trajectories/drawByParticleID-0/set mu- blue
+/vis/modeling/trajectories/drawByParticleID-0/set mu+ blue
+/vis/modeling/trajectories/drawByParticleID-0/set photon red
+/vis/modeling/trajectories/drawByParticleID-0/set gamma red
+/vis/modeling/trajectories/drawByParticleID-0/set proton cyan
+/vis/modeling/trajectories/drawByParticleID-0/set neutron cyan
+/vis/modeling/trajectories/drawByParticleID-0/set pi+ yellow
+/vis/modeling/trajectories/drawByParticleID-0/set pi- yellow
+/vis/modeling/trajectories/drawByParticleID-0/set pi0 yellow

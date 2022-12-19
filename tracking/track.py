@@ -85,7 +85,7 @@ class Track:
         for i in range(16):
             bins_z = np.append(bins_z,[bins_z[-1]+thickness, bins_z[-1]+thickness_screen])
             
-        axs[1].hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
+        axs.hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
         # axs.hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='magma')
         axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
         plt.xticks(np.linspace(1, 24, 6)*width)

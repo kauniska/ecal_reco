@@ -36,21 +36,23 @@
 #include "G4ComptonScattering.hh"
 #include "G4GammaConversion.hh"
 #include "G4PhotoElectricEffect.hh"
+#include "G4GammaConversionToMuons.hh"
 
 #include "G4eMultipleScattering.hh"
-#include "G4hMultipleScattering.hh"
-
 #include "G4eIonisation.hh"
 #include "G4eBremsstrahlung.hh"
 #include "G4eplusAnnihilation.hh"
+#include "G4ePairProduction.hh"
 
 #include "G4MuIonisation.hh"
 #include "G4MuBremsstrahlung.hh"
 #include "G4MuPairProduction.hh"
+#include "G4MuMultipleScattering.hh"
 
 #include "G4hIonisation.hh"
 #include "G4hBremsstrahlung.hh"
 #include "G4hPairProduction.hh"
+#include "G4hMultipleScattering.hh"
 
 #include "G4ionIonisation.hh"
 
@@ -68,8 +70,8 @@ PhysListEmStandard::PhysListEmStandard(const G4String& name)
     G4EmParameters* param = G4EmParameters::Instance();
     param->SetDefaults();
 	param->SetVerbose(0);
-    param->SetMinEnergy(100*eV);
-    param->SetMaxEnergy(100*TeV);
+    param->SetMinEnergy(10*eV);
+    param->SetMaxEnergy(10*TeV);
     param->SetNumberOfBinsPerDecade(10);
     param->SetMscStepLimitType(fUseSafety);
     param->SetStepFunction(0.2, 100*um);
@@ -100,7 +102,7 @@ void PhysListEmStandard::ConstructProcess()
       ph->RegisterProcess(new G4PhotoElectricEffect, particle);
       ph->RegisterProcess(new G4ComptonScattering,   particle);
       ph->RegisterProcess(new G4GammaConversion,     particle);
-      
+      ph->RegisterProcess(new G4GammaConversionToMuons, particle);
     } else if (particleName == "e-") {
       //electron
       ph->RegisterProcess(new G4eMultipleScattering, particle);

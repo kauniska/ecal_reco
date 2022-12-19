@@ -31,6 +31,7 @@
 #define TrackingAction_h 1
 
 #include "G4UserTrackingAction.hh"
+#include "EventAction.hh"
 #include "globals.hh"
 
 class DetectorConstruction;
@@ -39,16 +40,17 @@ class DetectorConstruction;
 
 class TrackingAction : public G4UserTrackingAction {
 
-  public:  
-    TrackingAction(DetectorConstruction*);
-    
-   ~TrackingAction() {};
+  public:
+    TrackingAction(DetectorConstruction *, EventAction *);
+
+    ~TrackingAction(){};
    
     void  PreUserTrackingAction(const G4Track*);   
     void PostUserTrackingAction(const G4Track*);
     
   private:
     DetectorConstruction*   detector;
+    EventAction* fEventAction;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

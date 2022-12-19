@@ -1,10 +1,12 @@
 {
     "files.associations": {
         "*.m": "matlab",
-        "plotHisto.C": "cpp"
+        "plotHisto.C": "cpp",
+        "plots.C": "cpp"
     },
     "python.analysis.extraPaths": [
         "./utils",
         "./tracking"
-    ]
+    ],
+    "cmake.sourceDirectory": "${workspaceFolder}/geant4"
 }

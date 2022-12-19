@@ -50,7 +50,8 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::BuildForMaster() const
 {
- SetUserAction(new RunAction(fDetector));
+  EventAction* eventAction = new EventAction(fDetector, nullptr);
+  SetUserAction(new RunAction(fDetector, eventAction));
 }
 
 
@@ -61,15 +62,15 @@ void ActionInitialization::Build() const
   PrimaryGeneratorAction* primary = new PrimaryGeneratorAction(fDetector);
   SetUserAction(primary);
  
-  RunAction* runaction = new RunAction(fDetector,primary);
+  EventAction* eventAction = new EventAction(fDetector, primary);
+  RunAction* runaction = new RunAction(fDetector, eventAction, primary);
   SetUserAction(runaction); 
   
-  EventAction* eventaction = new EventAction(fDetector,primary);
-  SetUserAction(eventaction);
+  SetUserAction(eventAction);
 
-  SetUserAction(new TrackingAction(fDetector));
+  SetUserAction(new TrackingAction(fDetector, eventAction));
 
-  SetUserAction(new SteppingAction(fDetector,eventaction));
+  SetUserAction(new SteppingAction(fDetector,eventAction));
 }  
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

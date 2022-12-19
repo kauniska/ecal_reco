@@ -1,21 +1,18 @@
 #
 # ------ GNU/WIN32 CYGWIN ------   !!! not supported !!!
-#                             Cygnus CygWin - gcc-9.2 and higher
-#                                       Windows 10
+#                             Cygnus CygWin - gcc-3.2 and higher
+#                                       Windows XP
+#
+# Stefano Agostinelli (agos001@pn.itnet.it) - IST Group, Genova
 #
 ifeq ($(G4SYSTEM),WIN32-g++)
   CXX       := g++
-  CXXFLAGS  := -Wall -Wno-non-virtual-dtor -Wno-long-long
-  CXXFLAGS  += -Wwrite-strings -Wpointer-arith -Woverloaded-virtual
-  CXXFLAGS  += -Wno-variadic-macros -Wshadow -pipe
-  CXXFLAGS  += -fno-trapping-math -ftree-vectorize -fno-math-errno
-  G4USE_STD17 := 1
-  CPPFLAGS  += -std=c++17
-  CXXFLAGS  += -std=c++17
+  CXXFLAGS  := -W -Wall -ansi -pedantic -Wno-non-virtual-dtor -Wno-long-long
+  CXXFLAGS  += -Wwrite-strings -Wpointer-arith -Woverloaded-virtual -pipe
   ifdef G4OPTIMISE
-    CXXFLAGS  += -O3
-    FCFLAGS   := -O3
-    CCFLAGS   := -O3
+    CXXFLAGS  += -O
+    FCFLAGS   := -O
+    CCFLAGS   := -O
   else
     ifdef G4DEBUG
       CXXFLAGS  += -g
@@ -55,7 +52,7 @@ ifeq ($(G4SYSTEM),WIN32-g++)
     X11FLAGS  := -I/usr/include/X11/extensions -I/usr/include/X11
   endif
   ifndef X11LIBS
-    X11LIBS   := -L/usr/X11R6/lib  -lXmu -lXt -lXext -lX11 -lSM -lICE
+    X11LIBS   := -L/usr/X11R6/lib  -lXmu -lXt -lXext -lX11 -lXi -lSM -lICE
   endif
   ifndef XMFLAGS
     XMFLAGS   := -I/usr/X11R6/include
@@ -73,7 +70,7 @@ ifeq ($(G4SYSTEM),WIN32-g++)
     OGLFLAGS  := -I$(OGLHOME)/include 
   endif
   ifndef OGLLIBS
-    OGLLIBS   := -L$(OGLHOME)/lib -lGL
+    OGLLIBS   := -L$(OGLHOME)/lib -lGLU -lGL
   endif
   define build-granular-shared-lib
     @libdir=`(cd $(@D);/bin/pwd)`; \
