@@ -128,7 +128,7 @@ class Track:
     def is_good_fit(self):
         return (self.chi2()/self.n_freedom < 2 * 3.841)
     
-    def find_track(self, sampling = 10, angle_sampling = 120, plot = False):
+    def find_track(self, sampling = 5, angle_sampling = 120, plot = False):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
 
         Args:

@@ -51,6 +51,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetRandomCosmic();
     void SetDecay();
     void SetMIP();
+    void SetPhaseSpaceScan();
     void SetRndmBeam(G4double val) { beam = val; }
     void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() {return particleGun;};

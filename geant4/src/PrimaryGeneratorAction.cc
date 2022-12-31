@@ -44,7 +44,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* det)
-:Detector(det)
+: Detector(det)
 {
   G4int n_particle = 1;
   particleGun  = new G4ParticleGun(n_particle);
@@ -167,13 +167,40 @@ void PrimaryGeneratorAction::SetMIP()
   energy = 4. * GeV; // for MIPs
 }
 
+void PrimaryGeneratorAction::SetPhaseSpaceScan()
+{
+  // G4ThreeVector position = particleGun->GetParticlePosition();
+  // z0 = position.z();
+  // G4double theta_x = 1.4 * 2 * (G4UniformRand() - 0.5); // -80° to 80°
+  // G4double theta_y = 1.4 * 2 * (G4UniformRand() - 0.5); // -80° to 80°
+  // theta = atan(sqrt(tan(theta_x) * tan(theta_x) + tan(theta_y) * tan(theta_y)));
+  // phi = acos(tan(theta_x)/tan(theta));
+  // x0 = z0 * tan(theta_x);
+  // y0 = z0 * tan(theta_y);
+  // energy = 4. * GeV;
+  G4ThreeVector position = particleGun->GetParticlePosition();
+  G4double maxXY = 0.49 * (Detector->GetCalorSizeXY());
+  x0 = 2. * maxXY * (G4UniformRand() - 0.5) * 2.; // x at the top of the ecal
+  y0 = 2. * maxXY * (G4UniformRand() - 0.5) * 2.; // y at the top of the ecal
+  z0 = 50. * mm + 0.5 * (Detector->GetCalorThickness());
+  G4double max_theta = abs(atan(x0 / (z0 - Detector->GetCalorThickness())));
+  if (abs(atan(y0 / (z0 - Detector->GetCalorThickness()))) < max_theta)
+  {
+    max_theta = abs(atan(y0 / (z0 - Detector->GetCalorThickness())));
+  }
+  G4cout << max_theta * 180 / M_PI << G4endl;
+  theta = abs(max_theta) * 2 * (G4UniformRand() - 0.5);
+  phi = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
+  energy = 4. * GeV;
+}
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 {
   //this function is called at the begining of event
   //
   //randomize beam, if requested.
   //
-  SetMIP();
+  SetPhaseSpaceScan();
   particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
   particleGun->SetParticleMomentumDirection(G4ThreeVector(sin(theta) * cos(phi), sin(theta) * sin(phi), -cos(theta)));
   particleGun->SetParticleEnergy(energy);

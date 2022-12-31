@@ -92,7 +92,7 @@ RunAction::RunAction(DetectorConstruction *det, EventAction *eventAction, Primar
 
   // create ROOT tree for electron decay data
   analysisManager->CreateNtuple("electrons", "electron info");
-  analysisManager->CreateNtupleDColumn(2, "E", fEventAction->GetElectronEnergies()); // 0
+  analysisManager->CreateNtupleDColumn(2, "E_e", fEventAction->GetElectronEnergies()); // 0
   analysisManager->CreateNtupleDColumn(2, "Vertex_E", fEventAction->GetVertexEnergies());
   analysisManager->CreateNtupleIColumn(2, "muID", fEventAction->GetMuonIDs()); // 1
   analysisManager->FinishNtuple(2);
