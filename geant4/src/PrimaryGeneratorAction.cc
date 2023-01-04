@@ -178,20 +178,17 @@ void PrimaryGeneratorAction::SetPhaseSpaceScan()
   // x0 = z0 * tan(theta_x);
   // y0 = z0 * tan(theta_y);
   // energy = 4. * GeV;
-  G4ThreeVector position = particleGun->GetParticlePosition();
-  G4double maxXY = 0.49 * (Detector->GetCalorSizeXY());
+  G4double maxXY = Detector->GetCalorSizeXY();
   x0 = 2. * maxXY * (G4UniformRand() - 0.5) * 2.; // x at the top of the ecal
   y0 = 2. * maxXY * (G4UniformRand() - 0.5) * 2.; // y at the top of the ecal
-  z0 = 50. * mm + 0.5 * (Detector->GetCalorThickness());
-  G4double max_theta = abs(atan(x0 / (z0 - Detector->GetCalorThickness())));
-  if (abs(atan(y0 / (z0 - Detector->GetCalorThickness()))) < max_theta)
-  {
-    max_theta = abs(atan(y0 / (z0 - Detector->GetCalorThickness())));
+  z0 = 50. * mm + 0.5 * Detector->GetCalorThickness();
+  if (x0 > 0) {
+    theta = -atan(sqrt(x0*x0 + y0*y0)/z0);
+  } else {
+    theta = atan(sqrt(x0 * x0 + y0 * y0) / z0);
   }
-  G4cout << max_theta * 180 / M_PI << G4endl;
-  theta = abs(max_theta) * 2 * (G4UniformRand() - 0.5);
-  phi = 2 * M_PI * 2 * (G4UniformRand() - 0.5);
-  energy = 4. * GeV;
+  phi = atan(y0/x0);
+  energy = 4. * GeV; 
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
