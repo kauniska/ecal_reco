@@ -123,12 +123,24 @@ class Track:
         tracks = self.get_tracks()
         hits.sort(key=lambda x: x[1])
         tracks.sort(key=lambda x: x[1])
-        return np.sum([(hit[0] - track[0])**2 / 0.5 for hit, track in zip(hits, tracks)])
+        if len(hits) == 0 or len(tracks) == 0:
+            return np.inf
+        c = 0
+        # this is necessary because the track and the hits may not begin on the same layer
+        # and because there might be multiple htis in one layer
+        for hit in hits:
+            for track in tracks:
+                if int(hit[1]) == int(track[1]):
+                    c += (hit[0] - track[0])**2 / width
+        return c
+                
+        # return np.sum([(hit[0] - track[0])**2 / width for hit, track in zip(hits, tracks)])
+
     
     def is_good_fit(self):
         return (self.chi2()/self.n_freedom < 2 * 3.841)
     
-    def find_track(self, sampling = 5, angle_sampling = 120, plot = False):
+    def find_track(self, sampling = 10, angle_sampling = 120, plot = False):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
 
         Args:
