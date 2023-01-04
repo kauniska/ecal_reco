@@ -3,7 +3,6 @@
 /control/alias CAl "0 0.5 0.5 0 0.1"
 /control/alias Ctransparent "0 0.1 0.1 0.1 0.1"
 
-
 /vis/viewer/set/style surface
 
 /vis/viewer/set/lightsThetaPhi 60 120 deg
@@ -21,7 +20,8 @@
 /vis/scene/add/trajectories smooth
 /vis/modeling/trajectories/create/drawByCharge
 /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
-/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 20
+/vis/viewer/set/globalLineWidthScale 5
 
 /vis/modeling/trajectories/create/drawByParticleID
 /vis/modeling/trajectories/drawByParticleID-0/set e- green

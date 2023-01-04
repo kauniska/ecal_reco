@@ -123,7 +123,19 @@ class Track:
         tracks = self.get_tracks()
         hits.sort(key=lambda x: x[1])
         tracks.sort(key=lambda x: x[1])
-        return np.sum([(hit[0] - track[0])**2 / 0.5 for hit, track in zip(hits, tracks)])
+        if len(hits) == 0 or len(tracks) == 0:
+            return np.inf
+        c = 0
+        # this is necessary because the track and the hits may not begin on the same layer
+        # and because there might be multiple htis in one layer
+        for hit in hits:
+            for track in tracks:
+                if int(hit[1]) == int(track[1]):
+                    c += (hit[0] - track[0])**2 / width
+        return c
+                
+        # return np.sum([(hit[0] - track[0])**2 / width for hit, track in zip(hits, tracks)])
+
     
     def is_good_fit(self):
         return (self.chi2()/self.n_freedom < 2 * 3.841)
@@ -162,7 +174,10 @@ class Track:
 
         fit = self.get_tracks()
         self.hits_index = self.get_indices(None, False)
-        self.reduced_chi2 = self.chi2() / self.n_freedom
+        if self.n_freedom > 0:
+            self.reduced_chi2 = self.chi2() / self.n_freedom
+        else:
+            self.reduced_chi2 = 0
         if plot:
             fig, axs = plt.subplots(1, 2)
             fig.set_size_inches(12, 3, forward=True)
@@ -245,9 +260,10 @@ class Track:
         coord_x_max = round(xmax//width + 1)
 
         z_i = []
-        for i in range(n_layers):
-            z_center = coord_to_pos_z(i+1,self.hits[0].is_sidex)
-            z_i.append([z_center-thickness/2,z_center+thickness/2])
+        if (len(self.hits) > 0):
+            for i in range(n_layers):
+                z_center = coord_to_pos_z(i+1,self.hits[0].is_sidex)
+                z_i.append([z_center-thickness/2,z_center+thickness/2])
 
         for j in range(coord_x_min,coord_x_max+1):
             if self.t == 0:
