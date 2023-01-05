@@ -114,13 +114,14 @@ class Track:
                 self.get_plot(ax)
             
 
-    def chi2(self):
+    def chi2(self, tracks = None):
         """Computes the chi^2 between the hits and the track
         Returns:
             float: chi^2
         """
         hits = self.get_hits_coords()
-        tracks = self.get_tracks()
+        if tracks is None:
+            tracks = self.get_tracks()
         hits.sort(key=lambda x: x[1])
         tracks.sort(key=lambda x: x[1])
         if len(hits) == 0 or len(tracks) == 0:
@@ -138,7 +139,7 @@ class Track:
 
     
     def is_good_fit(self):
-        return (self.chi2()/self.n_freedom < 2 * 3.841)
+        return (self.reduced_chi2 < 3.841)
     
     def find_track(self, sampling = 10, angle_sampling = 120, plot = False):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
@@ -370,6 +371,9 @@ class Track:
         (xs, P, K, Pp) = f.rts_smoother(mu, cov)
         kalman_hits = [[coord_to_pos_x(int(np.round(x[0]))), coord_to_pos_z(int(np.round(x[1])),self.hits[0].is_sidex)] for x in xs]
         fit = self.get_tracks()
+        
+        self.n_freedom = len(kalman_hits)
+        self.reduced_chi2 = self.chi2(tracks=kalman_hits) / self.n_freedom
         
         return kalman_hits
         # if axs is not None:
