@@ -345,13 +345,19 @@ class Track:
         f.H = np.array([[1., 0., 0., 0.],
                         [0., 1., 0., 0.]])
         # covariance matrix # TODO: find right value
-        f.P = np.array([[1., 0., 0., 0.],
-                        [0., 1., 0., 0.],
+        # f.P = np.array([[1., 0., 0., 0.],
+        #                 [0., 1., 0., 0.],
+        #                 [0., 0., 1., 0.],
+        #                 [0., 0., 0., 1.]])
+        f.P = np.array([[width, 0., 0., 0.],
+                        [0., thickness, 0., 0.],
                         [0., 0., 1., 0.],
                         [0., 0., 0., 1.]])
         # measurement noise matrix
-        f.R = np.array([[width, 0.], # x
-                        [0., thickness]]) # z
+        # f.R = np.array([[width, 0.], # x
+        #                 [0., thickness]]) # z
+        f.R = np.array([[0.01, 0.], # x
+                        [0., 0.01]]) # z
        
         #  process noise, # TODO: find right value
         d = Delta_z*(1+self.t**2)**0.5

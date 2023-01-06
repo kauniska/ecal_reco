@@ -135,13 +135,14 @@ def pos_to_coord(pos):
 
 
 # Plot the fired hits on the chosen side with the right geometry
-def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hits_next = None):
+def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hits_next = None, alpha_next = 1):
     '''
     Arguments :
         -x_plane : if True the plot shows the fired hits on the xz-plane, else on the yz-plane
         -plot_perpendicular : if True the hits on the other plane will be visible (in a darker color)
         -scaling : relative size of the plot
         -hits_next : if given, they will be considered as hits from product of muon decay in a next event. The hits will have another color
+        -alpha_next : transparency, of the hits of the next event
     '''
     passive_color = (80/255,80/255,80/255)      # Color of the passive layers
     active_color = (22/255,100/255,90/255)      # Color of the active layers
@@ -165,8 +166,8 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
                 hits_x_next.append(hit)
             else:
                 hits_y_next.append(hit)   
-        hit_color_next = (250/255,100/255,0)                # Color of the hits for the second event
-        perpendicular_color_next = (250/255,100/255,0.25)   # Color of the hits in perpendicular plane fort the next event
+        hit_color_next = (250/255,100/255,0,alpha_next)                # Color of the hits for the second event
+        perpendicular_color_next = (250/255,100/255,0,0.25*alpha_next)   # Color of the hits in perpendicular plane fort the next event
 
     # Plot of the background
     fig,ax = plt.subplots(figsize = (n_strips*width/2*scaling,2*n_layers*(thickness+thickness_screen)/2*scaling))
