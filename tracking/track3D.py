@@ -54,11 +54,12 @@ class Track3D:
     def reduced_chi2(self):
         return self.x.reduced_chi2 + self.y.reduced_chi2
     
-    def print(self, plot = False):
+    def print(self, plot = False, size = (12, 6)):
         fig, axs = plt.subplots(1, 2)
-        fig.set_size_inches(12, 6)
+        fig.set_size_inches(size)
         self.x.print(plot, axs[0])
         self.y.print(plot, axs[1])
+        return fig
         # fig.show()
         # fig.savefig('test.png')
         

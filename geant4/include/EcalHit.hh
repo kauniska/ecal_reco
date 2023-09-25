@@ -76,7 +76,12 @@ class EcalHit : public G4VHit
 
     void SetEdep(G4double de) { fEdep = de; }
     void AddEdep(G4double de) { fEdep += de;}
+    void AddElectronEdep(G4double de) { fEdepElectron += de; }
+    void AddMuonEdep(G4double de) { fEdepMuon += de; }
+
     G4double GetEdep() const { return fEdep; }
+    G4double GetElectronEdep() const { return fEdepElectron; }
+    G4double GetMuonEdep() const { return fEdepMuon; }
 
     void SetPos(G4ThreeVector xyz) { fPos = xyz; }
     G4ThreeVector GetPos() const { return fPos; }
@@ -96,6 +101,8 @@ class EcalHit : public G4VHit
     G4int fBarID = -1; // used to be Column, along x and y
     G4int fLayerID = -1; // used to be Row, along z (vertical)
     G4double fEdep = 0.;
+    G4double fEdepElectron = 0.;
+    G4double fEdepMuon = 0.;
     G4ThreeVector fPos;
     G4RotationMatrix fRot;
     G4int fHits = 0;

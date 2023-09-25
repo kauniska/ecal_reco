@@ -98,6 +98,11 @@ G4bool EcalSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   }
   // add energy deposition
   hit->AddEdep(edep);
+  if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "e-") {
+    hit->AddElectronEdep(edep);
+  } else if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "mu-") {
+    hit->AddMuonEdep(edep);
+  }
   hit->AddNHit(1);
   hit->SetPD(pd);
   hit->SetCopyNo(copyNo);
