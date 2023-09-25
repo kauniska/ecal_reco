@@ -114,13 +114,14 @@ class Track:
                 self.get_plot(ax)
             
 
-    def chi2(self):
+    def chi2(self, tracks = None):
         """Computes the chi^2 between the hits and the track
         Returns:
             float: chi^2
         """
         hits = self.get_hits_coords()
-        tracks = self.get_tracks()
+        if tracks is None:
+            tracks = self.get_tracks()
         hits.sort(key=lambda x: x[1])
         tracks.sort(key=lambda x: x[1])
         if len(hits) == 0 or len(tracks) == 0:
@@ -138,7 +139,7 @@ class Track:
 
     
     def is_good_fit(self):
-        return (self.chi2()/self.n_freedom < 2 * 3.841)
+        return (self.reduced_chi2 < 3.841)
     
     def find_track(self, sampling = 10, angle_sampling = 120, plot = False):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
@@ -179,38 +180,51 @@ class Track:
         else:
             self.reduced_chi2 = 0
         if plot:
-            fig, axs = plt.subplots(1, 2)
-            fig.set_size_inches(12, 3, forward=True)
-            fig.set_dpi(140)
-            axs[0].set_title('t = {:.2f},\t x0 = {:.2f}'.format(self.t, self.x0))
-            # axs[0].hist2d(txs, x0s, bins=int(2 * angle_sampling / maxi), cmap='inferno', range=[[self.t - 2, self.t+2], [self.x0-10, self.x0+10]])
-            axs[0].hist2d(txs, x0s, bins = angle_sampling, cmap = 'inferno')
-            axs[0].plot([self.t], [self.x0], 'bx', label='precise')
-            axs[0].set(xlabel='$t$', ylabel='$x$')
-            axs[0].legend()
+            # fig, axs = plt.subplots(1, 2)
+            fig1 = plt.figure(figsize=(10, 3), dpi = 140)
+            # plt.title('$t =$ {:.2f}, $x_0 =$ {:.2f}'.format(self.t, self.x0))
+            # plt.hist2d(txs, x0s, bins=int(2 * angle_sampling / maxi), cmap='inferno', range=[[self.t - 2, self.t+2], [self.x0-10, self.x0+10]])
+            plt.hist2d(txs, x0s, bins = angle_sampling, cmap = 'inferno')
+            plt.plot([self.t], [self.x0], 'gx', label='maximum')
+            plt.xlabel('$t$')
+            plt.ylabel('$x_0$')
+            plt.colorbar()
+            plt.legend()
+            
+            fig2 = plt.figure(figsize=(10, 3), dpi=140)
+            # plt.title('$t =$ {:.2f}, $x_0 =$ {:.2f}'.format(self.t, self.x0))
+            plt.hist2d(txs, x0s, bins=int(angle_sampling / max), cmap='inferno', range=[[self.t-1, self.t+1], [self.x0-10, self.x0+10]])
+            # plt.hist2d(txs, x0s, bins=angle_sampling, cmap='inferno')
+            plt.plot([self.t], [self.x0], 'gx', label='maximum')
+            plt.xlabel('$t$')
+            plt.ylabel('$x_0$')
+            plt.colorbar()
+            plt.legend()
+            
+            return fig1, fig2
 
-            hitsX = [hit.get_pos()[0] for hit in self.hits]
-            hitsZ = [hit.get_pos()[1] for hit in self.hits]
-            bins_z = np.array([0])
-            for i in range(16):
-                bins_z = np.append(bins_z,[bins_z[-1]+thickness, bins_z[-1]+thickness_screen])
+            # hitsX = [hit.get_pos()[0] for hit in self.hits]
+            # hitsZ = [hit.get_pos()[1] for hit in self.hits]
+            # bins_z = np.array([0])
+            # for i in range(16):
+            #     bins_z = np.append(bins_z,[bins_z[-1]+thickness, bins_z[-1]+thickness_screen])
                 
-            axs[1].hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
-            axs[1].plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
-            axs[1].set_xticks(np.linspace(1, 24, 6)*width)
-            axs[1].set_yticks(np.linspace(1, 8, 8)*(thickness+thickness_screen))
-            axs[1].grid(True, which='major')
-            axs[1].grid(False, which='minor')
-            coords_x = []
-            coords_z = []
-            fit = np.round(self.get_tracks())
-            fit = [[int(f[0]), int(f[1])] for f in fit]
-            for i in self.hits_index:
-                if self.hits[i].coord in fit:
-                    coords_x.append(self.hits[i].coord[0])
-                    coords_z.append(self.hits[i].coord[1])
-            axs[1].plot(coords_x, coords_z, 'r*')
-            axs[1].set(xlabel='$x$', ylabel='$z$')
+            # axs[1].hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
+            # axs[1].plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
+            # axs[1].set_xticks(np.linspace(1, 24, 6)*width)
+            # axs[1].set_yticks(np.linspace(1, 8, 8)*(thickness+thickness_screen))
+            # axs[1].grid(True, which='major')
+            # axs[1].grid(False, which='minor')
+            # coords_x = []
+            # coords_z = []
+            # fit = np.round(self.get_tracks())
+            # fit = [[int(f[0]), int(f[1])] for f in fit]
+            # for i in self.hits_index:
+            #     if self.hits[i].coord in fit:
+            #         coords_x.append(self.hits[i].coord[0])
+            #         coords_z.append(self.hits[i].coord[1])
+            # axs[1].plot(coords_x, coords_z, 'r*')
+            # axs[1].set(xlabel='$x$', ylabel='$z$')
 
         # return self.x0, self.t, self.hits_index
 
@@ -378,6 +392,9 @@ class Track:
         (xs, P, K, Pp) = f.rts_smoother(mu, cov)
         kalman_hits = [[coord_to_pos_x(int(np.round(x[0]))), coord_to_pos_z(int(np.round(x[1])),self.hits[0].is_sidex)] for x in xs]
         fit = self.get_tracks()
+        
+        self.n_freedom = len(kalman_hits)
+        self.reduced_chi2 = self.chi2(tracks=kalman_hits) / self.n_freedom
         
         return kalman_hits
         # if axs is not None:
