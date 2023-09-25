@@ -16,6 +16,7 @@ class Layer:
         self.rho = rho
         self.I = I
         self.color = color
+        ##
 
     #returns the electron number density which is needed in the bethe-bloch function
     def n(self):
