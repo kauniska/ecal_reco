@@ -12,12 +12,12 @@ hits_tree = 'board_57'
 data = uproot.open('C:\\Users\\Pascal\\Desktop\\TP4a\\git\\test_data_loading\\data_0000.root')
 
 x = data['event_data']['evt_number']
-y = data['event_data']['timestamp']
-print()
+y = data['event_data']['n_hits']
+print(y)
 print(data['event_data'].keys())
 print(x)
 fig, ax = plt.subplots()
-ax.plot([],'+')
+ax.plot(y,'+')
 
 ax.set(xlabel='x', ylabel='voltage (mV)',
        title='test')
