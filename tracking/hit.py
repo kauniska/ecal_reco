@@ -9,7 +9,7 @@ from track_reconstruction import mapping_2D
 import numpy as np
 
 import sys
-sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\utils')
+sys.path.insert(1, 'C:\\Users\\kimyk\\OneDrive\\Bureau\\Master 1\\Projet_LPHE_I\\ecal_reco\\utils')
 from parameters import *
 
 class Hit:
