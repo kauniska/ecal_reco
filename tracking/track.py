@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from hit import Hit
 import sys
-sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\utils')
 from parameters import *
 plt.ion()
 from filterpy.kalman import KalmanFilter
