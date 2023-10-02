@@ -4,7 +4,7 @@ from track import Track
 from hit import Hit
 from track_reconstruction import coord_to_pos,coord_to_pos_x,coord_to_pos_z
 import sys
-sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+sys.path.insert(1, r"C:\Users\kimyk\Projet_LPHE_I\ecal_reco\utils")
 from parameters import *
 from physics import overlap_length
 
