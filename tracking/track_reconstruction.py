@@ -15,7 +15,6 @@ sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
 from parameters import *
 from tqdm import tqdm
 
-
 # Check that a is tofpet on the x side of the calorimeter
 def is_sidex(a):
     if(a==0 or a==1 or a==4 or a==5):
