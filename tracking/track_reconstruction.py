@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 import sys
 sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
 from parameters import *
+from tqdm import tqdm
 
 
 # Check that a is tofpet on the x side of the calorimeter
@@ -234,4 +235,36 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
     return fig,ax
 
         
+def create_tracks(df, plot = False):
+    tracks = []
+    nb_events = len(df['n_hits'])
+    steps = 9
+    buff_start = None
+    buff_evt_idx = None
+    dts = []
+    for index, row in tqdm(df.iterrows(), total = df.shape[0]):
+        channels = row['tofpet_channel']
+        tofpet_id = row['tofpet_id']
+        hits = [Hit(row,i) for i in range(row['n_hits'])]
+        hitsX = [h for h in hits if h.is_sidex]
+        hitsY = [h for h in hits if not h.is_sidex]
+        
+        ## Some events don't have three hits on one of the two sides and are thus not considered
+        if len(hitsX) > 3 and len(hitsY) > 3:
+            # get track parameters
+            track = Track3D(hits)
+            tracks.append(track)
 
+            ## check if track has a "good" chi2 value
+            if track.is_good_2D_fit():
+            
+                # worth making a precise track
+                #track.precise_track()
+                
+                ## compute the time of the track
+                dt = track.get_time_interval()
+                if dt is not None:
+                    dts.append(dt)
+
+
+    return tracks, dts

@@ -87,7 +87,10 @@ class Track:
             
         axs.hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
         # axs.hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='magma')
-        axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
+        if(self.hits[0].is_sidex):
+            axs.plot([coord_to_pos_x(f[0]) for f in fit], [coord_to_pos_z(f[1],True) for f in fit], 'b-')
+        else:
+            axs.plot([coord_to_pos_x(f[0]) for f in fit], [coord_to_pos_z(f[1],False) for f in fit], 'b-')
         plt.xticks(np.linspace(1, 24, 6)*width)
         plt.yticks(np.linspace(1, 8, 8)*(thickness_screen+thickness))
         coords_x = []
