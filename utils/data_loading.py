@@ -8,8 +8,8 @@ from os import listdir
 
 br_list_data = ['evt_timestamp', 'evt_number', 'evt_flags','n_hits', 'tofpet_id', 'tofpet_channel', 'timestamp', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value']
 #br_list_evt = ]
-evt_tree = 'event_data'
-#hits_tree = 'event_data'
+# evt_tree = 'event_data'
+tree = 'event_data'
 
 
 def load_dataset(file_path):
@@ -24,7 +24,7 @@ def load_dataset(file_path):
 
     with uproot.open(file_path) as tree:
         # hits_dict = tree[hits_tree].arrays(br_list_data, library="np")
-        hits_dict = tree[evt_tree].arrays(br_list_data, library="np")
+        hits_dict = tree[tree].arrays(br_list_data, library="np")
         #evts_dict = tree[evt_tree].arrays(br_list_evt, library="np")
     
    # df_evts = pd.DataFrame.from_dict(evts_dict)
