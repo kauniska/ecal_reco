@@ -16,3 +16,4 @@ build/*
 geant4/build/*
 .vscode/*
 .vscode/settings.json
+/tests/test_pascal.ipynb
