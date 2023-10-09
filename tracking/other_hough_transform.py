@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from track_reconstruction import max_overlap
 import pandas as pd
 import sys
-sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+sys.path.insert(1, r"C:\Users\kimyk\OneDrive\Bureau\Master 1\Projet_LPHE_I\ecal_reco\utils")
 from parameters import *
 
 # Test version of Hough transform : discretization of the Hough space.

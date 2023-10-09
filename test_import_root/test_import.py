@@ -9,7 +9,7 @@ br_list_evt = ['timestamp', 'evt_number', 'flags']
 evt_tree = 'event'
 hits_tree = 'board_57'
 
-data = uproot.open(r'C:\Users\kimyk\OneDrive\Bureau\Master 1\Projet_LPHE_I\ecal_reco\test_import_root\data_0000\data_0000.root')
+data = uproot.open(r'C:\Users\kimyk\OneDrive\Bureau\Master 1\Projet_LPHE_I\ecal_reco\test_import_root\run_000002\data_0000.root')
 #print(data['event_data'].keys())
 
 
