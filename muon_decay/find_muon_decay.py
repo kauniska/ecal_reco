@@ -1,9 +1,9 @@
-import tqdm
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
-import sys
-sys.path.insert(1, r".\utils")
-sys.path.insert(1, r".\tracking")
+import sysma
+sys.path.insert(1, ".\\utils")
+sys.path.insert(1, ".\\tracking")
 from hit import Hit
 from track3D import Track3D
 from parameters import *
