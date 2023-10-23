@@ -76,18 +76,18 @@ def find_muon_decay_kim(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                 last_y=True
 
                  
-                 if hitsX[0].coord[1] >= 15 and hitsY[0].coord[1] >= 15:    #if the track went through the first x and y layers 
+                if hitsX[0].coord[1] >= 15 and hitsY[0].coord[1] >= 15:    #if the track went through the first x and y layers 
                     hitsX_first = [hit for hit in hitsX if hit.coord[1]==hitsX[0].coord[1]]   #we take all the hit with the same z component than the last hit
                     hitsY_first = [hit for hit in hitsY if hit.coord[1]==hitsY[0].coord[1]]
                     first_x=True
                     first_y=True
     
-                    if len(hitsX_last) != 0 and len(hitsY_last) !=0 :    #verify the last layer is only hit once
+                    if len(hitsX_last) != 0 or len(hitsY_last) !=0 :    #verify the last layer is only hit once
                      last_x = False
                      last_y= False
                      double_hit_same_z+=1
                     
-                    if len(hitsX_first) != 0 and len(hitsY_first) !=0 :    #verify the first layer is only hit once
+                    if len(hitsX_first) != 0 or len(hitsY_first) !=0 :    #verify the first layer is only hit once
                      first_x = False
                      first_y= False
                      double_hit_same_z+=1
@@ -117,12 +117,20 @@ def find_muon_decay_kim(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                                        hits_far_from_track +=1
        
                                    else:
-                                       hits_far_from_track = 0
-       
+                                        candidate_index.append(index)
+                                        if save_hits:
+                                            decay_data['event_index'].append(index)
+                                            decay_data['track_x0'].append(track.x.x0)
+                                            decay_data['track_tx'].append(track.x.t)
+                                            decay_data['track_y0'].append(track.y.x0)
+                                            decay_data['track_ty'].append(track.y.t)
+                                            decay_data['hits_muon'].append(hits)
+                                            decay_data['hits_electron'].append(hits_next_event)
+
                            else:
                                bad_fit += 1
                     else : 
-                    double_hit_same_z=0
+                      double_hit_same_z=0
             else:
                 not_pass_through += 1
         else:
