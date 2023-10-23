@@ -19,7 +19,7 @@ class Track3D:
         elif len(args) == 2:
             self.x = args[0]
             self.y = args[1]
-            self.time = self.get_time()
+            self.time = self.x.get_timestamps() + self.y.get_timestamps()
 
             
     def get_time_interval(self):
