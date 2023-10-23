@@ -13,7 +13,7 @@ from physics import dist_line_rect
 ## This function finds the indices of event which are good candidate for muon decay : good tracks that don't end on a side of the detector
 ## have enough hits on both planes, and close to the reconstructed track, and for which the next event is not too long after and has hits
 ## close to the possible decay point.
-def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
+def find_muon_track(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                     save_indices = True, save_hits = False, save_stats = False, save_time_intervals = True,\
                     run_name = None, storage_dir = None, \
                     return_stats = True):
@@ -63,7 +63,7 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
         hitsY = [h for h in hits if not h.is_sidex]
         
         ## Some events don't have three hits on one of the two sides and are thus not considered
-        if len(hitsX) > 3 and len(hitsY) > 3:
+        if len(hitsX)==8 and  len(hitsY) ==8:
             #One only considers the events for which the potential track ended inside the detector
             hitsX.sort(key = lambda hit: -hit.coord[1])
             hitsY.sort(key = lambda hit: -hit.coord[1])
@@ -73,11 +73,11 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                 X_ok = True
                 Y_ok = True
                 for hit in hitsX_last:
-                    if hit.coord[0] == 1 or hit.coord[0] == 24:
+                    if hit.coord[0] !=24:
                         X_ok = False
                         side_touch += 1
                 for hit in hitsY_last:
-                    if hit.coord[0] == 1 or hit.coord[0] == 24:
+                    if hit.coord[0]!= 24:
                         Y_ok = False
                         if X_ok:
                             side_touch += 1
@@ -102,57 +102,11 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
 
                             ## check if there's still hits in the list after removing the ones far from the reconstructed track
                             if len(hitsX) != 0 or len(hitsY) != 0:
-
-                                ## check if the next event happend close enough from the muon track for it to be the product of a decay
-                                time_interval = hits_next_event[0].timestamp_event-hits[0].timestamp_event
-                                if  time_interval < time_cutoff: 
-                                    hitsX.sort(key = lambda hit: -hit.get_pos()[1])
-                                    hitsY.sort(key = lambda hit: -hit.get_pos()[1])
-
-                                    X_near = False
-                                    Y_near = False
-
-                                    ## Check if the hits in the next event are close to the end of the muon track
-                                    if len(hitsX) != 0:
-                                        for h in hitsX_next_event:
-                                            if np.linalg.norm(h.get_pos()-hitsX[-1].get_pos()) < spacial_cutoff:
-                                                X_near = True
-                                    if len(hitsY) != 0:
-                                        for h in hitsY_next_event:
-                                            if np.linalg.norm(h.get_pos()-hitsY[-1].get_pos()) < spacial_cutoff:
-                                                Y_near = True
-                                    if X_near and Y_near:
-                                        candidate_index.append(index)
-                                        time_intervals.append(time_interval)
-                                        if save_hits:
-                                            decay_data['event_index'].append(index)
-                                            decay_data['track_x0'].append(track.x.x0)
-                                            decay_data['track_tx'].append(track.x.t)
-                                            decay_data['track_y0'].append(track.y.x0)
-                                            decay_data['track_ty'].append(track.y.t)
-                                            decay_data['hits_muon'].append(hits)
-                                            decay_data['hits_electron'].append(hits_next_event)
-                                            decay_data['time_interval'].append(time_interval)
-
-                                    else:
-                                        no_spacial_correlation += 1
-                                else:
-                                    too_large_time_interval += 1
-                            else:
-                                hits_far_from_track += 1
-                    else:
-                        bad_fit += 1
-            else:
-                bottom_touch += 1
-        else:
-            low_number += 1
+                              candidate_index.append(index)
+                                           
     if save_indices:
         np.savetxt(storage_dir+"events_indices"+run_name+".txt", candidate_index)
-    if save_time_intervals:
-        np.savetxt(storage_dir+"time_intervals"+run_name+".txt", time_intervals)
-    if save_hits:
-        decay_data = pd.DataFrame.from_dict(decay_data) # translate the dictionary into a pandas dataframe
-        decay_data.to_pickle(storage_dir+"pickle_decay_data"+run_name)
+    
     og_len = len(df_total)
     new_len = len(df)
     filtering = pd.DataFrame({'og_len' : [og_len],

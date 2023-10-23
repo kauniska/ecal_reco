@@ -16,3 +16,4 @@ build/*
 geant4/build/*
 .vscode/*
 .vscode/settings.json
+muon_decay/extracted_data
