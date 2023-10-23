@@ -74,7 +74,7 @@ class Track:
         Returns:
             list of float: timestamps of hits
         """
-        return [hit.timestamp + hit.timestamp_event for hit in self.hits]
+        return [hit.timestamp + hit.evt_timestamp for hit in self.hits]
     
     def get_plot(self, axs):
         fit = self.get_tracks() #np.round(self.get_tracks())
@@ -318,7 +318,7 @@ class Track:
             ## and if there are hits close to the end point
             distances = self._dr(last_hit, self.hits)
             if np.any(np.array(distances) < 2):
-                return np.mean(self.get_timestamps()) - self.hits[0].timestamp_event
+                return np.mean(self.get_timestamps()) - self.hits[0].evt_timestamp
 
     def _dr(self, hit_ref, hits):
         """Computes distance between a reference hit and a list of hits

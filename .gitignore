@@ -17,3 +17,4 @@ geant4/build/*
 .vscode/*
 .vscode/settings.json
 /tests/test_pascal.ipynb
+/tests/test_pascal_unable_merge.ipynb

@@ -36,7 +36,7 @@ class Track3D:
             if last_hit.coord[1] < 8:
                 distances = self.x._dr(last_hit, hits)
                 if np.any(np.array(distances) < 2):
-                    return np.mean(self.time) - hits[0].timestamp_event
+                    return np.mean(self.time) - hits[0].evt_timestamp
         else:
             return None
         
