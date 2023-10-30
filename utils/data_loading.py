@@ -6,7 +6,7 @@ from fnmatch import filter
 from os import listdir
 
 
-br_list_data = ['evt_timestamp', 'evt_number', 'evt_flags','n_hits', 'tofpet_id', 'tofpet_channel', 'timestamp', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value']
+br_list_data = ['evt_timestamp', 'evt_number', 'evt_flags','n_hits', 'tofpet_id', 'tofpet_channel', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value']
 #br_list_evt = ]
 # evt_tree = 'event_data'
 evt_tree = 'event_data'
@@ -30,7 +30,7 @@ def load_dataset(file_path):
    # df_evts = pd.DataFrame.from_dict(evts_dict)
     df_hits = pd.DataFrame.from_dict(hits_dict)
     #df_hits['timestamp_event'] = df_evts['timestamp']
-    df_hits['timestamp_event'] = df_hits['evt_timestamp']
+    # df_hits['timestamp_event'] = df_hits['evt_timestamp']
     
     return df_hits
 
