@@ -1,10 +1,11 @@
-from tqdm import tqdm 
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import sys
 sys.path.insert(1, r".\utils")
 sys.path.insert(1, r".\tracking")
 from hit import Hit
+from track import Track
 from track3D import Track3D
 from parameters import *
 from physics import dist_line_rect
@@ -13,9 +14,9 @@ from physics import dist_line_rect
 ## This function finds the indices of event which are good candidate for muon decay : good tracks that don't end on a side of the detector
 ## have enough hits on both planes, and close to the reconstructed track, and for which the next event is not too long after and has hits
 ## close to the possible decay point.
-def find_muon_decay_kim(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
+def find_muon_track(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                     save_indices = True, save_hits = False, save_stats = False, save_time_intervals = True,\
-                    run_name = "", storage_dir = "", \
+                    run_name = None, storage_dir = None, \
                     return_stats = True):
     """
     Arguments :
@@ -82,12 +83,12 @@ def find_muon_decay_kim(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                     first_x=True
                     first_y=True
     
-                    if len(hitsX_last) != 1 or len(hitsY_last) != 1 :    #verify the last layer is only hit once
+                    if len(hitsX_last) != 1 or len(hitsY_last) !=1 :    #verify the last layer is only hit once
                      last_x = False
                      last_y= False
                      double_hit_same_z+=1
                     
-                    if len(hitsX_first) != 1 or len(hitsY_first) != 1 :    #verify the first layer is only hit once
+                    if len(hitsX_first) != 1 or len(hitsY_first) !=1 :    #verify the first layer is only hit once
                      first_x = False
                      first_y= False
                      double_hit_same_z+=1
