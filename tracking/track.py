@@ -40,7 +40,7 @@ class Track:
             self.hits = args[0]
             self.n_freedom = len(self.hits) - 1 # two parameters: f(x) = a*x + b, number of data points = len + 1
             self.find_track(1, 11,False,5,0)
-            self.find_track(15, 11,False,5/11,self.t)
+            self.find_track(10, 11,False,5/11,self.t)
             self.mean_time = None # TODO: implement
             if self.n_freedom > 0:
                 self.reduced_chi2 = self.chi2()/self.n_freedom
