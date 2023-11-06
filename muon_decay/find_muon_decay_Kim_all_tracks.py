@@ -13,7 +13,7 @@ from physics import dist_line_rect
 ## This function finds the indices of event which are good candidate for muon decay : good tracks that don't end on a side of the detector
 ## have enough hits on both planes, and close to the reconstructed track, and for which the next event is not too long after and has hits
 ## close to the possible decay point.
-def find_muon_decay_kim(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
+def find_muon_decay_kim_all_tracks(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                     save_indices = True, save_hits = False, save_stats = False, save_time_intervals = True,\
                     run_name = None, storage_dir = None, \
                     return_stats = True):
@@ -54,7 +54,7 @@ def find_muon_decay_kim(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
     no_spacial_correlation = 0
     hits_far_from_track = 0
     double_hit_same_z=0
-    double_z= True
+    
 
     if save_hits:
         decay_data = {'event_index': [], 'track_x0' : [], 'track_tx' : [], 'track_y0' : [], 'track_ty' : [], 'hits_muon': [], 'hits_electron': [], 'time_interval' : []}
@@ -63,95 +63,101 @@ def find_muon_decay_kim(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
         hits = [Hit(row,i) for i in range(row['n_hits'])]   #hits is a list corresponding to a row of the DF, it contains contains n_hit element, each one being a Hit
         hitsX = [h for h in hits if h.is_sidex]    #filters hits to keep only the Hit where is_sidex is True --> hits on the x side
         hitsY = [h for h in hits if not h.is_sidex]
-        
+
+        hitsXfar=[]
+        hitsYfar=[]
+        double_z_x= True
+        double_z_y= True
+
         ## Some events don't have three hits on one of the two sides and are thus not considered
-        if len(hitsX) ==8  and len(hitsY) ==8 :   #we want the particle to pass through the detector, and to hit once each layer 
+        if len(hitsX) >=2  and len(hitsY) >=2 :   #we want the particle to pass through the detector, and to hit once each layer 
             # The track must go through the whole detector 
             hitsX.sort(key = lambda hit: -hit.coord[1])
             hitsY.sort(key = lambda hit: -hit.coord[1])
 
-            if hitsX[-1].coord[1] <= 2 and hitsY[-1].coord[1] <= 2:    #if the track went through the last x and y layers 
-                hitsX_last = [hit for hit in hitsX if hit.coord[1]==hitsX[-1].coord[1]]   #we take all the hit with the same z component than the last hit
-                hitsY_last = [hit for hit in hitsY if hit.coord[1]==hitsY[-1].coord[1]]
-                last_x=True
-                last_y=True
+            #if hitsX[-1].coord[1] <= 2 and hitsY[-1].coord[1] <= 2:    #if the track went through the last x and y layers 
+            #    hitsX_last = [hit for hit in hitsX if hit.coord[1]==hitsX[-1].coord[1]]   #we take all the hit with the same z component than the last hit
+            #    hitsY_last = [hit for hit in hitsY if hit.coord[1]==hitsY[-1].coord[1]]
+            #    last_x=True
+            #    last_y=True
+#
+            #     
+            #    if hitsX[0].coord[1] >= 2 and hitsY[0].coord[1] >= 2:    #if the track went through the first x and y layers 
+            #        #hitsX_first = [hit for hit in hitsX if hit.coord[1]==hitsX[0].coord[1]]   #we take all the hit with the same z component than the last hit
+            #        #hitsY_first = [hit for hit in hitsY if hit.coord[1]==hitsY[0].coord[1]]
+            #        #first_x=True
+            #        #first_y=True
+    #
+                    #if len(hitsX_last) != 1 or len(hitsY_last) !=1 :    #verify the last layer is only hit once
+                    # last_x = False
+                    # last_y= False
+                    # double_hit_same_z+=1
+                    #
+                    #if len(hitsX_first) != 1 or len(hitsY_first) !=1 :    #verify the first layer is only hit once
+                    # first_x = False
+                    # first_y= False
+                    # double_hit_same_z+=1
 
-                 
-                if hitsX[0].coord[1] >= 8 and hitsY[0].coord[1] >= 8:    #if the track went through the first x and y layers 
-                    hitsX_first = [hit for hit in hitsX if hit.coord[1]==hitsX[0].coord[1]]   #we take all the hit with the same z component than the last hit
-                    hitsY_first = [hit for hit in hitsY if hit.coord[1]==hitsY[0].coord[1]]
-                    first_x=True
-                    first_y=True
-    
-                    if len(hitsX_last) != 1 or len(hitsY_last) !=1 :    #verify the last layer is only hit once
-                     last_x = False
-                     last_y= False
-                     double_hit_same_z+=1
-                    
-                    if len(hitsX_first) != 1 or len(hitsY_first) !=1 :    #verify the first layer is only hit once
-                     first_x = False
-                     first_y= False
-                     double_hit_same_z+=1
-
-
-                    for i in range(len(hitsX)):
-                        for j in range(i+1, len(hitsX)):
-                            if hitsX[i].coord[1] == hitsX[j].coord[1]:
-                                double_z=False
-                    
-                    for i in range(len(hitsY)):
-                        for j in range(i+1, len(hitsY)):
-                            if hitsY[i].coord[1] == hitsY[j].coord[1]:
-                                double_z=False
-                    
  
-                    
-                    if last_y and last_x and first_x and first_y and double_z: 
-                           track = Track3D(hits)
-       
-                           ## check if track has a "good" chi2 value
-                           if track.is_good_2D_fit():
-                               if index+1 >= len(df_total):
-                                   last_event_of_df += 1
-                               else:
-                                   next_event = df_total.loc[index+1]
-                               
-           
-                                   hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
-                                   hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
-                                   hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
-       
-                                   hitsX = [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) < spacial_cutoff] #Keep only the hits close to the track
-                                   hitsY = [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) < spacial_cutoff]
-                                   #print("length hitsx is ; "+ str(len(hitsX)) + '\n')
+            for i in range(len(hitsX)):       
+                for j in range(i+1, len(hitsX)):
+                    if hitsX[i].coord[1] == hitsX[j].coord[1]:
+                        double_z_x=False
 
-                                   time_interval = hits_next_event[0].evt_timestamp-hits[0].evt_timestamp
+            for i in range(len(hitsY)):
+                for j in range(i+1, len(hitsY)):
+                    if hitsY[i].coord[1] == hitsY[j].coord[1]:
+                        double_z_y=False
 
-                                   ## check if there's still hits in the list after removing the ones far from the reconstructed track
-                                   if len(hitsX) > 8 or len(hitsY) > 8:
-       
-                                       hits_far_from_track +=1
-       
-                                   else:
-                                        candidate_index.append(index)
-                                        if save_hits:
-                                            decay_data['event_index'].append(index)
-                                            decay_data['track_x0'].append(track.x.x0)
-                                            decay_data['track_tx'].append(track.x.t)
-                                            decay_data['track_y0'].append(track.y.x0)
-                                            decay_data['track_ty'].append(track.y.t)
-                                            decay_data['hits_muon'].append(hits)
-                                            decay_data['hits_electron'].append(hits_next_event)
-                                            decay_data['time_interval'].append(time_interval)
 
-                           else:
-                               bad_fit += 1
-                    else : 
-                      double_hit_same_z=0
-            else:
-                not_pass_through += 1
+            if double_z_y and double_z_x: 
+                 track = Track3D(hits)
+       
+                  ## check if track has a "good" chi2 value
+                           
+                 if track.is_good_2D_fit():
+                     if index+1 >= len(df_total):
+                         last_event_of_df += 1
+                     else:
+                         next_event = df_total.loc[index+1]
+                     
+ 
+                         hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
+                         hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
+                         hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex] 
+                         hitsX = [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) < spacial_cutoff] #Keep only the hits close to the track
+                         hitsY = [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) < spacial_cutoff]
+                         
+                         hitsXfar= [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) >= spacial_cutoff] #Keep only the hits far to the track
+                         hitsYfar= [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) >= spacial_cutoff] #Keep only the hits far to the track
+
+                         
+                         #print("length hitsx is ; "+ str(len(hitsX)) + '\n 
+                         time_interval = hits_next_event[0].evt_timestamp-hits[0].evt_timestamp
+                         ## check if there's still hits in the list after removing the ones far from the reconstructed track
+                         
+                         if len(hitsXfar) > 0 or len(hitsYfar) > 0: 
+                             hits_far_from_track +=1
+                      
+                         
+                         candidate_index.append(index)
+                         if save_hits:
+                             decay_data['event_index'].append(index)
+                             decay_data['track_x0'].append(track.x.x0)
+                             decay_data['track_tx'].append(track.x.t)
+                             decay_data['track_y0'].append(track.y.x0)
+                             decay_data['track_ty'].append(track.y.t)
+                             decay_data['hits_muon'].append(hits)
+                             decay_data['hits_electron'].append(hits_next_event)
+                             decay_data['time_interval'].append(time_interval)
+
+                 else:
+                     bad_fit += 1
+            else : 
+              double_hit_same_z=0
+            
         else:
-            wrong_number += 1
+          wrong_number += 1
 
 
     if save_indices:
