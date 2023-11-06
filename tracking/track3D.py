@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from track import Track
 import plotly.graph_objects as go
 
-
 class Track3D:
     def __init__(self, *args):
         """Creates a 3D Track class, containing two 2D tracks
@@ -21,7 +20,7 @@ class Track3D:
         elif len(args) == 2:
             self.x = args[0]
             self.y = args[1]
-            self.time = self.get_time()
+            self.time = self.x.get_timestamps() + self.y.get_timestamps()
 
             
     def get_time_interval(self):
@@ -38,7 +37,7 @@ class Track3D:
             if last_hit.coord[1] < 8:
                 distances = self.x._dr(last_hit, hits)
                 if np.any(np.array(distances) < 2):
-                    return np.mean(self.time) - hits[0].evt_timestamp
+                    return np.mean(self.time) - hits[0].timestamp_event
         else:
             return None
         
@@ -64,7 +63,6 @@ class Track3D:
         return fig
         # fig.show()
         # fig.savefig('test.png')
-        
     def show(self):
         tt_x = self.x
         tt_y = self.y
@@ -110,9 +108,8 @@ class Track3D:
                 aspectmode='cube'
             ),
         )
-        #show the plot
+        # Show the plot
         fig.show()
-
     def kalman_filter(self, sigma = 0.5, plot = False):
         if plot:
             fig, axs = plt.subplots(1, 2)

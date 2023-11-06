@@ -39,7 +39,8 @@ class Track:
         elif len(args) == 1:
             self.hits = args[0]
             self.n_freedom = len(self.hits) - 1 # two parameters: f(x) = a*x + b, number of data points = len + 1
-            self.find_track()
+            self.find_track(1, 11,False,5,0)
+            self.find_track(10, 11,False,5/11,self.t)
             self.mean_time = None # TODO: implement
             if self.n_freedom > 0:
                 self.reduced_chi2 = self.chi2()/self.n_freedom
@@ -144,7 +145,7 @@ class Track:
     def is_good_fit(self):
         return (self.reduced_chi2 < 3.841)
     
-    def find_track(self, sampling = 10, angle_sampling = 120, plot = False):
+    def find_track(self, sampling = 10, angle_sampling = 120, plot = False, max = 5, t = 0):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
 
         Args:
@@ -156,8 +157,8 @@ class Track:
             t: tan of the angle (0° is vertical)
             indices: indices of the hits considered
         """
-        max=5 # => angle scanning between [-78.7°,78,7°]
-        T = np.linspace(-max, max, angle_sampling, False)
+        # => angle scanning between [-78.7°,78,7°]
+        T = np.linspace(t-max, t+max, angle_sampling, False)
         x0s = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         txs = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         for n, hit in enumerate(self.hits):

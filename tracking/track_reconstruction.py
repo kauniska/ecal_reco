@@ -11,13 +11,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import sys
-sys.path.insert(1, r"C:\Users\kimyk\OneDrive\Bureau\Master 1\Projet_LPHE_I\ecal_reco\utils")
-sys.path.insert(1, r"C:\Users\kimyk\OneDrive\Bureau\Master 1\Projet_LPHE_I\ecal_reco\tracking")
+sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
 from parameters import *
 from tqdm import tqdm
-
-
-
 
 # Check that a is tofpet on the x side of the calorimeter
 def is_sidex(a):

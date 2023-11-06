@@ -8,8 +8,8 @@ from os import listdir
 
 br_list_data = ['evt_timestamp', 'evt_number', 'evt_flags','n_hits', 'tofpet_id', 'tofpet_channel', 'timestamp', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value']
 #br_list_evt = ]
+# evt_tree = 'event_data'
 evt_tree = 'event_data'
-#hits_tree = 'event_data'
 
 
 def load_dataset(file_path):
@@ -48,6 +48,7 @@ def load_run(run_path, n_hits_min=6, n_hits_max=50):
     files = filter(listdir(run_path),'*.root')
     for i,file in enumerate(files):
         if i == 0:
+            print(run_path+file)
             df = [load_dataset(run_path+file)]
         else:
             df_i = load_dataset(run_path+file)
