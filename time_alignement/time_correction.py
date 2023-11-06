@@ -9,6 +9,8 @@ from track3D import Track3D
 
 def time_correction(T3D):
     Speed_In_Fiber = 15 # cm/ns
+    fac = 6.25 # ns/clock cycle
+    Speed_In_Fiber = Speed_In_Fiber*fac # cm/clock cycle
     Tx = T3D.x
     Ty = T3D.y
     
