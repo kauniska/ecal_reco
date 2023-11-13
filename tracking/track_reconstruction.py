@@ -11,8 +11,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import sys
-sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\utils')
 from parameters import *
+from scipy.stats import norm
 
 
 # Check that a is tofpet on the x side of the calorimeter
@@ -29,7 +30,31 @@ def mapping_2D(t_id,channel):
         return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]
     else:
         t_id=t_id-2
-        return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]
+        return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]   
+
+## Determine the tofpet id and channel from (X,Y,Z) coord. Warning : topfet id is not unique (modulo) !
+def mapping_inv_2D(side_x,bar,layer) :
+    for t_id in range(8) :
+        for channel in range(64) :
+            if side_x and mapping_2D(t_id,channel) == [bar,layer] :
+                return [t_id, channel]
+            elif not side_x and mapping_2D(t_id,channel) == [bar,layer] :
+                return [t_id+2, channel]
+
+
+## Apply a time correction coming from time resultion and light propagation in fibers
+def time_offset_correction(timestamp, tofpet_id, tofpet_channel) :
+
+    muX = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
+    muY = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
+    
+    if is_sidex(tofpet_id) :
+        return timestamp - muX[tofpet_id,tofpet_channel]
+    else :
+        return timestamp - muY[tofpet_id,tofpet_channel]
+    
+
+    
 
 ## Looks how many hits overlap at a certain angle t. Return the the hits index that overlap, the number of overlaping
 # and the boundaries, boundaries are the extremal x that belongs to the overlap region

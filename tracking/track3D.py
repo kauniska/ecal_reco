@@ -1,3 +1,4 @@
+# track3D
 import numpy as np
 import matplotlib.pyplot as plt
 from track import Track
@@ -19,8 +20,7 @@ class Track3D:
         elif len(args) == 2:
             self.x = args[0]
             self.y = args[1]
-            self.time = self.get_time()
-
+            self.time =  self.x.get_timestamps() + self.y.get_timestamps()
             
     def get_time_interval(self):
         """Get the timings of all hits, returns None if zero hits are associated to the track
@@ -72,3 +72,75 @@ class Track3D:
         else:
             self.x.kalman_filter(sigma)
             self.y.kalman_filter(sigma)
+# load and filter data
+
+import sys
+import time
+tic = time.time() 
+from data_loading import *
+from tqdm import tqdm
+from matplotlib import pyplot as plt
+from track_reconstruction import *
+
+file_path = 'C:\\Users\\eliot\\EPFL\\TP4_ECAL\\raw_data\\run_000006\\data_0000.root'
+import pandas as pd
+import uproot
+import numpy as np
+
+
+N_cons_events = 1000 # number of events to consider
+
+br_list_data = ['n_hits', 'tofpet_id', 'tofpet_channel', 'timestamp', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value']
+br_list_evt = ['timestamp', 'evt_number', 'evt_flags']
+evt_tree = 'event_data;1'
+hits_tree = 'event_data;1'
+
+with uproot.open(file_path) as tree:
+    hits_dict = tree[hits_tree].arrays(br_list_data, library="np")
+    evts_dict = tree[evt_tree].arrays(br_list_evt, library="np")
+    
+df_evts = pd.DataFrame.from_dict(evts_dict)
+df_hits = pd.DataFrame.from_dict(hits_dict)
+df_hits['timestamp_event'] = df_evts['timestamp']
+df_hits = df_hits[0:N_cons_events]
+
+og_len = len(df_hits)
+df_hits.query('n_hits > 6', inplace=True)
+df_hits.query('n_hits < 50', inplace=True)
+new_len = len(df_hits)
+print('selected {:.2f}% of all events'.format(new_len/og_len * 100))
+# selected 49.60% of all events
+# create tracks
+def create_tracks(df, plot = False):
+    tracks = []
+    nb_events = len(df['n_hits'])
+    steps = 9
+    buff_start = None
+    buff_evt_idx = None
+    dts = []
+    for index, row in tqdm(df.iterrows(), total = df.shape[0]):
+        channels = row['tofpet_channel']
+        tofpet_id = row['tofpet_id']
+        hits = [Hit(row,i) for i in range(row['n_hits'])]
+        hitsX = [h for h in hits if h.is_sidex]
+        hitsY = [h for h in hits if not h.is_sidex]
+        
+        ## Some events don't have three hits on one of the two sides and are thus not considered
+        if len(hitsX) > 3 and len(hitsY) > 3:
+            # get track parameters
+            track = Track3D(hits)
+            tracks.append(track)
+
+            ## check if track has a "good" chi2 value
+            if track.is_good_2D_fit():
+            
+                # worth making a precise track
+                #track.precise_track()
+                
+                ## compute the time of the track
+                dt = track.get_time_interval()
+                if dt is not None:
+                    dts.append(dt)
+
+
+    return tracks, dts
