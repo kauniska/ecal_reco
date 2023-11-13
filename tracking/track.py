@@ -15,6 +15,7 @@ from filterpy.kalman import KalmanFilter
 from track_reconstruction import coord_to_pos_z,coord_to_pos_x,coord_to_pos
 from physics import overlap_length
 
+
 class Track:
     def __init__(self, *args):
         """Creates a Track from arguments.
@@ -60,7 +61,8 @@ class Track:
             self.hits_index = [i for i in range(len(self.hits))]
         else:
             raise ValueError("not the correct number of arguments given")
-        
+
+
     def keep_hits_only(self):
         """Keeps only the hits given by the hits_index
         """
