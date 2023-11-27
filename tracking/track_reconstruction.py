@@ -11,8 +11,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import sys
-sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\utils')
 from parameters import *
+from scipy.stats import norm
 
 
 # Check that a is tofpet on the x side of the calorimeter
@@ -29,7 +30,22 @@ def mapping_2D(t_id,channel):
         return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]
     else:
         t_id=t_id-2
-        return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]
+        return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]   
+
+## Determine the tofpet id and channel from (X,Y,Z) coord. Warning : topfet id is not unique (modulo) !
+def mapping_inv_2D(side_x,bar,layer) :
+    for t_id in range(8) :
+        for channel in range(64) :
+            if side_x and mapping_2D(t_id,channel) == [bar,layer] :
+                return [t_id, channel]
+            elif not side_x and mapping_2D(t_id,channel) == [bar,layer] :
+                return [t_id+2, channel]
+
+
+
+
+
+
 
 ## Looks how many hits overlap at a certain angle t. Return the the hits index that overlap, the number of overlaping
 # and the boundaries, boundaries are the extremal x that belongs to the overlap region

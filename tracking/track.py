@@ -5,14 +5,16 @@ The methods are the chi^2.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from hit import Hit
 import sys
-sys.path.insert(1, r"C:\Users\nelg\Desktop\Cours\Labo\TP4\Git\utils")
+sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
+sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\tracking')
+from hit import Hit
 from parameters import *
 plt.ion()
 from filterpy.kalman import KalmanFilter
 from track_reconstruction import coord_to_pos_z,coord_to_pos_x,coord_to_pos
 from physics import overlap_length
+
 
 class Track:
     def __init__(self, *args):
@@ -39,7 +41,8 @@ class Track:
         elif len(args) == 1:
             self.hits = args[0]
             self.n_freedom = len(self.hits) - 1 # two parameters: f(x) = a*x + b, number of data points = len + 1
-            self.find_track()
+            self.find_track(1, 10,False,5,0)
+            self.find_track(10, 15,False,0.5,self.t)
             self.mean_time = None # TODO: implement
             if self.n_freedom > 0:
                 self.reduced_chi2 = self.chi2()/self.n_freedom
@@ -58,7 +61,8 @@ class Track:
             self.hits_index = [i for i in range(len(self.hits))]
         else:
             raise ValueError("not the correct number of arguments given")
-        
+
+
     def keep_hits_only(self):
         """Keeps only the hits given by the hits_index
         """
@@ -87,7 +91,10 @@ class Track:
             
         axs.hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
         # axs.hist2d(hitsX, hitsZ, bins=[24, 8], range=[[1, 24], [1, 8]], cmap='magma')
-        axs.plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
+        if(self.hits[0].is_sidex):
+            axs.plot([coord_to_pos_x(f[0]) for f in fit], [coord_to_pos_z(f[1],True) for f in fit], 'b-')
+        else:
+            axs.plot([coord_to_pos_x(f[0]) for f in fit], [coord_to_pos_z(f[1],False) for f in fit], 'b-')
         plt.xticks(np.linspace(1, 24, 6)*width)
         plt.yticks(np.linspace(1, 8, 8)*(thickness_screen+thickness))
         coords_x = []
@@ -141,7 +148,7 @@ class Track:
     def is_good_fit(self):
         return (self.reduced_chi2 < 3.841)
     
-    def find_track(self, sampling = 10, angle_sampling = 120, plot = False):
+    def find_track(self, sampling = 10, angle_sampling = 120, plot = False, max = 5, t = 0):
         """Finds the best parameters of a track passing through the hits, can plot the recorded hits and track
 
         Args:
@@ -153,8 +160,8 @@ class Track:
             t: tan of the angle (0° is vertical)
             indices: indices of the hits considered
         """
-        max=5 # => angle scanning between [-78.7°,78,7°]
-        T = np.linspace(-max, max, angle_sampling, False)
+        # => angle scanning between [-78.7°,78,7°]
+        T = np.linspace(t-max, t+max, angle_sampling, False)
         x0s = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         txs = np.empty(len(self.hits) * sampling * sampling * angle_sampling)
         for n, hit in enumerate(self.hits):
@@ -358,7 +365,7 @@ class Track:
         # measurement matrix
         f.H = np.array([[1., 0., 0., 0.],
                         [0., 1., 0., 0.]])
-        # covariance matrix # TODO: find right value
+        # covariance matrix # TODO: find right value
         # f.P = np.array([[1., 0., 0., 0.],
         #                 [0., 1., 0., 0.],
         #                 [0., 0., 1., 0.],

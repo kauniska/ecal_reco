@@ -16,3 +16,258 @@ build/*
 geant4/build/*
 .vscode/*
 .vscode/settings.json
+
+muon_decay/extracted_data
+absl_py-2.0.0-py3-none-any.whl
+astunparse-1.6.3-py2.py3-none-any.whl
+attrs-23.1.0-py3-none-any.whl
+awkward_cpp-24-cp310-cp310-win_amd64.whl
+awkward-2.4.6-py3-none-any.whl
+boost_histogram-1.4.0-cp310-cp310-win_amd64.whl
+cachetools-5.3.1-py3-none-any.whl
+certifi-2023.7.22-py3-none-any.whl
+charset_normalizer-3.3.0-cp310-cp310-win_amd64.whl
+click-8.1.7-py3-none-any.whl
+cloudpickle-3.0.0-py3-none-any.whl
+colorama-0.4.6-py2.py3-none-any.whl
+colored-2.2.3-py3-none-any.whl
+colorlog-6.7.0-py2.py3-none-any.whl
+decorator-5.1.1-py3-none-any.whl
+Deprecated-1.2.14-py2.py3-none-any.whl
+dill-0.3.7-py3-none-any.whl
+dm_tree-0.1.8-cp310-cp310-win_amd64.whl
+dotmap-1.3.30-py3-none-any.whl
+flatbuffers-23.5.26-py2.py3-none-any.whl
+frozendict-2.3.8-cp310-cp310-win_amd64.whl
+gast-0.4.0-py3-none-any.whl
+google_auth_oauthlib-1.0.0-py2.py3-none-any.whl
+google_auth-2.23.3-py2.py3-none-any.whl
+google_pasta-0.2.0-py3-none-any.whl
+grpcio-1.59.0-cp310-cp310-win_amd64.whl
+h5py-3.10.0-cp310-cp310-win_amd64.whl
+hist-2.7.2-py3-none-any.whl
+histoprint-2.4.0-py3-none-any.whl
+idna-3.4-py3-none-any.whl
+iminuit-2.24.0-cp310-cp310-win_amd64.whl
+importlib_metadata-6.8.0-py3-none-any.whl
+jacobi-0.9.2-py3-none-any.whl
+keras-2.13.1-py3-none-any.whl
+libclang-16.0.6-py2.py3-none-win_amd64.whl
+Markdown-3.5-py3-none-any.whl
+MarkupSafe-2.1.3-cp310-cp310-win_amd64.whl
+numdifftools-0.9.41-py2.py3-none-any.whl
+numpy-1.24.3-cp310-cp310-win_amd64.whl
+oauthlib-3.2.2-py3-none-any.whl
+opt_einsum-3.3.0-py3-none-any.whl
+ordered_set-4.1.0-py3-none-any.whl
+packaging-23.2-py3-none-any.whl
+pandas-2.1.1-cp310-cp310-win_amd64.whl
+protobuf-4.24.4-cp310-abi3-win_amd64.whl
+pyasn1_modules-0.3.0-py2.py3-none-any.whl
+pyasn1-0.5.0-py2.py3-none-any.whl
+pydantic-1.10.13-cp310-cp310-win_amd64.whl
+python_dateutil-2.8.2-py2.py3-none-any.whl
+pytz-2023.3.post1-py2.py3-none-any.whl
+PyYAML-6.0.1-cp310-cp310-win_amd64.whl
+requests_oauthlib-1.3.1-py2.py3-none-any.whl
+requests-2.31.0-py3-none-any.whl
+rsa-4.9-py3-none-any.whl
+scipy-1.11.3-cp310-cp310-win_amd64.whl
+setuptools-68.2.2-py3-none-any.whl
+six-1.16.0-py2.py3-none-any.whl
+tabulate-0.9.0-py3-none-any.whl
+tensorboard_data_server-0.7.1-py3-none-any.whl
+tensorboard-2.13.0-py3-none-any.whl
+tensorflow_estimator-2.13.0-py2.py3-none-any.whl
+tensorflow_intel-2.13.1-cp310-cp310-win_amd64.whl
+tensorflow_io_gcs_filesystem-0.31.0-cp310-cp310-win_amd64.whl
+tensorflow_probability-0.21.0-py2.py3-none-any.whl
+tensorflow-2.13.1-cp310-cp310-win_amd64.whl
+termcolor-2.3.0-py3-none-any.whl
+texttable-1.7.0-py2.py3-none-any.whl
+typing_extensions-4.5.0-py3-none-any.whl
+tzdata-2023.3-py2.py3-none-any.whl
+uhi-0.3.3-py3-none-any.whl
+uproot-5.1.1-py3-none-any.whl
+urllib3-2.0.6-py3-none-any.whl
+werkzeug-3.0.0-py3-none-any.whl
+wheel-0.41.2-py3-none-any.whl
+wrapt-1.15.0-cp310-cp310-win_amd64.whl
+xxhash-3.4.1-cp310-cp310-win_amd64.whl
+zfit_interface-0.0.3-py2.py3-none-any.whl
+zfit-0.16.0-py2.py3-none-any.whl
+zipp-3.17.0-py3-none-any.whl
+muon_decay/fig_muon_decay_problem.pdf
+muon_decay/muon_lifetime.pdf
+muon_decay/shower_section.pdf
+muon_decay/extracted_data/pickle_decay_data_run_000009
+muon_decay/extracted_data/pickle_decay_data_run_000010
+time_alignement/fig_muon_decay_problem.pdf
+time_alignement/extracted_data/events_indices_run_000006.txt
+time_alignement/extracted_data/events_indices_run_000009.txt
+time_alignement/extracted_data/events_indices_run_000011.txt
+time_alignement/extracted_data/filtering_data_run_000006
+time_alignement/extracted_data/filtering_data_run_000011
+=======
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/#use-with-ide
+.pdm.toml
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
+

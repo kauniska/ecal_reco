@@ -2,9 +2,10 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import sys
-sys.path.insert(1, ".\\utils")
-sys.path.insert(1, ".\\tracking")
+sys.path.insert(1, r".\utils")
+sys.path.insert(1, r".\tracking")
 from hit import Hit
+from track import Track
 from track3D import Track3D
 from parameters import *
 from physics import dist_line_rect
@@ -13,7 +14,7 @@ from physics import dist_line_rect
 ## This function finds the indices of event which are good candidate for muon decay : good tracks that don't end on a side of the detector
 ## have enough hits on both planes, and close to the reconstructed track, and for which the next event is not too long after and has hits
 ## close to the possible decay point.
-def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
+def find_muon_track(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                     save_indices = True, save_hits = False, save_stats = False, save_time_intervals = True,\
                     run_name = None, storage_dir = None, \
                     return_stats = True):
@@ -33,8 +34,8 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
         -candidate_index : indices of the events considered by the algorithm as muon decay
         -time_intervals : time interval in clock cycle between the muon track and the decay for each decay
        The next return numbers are the stats returned if return_stats = True :       
-        -low_number : number of events which contain less that 3 hits in one of the 2 planes
-        -bottom_touch : number of events for which the last layer in x or y direction contains a hit
+        -wrong_number : number of events which contain less that 3 hits in one of the 2 planes
+        -not_pass_through : number of events for which the last layer in x or y direction contains a hit
         -side_touch : number of events for which a hit with the lowest z coordinate is a the side of the detector
         -bad_fit : number of events for which the chi square value of the reconstructed track wasn't satisfactory
         -last_event_of_df : number of events for which the muon track is the last event of a run : the decay can't be accessed
@@ -45,85 +46,79 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
     """
     candidate_index = []
     time_intervals = []
-    low_number = 0
-    bottom_touch = 0
+    wrong_number = 0
+    not_pass_through = 0
     side_touch = 0
     bad_fit = 0
     last_event_of_df = 0
     too_large_time_interval = 0
     no_spacial_correlation = 0
     hits_far_from_track = 0
+    double_hit_same_z=0
 
     if save_hits:
         decay_data = {'event_index': [], 'track_x0' : [], 'track_tx' : [], 'track_y0' : [], 'track_ty' : [], 'hits_muon': [], 'hits_electron': [], 'time_interval' : []}
 
-    for index, row in tqdm(df.iterrows(), total = df.shape[0]):
-        hits = [Hit(row,i) for i in range(row['n_hits'])]
-        hitsX = [h for h in hits if h.is_sidex]
+    for index, row in tqdm(df.iterrows(), total = df.shape[0]):  #interated over df, showing a progress bar 
+        hits = [Hit(row,i) for i in range(row['n_hits'])]   #hits is a list corresponding to a row of the DF, it contains contains n_hit element, each one being a Hit
+        hitsX = [h for h in hits if h.is_sidex]    #filters hits to keep only the Hit where is_sidex is True --> hits on the x side
         hitsY = [h for h in hits if not h.is_sidex]
         
         ## Some events don't have three hits on one of the two sides and are thus not considered
-        if len(hitsX) > 3 and len(hitsY) > 3:
-            #One only considers the events for which the potential track ended inside the detector
+        if len(hitsX) == 8  and len(hitsY) == 8 :   #we want the particle to pass through the detector, and to hit once each layer 
+            # The track must go through the whole detector 
             hitsX.sort(key = lambda hit: -hit.coord[1])
             hitsY.sort(key = lambda hit: -hit.coord[1])
-            if hitsX[-1].coord[1] > 1 and hitsY[-1].coord[1] > 1:
-                hitsX_last = [hit for hit in hitsX if hit.coord[1]==hitsX[-1].coord[1]]
+
+            if hitsX[-1].coord[1] <= 1 and hitsY[-1].coord[1] <= 1:    #if the track went through the last x and y layers 
+                hitsX_last = [hit for hit in hitsX if hit.coord[1]==hitsX[-1].coord[1]]   #we take all the hit with the same z component than the last hit
                 hitsY_last = [hit for hit in hitsY if hit.coord[1]==hitsY[-1].coord[1]]
-                X_ok = True
-                Y_ok = True
-                for hit in hitsX_last:
-                    if hit.coord[0] == 1 or hit.coord[0] == 24:
-                        X_ok = False
-                        side_touch += 1
-                for hit in hitsY_last:
-                    if hit.coord[0] == 1 or hit.coord[0] == 24:
-                        Y_ok = False
-                        if X_ok:
-                            side_touch += 1
-                if X_ok and Y_ok:
-                    # get track parameters
-                    track = Track3D(hits)
+                last_x=True
+                last_y=True
 
-                    ## check if track has a "good" chi2 value
-                    if track.is_good_2D_fit():
-                        if index+1 >= len(df_total):
-                            last_event_of_df += 1
-                        else:
-                            next_event = df_total.loc[index+1]
-                        
+                 
+                if hitsX[0].coord[1] >= 8 and hitsY[0].coord[1] >= 8:    #if the track went through the first x and y layers 
+                    hitsX_first = [hit for hit in hitsX if hit.coord[1]==hitsX[0].coord[1]]   #we take all the hit with the same z component than the last hit
+                    hitsY_first = [hit for hit in hitsY if hit.coord[1]==hitsY[0].coord[1]]
+                    first_x=True
+                    first_y=True
     
-                            hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
-                            hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
-                            hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
-
-                            hitsX = [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) < spacial_cutoff] #Keep only the hits close to the track
-                            hitsY = [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) < spacial_cutoff]
-
-                            ## check if there's still hits in the list after removing the ones far from the reconstructed track
-                            if len(hitsX) != 0 or len(hitsY) != 0:
-
-                                ## check if the next event happend close enough from the muon track for it to be the product of a decay
-                                time_interval = hits_next_event[0].timestamp_event-hits[0].timestamp_event
-                                if  time_interval < time_cutoff: 
-                                    hitsX.sort(key = lambda hit: -hit.get_pos()[1])
-                                    hitsY.sort(key = lambda hit: -hit.get_pos()[1])
-
-                                    X_near = False
-                                    Y_near = False
-
-                                    ## Check if the hits in the next event are close to the end of the muon track
-                                    if len(hitsX) != 0:
-                                        for h in hitsX_next_event:
-                                            if np.linalg.norm(h.get_pos()-hitsX[-1].get_pos()) < spacial_cutoff:
-                                                X_near = True
-                                    if len(hitsY) != 0:
-                                        for h in hitsY_next_event:
-                                            if np.linalg.norm(h.get_pos()-hitsY[-1].get_pos()) < spacial_cutoff:
-                                                Y_near = True
-                                    if X_near and Y_near:
+                    if len(hitsX_last) != 1 or len(hitsY_last) !=1 :    #verify the last layer is only hit once
+                     last_x = False
+                     last_y= False
+                     double_hit_same_z+=1
+                    
+                    if len(hitsX_first) != 1 or len(hitsY_first) !=1 :    #verify the first layer is only hit once
+                     first_x = False
+                     first_y= False
+                     double_hit_same_z+=1
+                    
+                    
+                    if last_y and last_x and first_x and first_y: 
+                           track = Track3D(hits)
+       
+                           ## check if track has a "good" chi2 value
+                           if track.is_good_2D_fit():
+                               if index+1 >= len(df_total):
+                                   last_event_of_df += 1
+                               else:
+                                   next_event = df_total.loc[index]
+                               
+           
+                                   hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
+                                   hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
+                                   hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
+       
+                                   hitsX = [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) < spacial_cutoff] #Keep only the hits close to the track
+                                   hitsY = [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) < spacial_cutoff]
+       
+                                   ## check if there's still hits in the list after removing the ones far from the reconstructed track
+                                   if len(hitsX) == 0 or len(hitsY) == 0:
+       
+                                       hits_far_from_track +=1
+       
+                                   else:
                                         candidate_index.append(index)
-                                        time_intervals.append(time_interval)
                                         if save_hits:
                                             decay_data['event_index'].append(index)
                                             decay_data['track_x0'].append(track.x.x0)
@@ -132,20 +127,17 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                                             decay_data['track_ty'].append(track.y.t)
                                             decay_data['hits_muon'].append(hits)
                                             decay_data['hits_electron'].append(hits_next_event)
-                                            decay_data['time_interval'].append(time_interval)
 
-                                    else:
-                                        no_spacial_correlation += 1
-                                else:
-                                    too_large_time_interval += 1
-                            else:
-                                hits_far_from_track += 1
-                    else:
-                        bad_fit += 1
+                           else:
+                               bad_fit += 1
+                    else : 
+                      double_hit_same_z=0
             else:
-                bottom_touch += 1
+                not_pass_through += 1
         else:
-            low_number += 1
+            wrong_number += 1
+
+
     if save_indices:
         np.savetxt(storage_dir+"events_indices"+run_name+".txt", candidate_index)
     if save_time_intervals:
@@ -157,8 +149,8 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
     new_len = len(df)
     filtering = pd.DataFrame({'og_len' : [og_len],
                     'new_len' : [new_len],
-                    'low_number' : [low_number],
-                    'bottom_touch' : [bottom_touch],
+                    'wrong_number' : [wrong_number],
+                    'not_pass_through' : [not_pass_through],
                     'side_touch' : [side_touch],
                     'bad_fit': [bad_fit],
                     'last_event_of_df' : [last_event_of_df],

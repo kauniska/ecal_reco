@@ -9,15 +9,20 @@ br_list_evt = ['timestamp', 'evt_number', 'flags']
 evt_tree = 'event'
 hits_tree = 'board_57'
 
-data = uproot.open('C:\\Users\\Pascal\\Desktop\\TP4a\\git\\test_data_loading\\data_0000.root')
+
+data = uproot.open('C:\\Users\\eliot\\OneDrive\\Documents\\EPFL\\TP4_ECAL\\Data\\data_0000.root')
+#print(data['event_data'].keys())
+
+
 
 x = data['event_data']['evt_number']
 y = data['event_data']['n_hits']
 print(y)
-print(data['event_data'].keys())
+
 print(x)
 fig, ax = plt.subplots()
-ax.plot(y,'+')
+ax.plot(x,'+')
+
 
 ax.set(xlabel='x', ylabel='voltage (mV)',
        title='test')
