@@ -37,16 +37,6 @@ def time_correction_fiber(args):
         Typrime = Track(newy)
         return Track3D(Txprime,Typrime)
         
-    # If 2 arguments : a timestamp, a x/y coordinate(in physical units [m]))
-    if len(args) == 2 :
-        timestamp = args[0] - args[1]/Speed_In_Fiber
-
-        return timestamp
-    
-    # If 3 arguments : A timestamp, and coordinates (in tofpet id and chanels), change the timestamp and return it
-    if len(args) == 3 :
-        timestamp = args[0] - mapping_2D(args[1],args[2])[1]/Speed_In_Fiber
-        return timestamp
     
 
     ## Apply a time correction coming from time resultion and light propagation in fibers
