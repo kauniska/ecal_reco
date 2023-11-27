@@ -13,9 +13,10 @@ from parameters import *
 def time_correction_fiber(args):
     Speed_In_Fiber = 15 # cm/ns
     Speed_Of_Light = 30 # cm/ns
-    fac = 6.25 # ns/clock cycle
-    Speed_In_Fiber = Speed_In_Fiber*fac # cm/clock cycle
-    Speed_Of_Light = Speed_Of_Light*fac # cm/clock cycle
+    ## clock cycle = 6.25 nanosecond
+    Speed_In_Fiber = 1/convert_ns_to_clockcycle(1/Speed_In_Fiber) # cm/clock cycle
+    Speed_Of_Light = 1/convert_ns_to_clockcycle(1/Speed_Of_Light) # cm/clock cycle
+
     #If one argument whcih is Track3D, change the timestamp of each hits of the track and return the track
     if len(args)== 1 : 
         Tx = arg[0].x
