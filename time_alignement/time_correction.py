@@ -37,9 +37,32 @@ def time_correction_fiber(args):
         Typrime = Track(newy)
         return Track3D(Txprime,Typrime)
         
+
+    
+def time_correction_electronics(args) :
+
+    # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
+    if len(args) == 3 :
+        timestamp = args[0] 
+        tofpet_id= args[1] 
+        tofpet_channel= args[2] 
+
+        if is_sidex(tofpet_id) :
+            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
+        else :
+            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
+    
+    # If 1 argument which is a Track3D, change timestamp of each hit and return the track3D
+    if len(args) == 1 :
+        T = args[0]
+        for h in T.x.hits:
+            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(1,h.get_pos())]
+        for h in T.y.hits:
+            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(0,h.get_pos())]
+        return T
     
 
-    ## Apply a time correction coming from time resultion and light propagation in fibers
+    ## Apply a time correction from general offset and coming from the time alignement procedure
 def time_correction_offset(args) :
 
     muX = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
@@ -69,24 +92,3 @@ def time_correction_offset(args) :
 
 
 
-def time_correction_electronics(args) :
-
-    # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
-    if len(args) == 3 :
-        timestamp = args[0] 
-        tofpet_id= args[1] 
-        tofpet_channel= args[2] 
-
-        if is_sidex(tofpet_id) :
-            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
-        else :
-            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
-    
-    # If 1 argument which is a Track3D, change timestamp of each hit and return the track3D
-    if len(args) == 1 :
-        T = args[0]
-        for h in T.x.hits:
-            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(1,h.get_pos())]
-        for h in T.y.hits:
-            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(0,h.get_pos())]
-        return T
