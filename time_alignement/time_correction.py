@@ -5,10 +5,10 @@ import matplotlib as plt
 
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\tracking')
-from track import Track
 from track_reconstruction import *
 from parameters import *
-from track3D import Track3D
+# from track import Track
+# from track3D import Track3D
 
 def time_correction_fiber(args):
     Speed_In_Fiber = 15 # cm/ns
@@ -73,11 +73,6 @@ def time_correction_offset(args) :
 
 
 def time_correction_electronics(args) :
-    Speed_In_Board = 1 # cm/ns
-
-    distance_Channels_X = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
-    distance_Channels_Y = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
-      
 
     # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
     if len(args) == 3 :
@@ -85,17 +80,16 @@ def time_correction_electronics(args) :
         tofpet_id= args[1] 
         tofpet_channel= args[2] 
 
-     
         if is_sidex(tofpet_id) :
-            return timestamp - distance_Channels_X[tofpet_id,tofpet_channel]/Speed_In_Board
+            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
         else :
-            return timestamp - distance_Channels_Y[tofpet_id,tofpet_channel]/Speed_In_Board
+            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
     
     # If 1 argument which is a Track3D, change timestamp of each hit and return the track3D
     if len(args) == 1 :
         T = args[0]
         for h in T.x.hits:
-            h.timestamp = h.timestamp - distance_Channels_X[mapping_inv_2D(1,h.get_pos())]/Speed_In_Board
+            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(1,h.get_pos())]
         for h in T.y.hits:
-            h.timestamp = h.timestamp - distance_Channels_Y[mapping_inv_2D(0,h.get_pos())]/Speed_In_Board
+            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(0,h.get_pos())]
         return T

@@ -40,11 +40,27 @@ def mapping_inv_2D(side_x,bar,layer) :
                 return [t_id, channel]
             elif not side_x and mapping_2D(t_id,channel) == [bar,layer] :
                 return [t_id+2, channel]
+            
 
 
+## Convert nanosecond into clockcyle using : 1 clockcyle = 6.25 ns (defined in parameters)
+def convert_ns_to_clockcycle(ns) :
+    clockcycle = ns/clockcycle_value
+    return clockcycle
 
 
+def mapping_SiPM_delay(tofpet_id, tofpet_channel)
+    ## find the delay of the corresponding SiPM channel (in picosecond)
+    ## then convert it into nanosecond, the into clockcycle
 
+    if tofpet_id % 2 == 0 :        
+        return convert_ns_to_clockcycle(SiPM_delay[63-tofpet_channel]/1000)  
+         ## SiPM channels 1-64 are related to tofpet 0 (or 2/4/6) 
+         ## SiPM channels are inversly sorted as tofpet channels
+    else                            
+        return convert_ns_to_clockcycle(SiPM_delay[127-tofpet_channel]/1000)
+        ## SiPM channels 65-96 are related to tofpet 1 (or 3/5/7)
+        ## SiPM channels are inversly sorted as tofpet channels
 
 
 ## Looks how many hits overlap at a certain angle t. Return the the hits index that overlap, the number of overlaping
