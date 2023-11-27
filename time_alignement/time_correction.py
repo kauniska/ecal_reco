@@ -1,11 +1,13 @@
 import sys
 import os 
 import fnmatch
+import matplotlib as plt
 
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\tracking')
 from track import Track
 from track_reconstruction import *
+from parameters import *
 from track3D import Track3D
 
 def time_correction_fiber(args):
@@ -38,3 +40,62 @@ def time_correction_fiber(args):
     if len(args) == 3 :
         timestamp = args[0] - mapping_2D(args[1],args[2])[1]/Speed_In_Fiber
         return timestamp
+    
+
+    ## Apply a time correction coming from time resultion and light propagation in fibers
+def time_correction_offset(args) :
+
+    muX = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
+    muY = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
+
+    # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
+    if len(args) == 3 :
+        timestamp = args[0] 
+        tofpet_id= args[1] 
+        tofpet_channel= args[2] 
+    
+        
+        if is_sidex(tofpet_id) :
+            return timestamp - muX[tofpet_id,tofpet_channel]
+        else :
+            return timestamp - muY[tofpet_id,tofpet_channel]
+    
+    # If 1 argument which is a track3D, change the timestamp of every hit and return the track3D
+    if len(args) == 1 :
+        T = args[0]
+        for h in T.x.hits:
+            h.timestamp = h.timestamp - muX[mapping_inv_2D(1,h.get_pos())]
+        for h in T.y.hits:
+            h.timestamp = h.timestamp - muY[mapping_inv_2D(0,h.get_pos())]
+      
+        return T
+
+
+
+def time_correction_electronics(args) :
+    Speed_In_Board = 1 # cm/ns
+
+    distance_Channels_X = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
+    distance_Channels_Y = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
+      
+
+    # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
+    if len(args) == 3 :
+        timestamp = args[0] 
+        tofpet_id= args[1] 
+        tofpet_channel= args[2] 
+
+     
+        if is_sidex(tofpet_id) :
+            return timestamp - distance_Channels_X[tofpet_id,tofpet_channel]/Speed_In_Board
+        else :
+            return timestamp - distance_Channels_Y[tofpet_id,tofpet_channel]/Speed_In_Board
+    
+    # If 1 argument which is a Track3D, change timestamp of each hit and return the track3D
+    if len(args) == 1 :
+        T = args[0]
+        for h in T.x.hits:
+            h.timestamp = h.timestamp - distance_Channels_X[mapping_inv_2D(1,h.get_pos())]/Speed_In_Board
+        for h in T.y.hits:
+            h.timestamp = h.timestamp - distance_Channels_Y[mapping_inv_2D(0,h.get_pos())]/Speed_In_Board
+        return T
