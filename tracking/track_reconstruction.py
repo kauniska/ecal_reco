@@ -42,19 +42,10 @@ def mapping_inv_2D(side_x,bar,layer) :
                 return [t_id+2, channel]
 
 
-## Apply a time correction coming from time resultion and light propagation in fibers
-def time_offset_correction(timestamp, tofpet_id, tofpet_channel) :
 
-    muX = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
-    muY = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
-    
-    if is_sidex(tofpet_id) :
-        return timestamp - muX[tofpet_id,tofpet_channel]
-    else :
-        return timestamp - muY[tofpet_id,tofpet_channel]
-    
 
-    
+
+
 
 ## Looks how many hits overlap at a certain angle t. Return the the hits index that overlap, the number of overlaping
 # and the boundaries, boundaries are the extremal x that belongs to the overlap region

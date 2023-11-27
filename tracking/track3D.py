@@ -63,6 +63,54 @@ class Track3D:
         # fig.show()
         # fig.savefig('test.png')
         
+    def show(self):
+        tt_x = self.x
+        tt_y = self.y
+     
+        z = np.linspace(0,16,50)
+        x = tt_x.x(z)
+        y = tt_y.x(z)
+     
+        draw = []
+        line_trace = go.Scatter3d(
+            x=x,
+            y=y,
+            z=z,
+            mode='lines',
+            line=dict(color='black', width=5)
+        )
+        draw.append(line_trace)
+        for h in tt_x.hits:
+            hitsXp = go.Scatter3d(
+                x=np.zeros(2)+h.get_pos()[0],
+                y=[0,38.4],
+                z=np.zeros(2)+h.get_pos()[1],
+                mode='lines',
+                marker=dict(size=1, color='blue')
+            )
+            draw.append(hitsXp)
+        for h in tt_y.hits:
+            hitsXp = go.Scatter3d(
+                y=np.zeros(2)+h.get_pos()[0],
+                x=[0,38.4],
+                z=np.zeros(2)+h.get_pos()[1],
+                mode='lines',
+                marker=dict(size=1, color='red')
+            )
+            draw.append(hitsXp)
+        fig = go.Figure(data=draw)
+        # Customize the layout
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(range=[0, 38.4], title='X [cm]'),
+                yaxis=dict(range=[0, 38.4], title='Y [cm]'),
+                zaxis=dict(range=[0, 16], title='Z [cm]'),
+                aspectmode='cube'
+            ),
+        )
+        # Show the plot
+        fig.show()
+
     def kalman_filter(self, sigma = 0.5, plot = False):
         if plot:
             fig, axs = plt.subplots(1, 2)
