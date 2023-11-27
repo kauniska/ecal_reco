@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from track import Track
+import plotly.graph_objects as go
 
 class Track3D:
     def __init__(self, *args):
@@ -20,7 +21,12 @@ class Track3D:
         elif len(args) == 2:
             self.x = args[0]
             self.y = args[1]
+<<<<<<< HEAD
             self.time =  self.x.get_timestamps() + self.y.get_timestamps()
+=======
+            self.time = self.x.get_timestamps() + self.y.get_timestamps()
+
+>>>>>>> d32bfcda9adbbedc194d2349dee3960d5aeaadbf
             
     def get_time_interval(self):
         """Get the timings of all hits, returns None if zero hits are associated to the track
@@ -62,6 +68,7 @@ class Track3D:
         return fig
         # fig.show()
         # fig.savefig('test.png')
+<<<<<<< HEAD
         
     def show(self):
         tt_x = self.x
@@ -71,6 +78,16 @@ class Track3D:
         x = tt_x.x(z)
         y = tt_y.x(z)
      
+=======
+    def show(self):
+        tt_x = self.x
+        tt_y = self.y
+
+        z = np.linspace(0,16,50)
+        x = tt_x.x(z)
+        y = tt_y.x(z)
+
+>>>>>>> d32bfcda9adbbedc194d2349dee3960d5aeaadbf
         draw = []
         line_trace = go.Scatter3d(
             x=x,
@@ -110,7 +127,10 @@ class Track3D:
         )
         # Show the plot
         fig.show()
+<<<<<<< HEAD
 
+=======
+>>>>>>> d32bfcda9adbbedc194d2349dee3960d5aeaadbf
     def kalman_filter(self, sigma = 0.5, plot = False):
         if plot:
             fig, axs = plt.subplots(1, 2)
