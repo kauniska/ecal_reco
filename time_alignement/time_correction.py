@@ -12,24 +12,30 @@ from parameters import *
 
 def time_correction_fiber(args):
     Speed_In_Fiber = 15 # cm/ns
-
+    Speed_Of_Light = 30 # cm/ns
+    fac = 6.25 # ns/clock cycle
+    Speed_In_Fiber = Speed_In_Fiber*fac # cm/clock cycle
+    Speed_Of_Light = Speed_Of_Light*fac # cm/clock cycle
     #If one argument whcih is Track3D, change the timestamp of each hits of the track and return the track
     if len(args)== 1 : 
-        Tx = args[0].x
-        Ty = args[0].y
+        Tx = arg[0].x
+        Ty = arg[0].y
         
         newx = []
         newy = []
+        zmax =  thickness+thickness_screen + (8-0.5)*thickness + (8-1)*(2*thickness_screen+thickness)
         for h in Tx.hits:
             newx.append(h)
-            newx[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber
+            heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
+            newx[-1].timestamp = h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
         for h in Ty.hits:
             newy.append(h)
-            newy[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber
+            heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
+            newy[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
         Txprime = Track(newx)
         Typrime = Track(newy)
         return Track3D(Txprime,Typrime)
-    
+        
     # If 2 arguments : a timestamp, a x/y coordinate(in physical units [m]))
     if len(args) == 2 :
         timestamp = args[0] - args[1]/Speed_In_Fiber
