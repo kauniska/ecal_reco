@@ -1,7 +1,7 @@
 '''
 Geometric properties of the detector
 '''
-
+import numpy as np
 n_strips = 24
 n_layers = 8
 
