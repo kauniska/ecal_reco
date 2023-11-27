@@ -18,10 +18,10 @@ def time_correction(T3D):
     newy = []
     for h in Tx.hits:
         newx.append(h)
-        newx[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber
+        newx[-1].timestamp = h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber
     for h in Ty.hits:
         newy.append(h)
-        newy[-1].timestamp = h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber
+        newy[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber
     Txprime = Track(newx)
     Typrime = Track(newy)
     return Track3D(Txprime,Typrime)

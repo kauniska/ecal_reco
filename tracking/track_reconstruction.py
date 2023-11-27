@@ -30,7 +30,9 @@ def mapping_2D(t_id,channel):
         return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]
     else:
         t_id=t_id-2
-        return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]
+        intermediate = mapping[int(t_id/4)][channel+32*np.mod(t_id,2)] # reverse y coord to have the origin at the angle between the two SiPMs
+        intermediate[0] = 25-intermediate[0]
+        return intermediate
 
 ## Looks how many hits overlap at a certain angle t. Return the the hits index that overlap, the number of overlaping
 # and the boundaries, boundaries are the extremal x that belongs to the overlap region
