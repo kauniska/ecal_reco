@@ -5,10 +5,8 @@ import matplotlib as plt
 
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\tracking')
-from track import Track
 from track_reconstruction import *
 from parameters import *
-from track3D import Track3D
 
 def time_correction_fiber(args):
     Speed_In_Fiber = 15 # cm/ns
