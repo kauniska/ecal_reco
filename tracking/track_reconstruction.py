@@ -34,7 +34,7 @@ def mapping_2D(t_id,channel):
         return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]   
 
 ## Determine the tofpet id and channel from (X,Y,Z) coord. Warning : topfet id is not unique (modulo) !
-def mapping_inv_2D(side_x,bar,layer) :
+def mapping_inv_2D(side_x,bar,layer) :y
     for t_id in range(8) :
         for channel in range(64) :
             if side_x and mapping_2D(t_id,channel) == [bar,layer] :

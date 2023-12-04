@@ -1,7 +1,10 @@
 # track3D
+import plotly
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.express as px
 from track import Track
+import plotly.graph_objects as go
 
 class Track3D:
     def __init__(self, *args):

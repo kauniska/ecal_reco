@@ -64,7 +64,7 @@ def time_correction_electronics(*args) :
             h.timestamp = h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1])
         for h in T.y.hits:
             [y,z] = h.coord
-            tofpet = mapping_inv_2D(1,y,z)
+            tofpet = mapping_inv_2D(0,y,z)
             h.timestamp = h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1])
         return T
     
