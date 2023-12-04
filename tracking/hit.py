@@ -12,8 +12,6 @@ import sys
 sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\utils')
 sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\tracking')
 sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\time_alignement')
-
-from time_correction import time_correction_offset
 from parameters import *
 
 class Hit:
@@ -43,7 +41,8 @@ class Hit:
                 self.is_sidex = True
             else:
                 self.is_sidex = False
-            self.timestamp = time_correction_offset(args[0]['timestamp'][args[1]],args[0]['tofpet_id'][args[1]],args[0]['tofpet_channel'][args[1]])
+                self.coord[0] = 25-self.coord[0]
+            self.timestamp = args[0]['timestamp'][args[1]] #,args[0]['tofpet_id'][args[1]],args[0]['tofpet_channel'][args[1]])
             self.timestamp_event = args[0]['evt_timestamp']
             self.value = args[0]['value'][args[1]]
         elif len(args) == 5:
