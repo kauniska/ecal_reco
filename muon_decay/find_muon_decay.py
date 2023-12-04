@@ -4,10 +4,12 @@ import pandas as pd
 import sys
 sys.path.insert(1, ".\\utils")
 sys.path.insert(1, ".\\tracking")
+sys.path.insert(1, ".\\time_alignement")
 from hit import Hit
 from track3D import Track3D
 from parameters import *
 from physics import dist_line_rect
+from time_correction import *
 
 
 ## This function finds the indices of event which are good candidate for muon decay : good tracks that don't end on a side of the detector
@@ -16,7 +18,7 @@ from physics import dist_line_rect
 def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                     save_indices = True, save_hits = False, save_stats = False, save_time_intervals = True,\
                     run_name = None, storage_dir = None, \
-                    return_stats = True):
+                    return_stats = True, time_corr = False):
     """
     Arguments :
         -df : data frame filtered containing only the events with a certain range of n_hits
@@ -28,6 +30,7 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
         -save_stats : if True, the function saves the filtering stats in a dictionary with pickle in {storage_dir"filtering_data"run_name}   
         -save_time_intervals : if True, the time intervals are stored in {storage_dir"time_intervals"run_name.txt}     
         -return_stats : if True, the function returns the number of event filtered out at each step of the algorithm
+        -time_corr : if True, apply time correction at the creation of Track3D
 
     Returns :
         -candidate_index : indices of the events considered by the algorithm as muon decay
@@ -82,8 +85,11 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                         if X_ok:
                             side_touch += 1
                 if X_ok and Y_ok:
-                    # get track parameters
-                    track = Track3D(hits)
+                    # get track parameters and apply time correction
+                    if time_corr : 
+                        track = time_correction_global(Track3D(hits))
+                    else : 
+                        track = Track3D(hits)
 
                     ## check if track has a "good" chi2 value
                     if track.is_good_2D_fit():

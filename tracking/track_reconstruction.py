@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import sys
-sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\utils')
+import fnmatch
+sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 from parameters import *
 from scipy.stats import norm
 
@@ -49,7 +50,7 @@ def convert_ns_to_clockcycle(ns) :
     return clockcycle
 
 
-def mapping_SiPM_delay(tofpet_id, tofpet_channel)
+def mapping_SiPM_delay(tofpet_id, tofpet_channel) :
     ## find the delay of the corresponding SiPM channel (in picosecond)
     ## then convert it into nanosecond, the into clockcycle
 
@@ -57,7 +58,7 @@ def mapping_SiPM_delay(tofpet_id, tofpet_channel)
         return convert_ns_to_clockcycle(SiPM_delay[63-tofpet_channel]/1000)  
          ## SiPM channels 1-64 are related to tofpet 0 (or 2/4/6) 
          ## SiPM channels are inversly sorted as tofpet channels
-    else                            
+    else :         
         return convert_ns_to_clockcycle(SiPM_delay[127-tofpet_channel]/1000)
         ## SiPM channels 65-96 are related to tofpet 1 (or 3/5/7)
         ## SiPM channels are inversly sorted as tofpet channels

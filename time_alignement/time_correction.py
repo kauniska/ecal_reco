@@ -2,15 +2,18 @@ import sys
 import os 
 import fnmatch
 import matplotlib as plt
+import math
 
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\tracking')
 from track_reconstruction import *
 from parameters import *
+from track import Track
+from track3D import Track3D
 # from track import Track
 # from track3D import Track3D
 
-def time_correction_fiber(args):
+def time_correction_fiber(*args):
     Speed_In_Fiber = 15 # cm/ns
     Speed_Of_Light = 30 # cm/ns
     ## clock cycle = 6.25 nanosecond
@@ -19,8 +22,8 @@ def time_correction_fiber(args):
 
     #If one argument whcih is Track3D, change the timestamp of each hits of the track and return the track
     if len(args)== 1 : 
-        Tx = arg[0].x
-        Ty = arg[0].y
+        Tx = args[0].x
+        Ty = args[0].y
         
         newx = []
         newy = []
@@ -39,7 +42,7 @@ def time_correction_fiber(args):
         
 
     
-def time_correction_electronics(args) :
+def time_correction_electronics(*args) :
 
     # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
     if len(args) == 3 :
@@ -56,14 +59,18 @@ def time_correction_electronics(args) :
     if len(args) == 1 :
         T = args[0]
         for h in T.x.hits:
-            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(1,h.get_pos())]
+            [x,z] = h.coord
+            tofpet = mapping_inv_2D(1,x,z)
+            h.timestamp = h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1])
         for h in T.y.hits:
-            h.timestamp = h.timestamp - mapping_SiPM_delay[mapping_inv_2D(0,h.get_pos())]
+            [y,z] = h.coord
+            tofpet = mapping_inv_2D(1,y,z)
+            h.timestamp = h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1])
         return T
     
 
     ## Apply a time correction from general offset and coming from the time alignement procedure
-def time_correction_offset(args) :
+def time_correction_offset(*args) :
 
     muX = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
     muY = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
@@ -84,11 +91,23 @@ def time_correction_offset(args) :
     if len(args) == 1 :
         T = args[0]
         for h in T.x.hits:
-            h.timestamp = h.timestamp - muX[mapping_inv_2D(1,h.get_pos())]
+                tofpet = mapping_inv_2D(1,h.coord[0],h.coord[1])
+                h.timestamp = h.timestamp - muX[tofpet[0], tofpet[1]]
         for h in T.y.hits:
-            h.timestamp = h.timestamp - muY[mapping_inv_2D(0,h.get_pos())]
-      
+                tofpet = mapping_inv_2D(0,h.coord[0],h.coord[1])
+                h.timestamp = h.timestamp - muY[tofpet[0], tofpet[1]]
+
         return T
 
-
+def time_correction_global(*args) :
+    # if 1 argument which is a track3D. change the timestamp of every hit 
+    # with respect of all the time correction functions.
+    if len(args) == 1 :
+        T = args[0]
+        T = time_correction_fiber(T)
+        T = time_correction_electronics(T)
+        T= time_correction_offset(T)
+        return T
+    else :
+        raise ValueError("Expect only one argument (Track3D)")
 
