@@ -10,6 +10,7 @@ from track3D import Track3D
 from parameters import *
 from physics import dist_line_rect
 from time_correction import *
+from track_reconstruction import mean_timestamp
 
 
 ## This function finds the indices of event which are good candidate for muon decay : good tracks that don't end on a side of the detector
@@ -109,8 +110,19 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                             ## check if there's still hits in the list after removing the ones far from the reconstructed track
                             if len(hitsX) != 0 or len(hitsY) != 0:
 
-                                ## check if the next event happend close enough from the muon track for it to be the product of a decay
-                                time_interval = hits_next_event[0].timestamp_event-hits[0].timestamp_event
+                                
+                                        
+                                        ## Debuging print
+                                        # print(hits_next_event[0].timestamp_event)
+                                        # print(hits_next_event)
+                                        # print("mean_timestamp " + str(mean_timestamp(hits_next_event)))
+                                        # print(hits[0].timestamp_event)
+                                        # print("mean_timestamp " + str(mean_timestamp(hitsX, hitsY)))
+
+                                        
+                                 ## check if the next event happend close enough from the muon track for it to be the product of a decay
+                                time_interval = hits_next_event[0].timestamp_event + mean_timestamp(hits_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
+                                
                                 if  time_interval < time_cutoff: 
                                     hitsX.sort(key = lambda hit: -hit.get_pos()[1])
                                     hitsY.sort(key = lambda hit: -hit.get_pos()[1])

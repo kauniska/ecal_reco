@@ -3,6 +3,7 @@ import os
 import fnmatch
 import matplotlib as plt
 import math
+import copy
 
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\tracking')
@@ -22,8 +23,9 @@ def time_correction_fiber(*args):
 
     #If one argument whcih is Track3D, change the timestamp of each hits of the track and return the track
     if len(args)== 1 : 
-        Tx = args[0].x
-        Ty = args[0].y
+        # print("fiber")
+        Tx = copy.deepcopy(args[0].x)
+        Ty = copy.deepcopy(args[0].y)
         
         newx = []
         newy = []
@@ -31,11 +33,11 @@ def time_correction_fiber(*args):
         for h in Tx.hits:
             newx.append(h)
             heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
-            newx[-1].timestamp = h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
+            newx[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
         for h in Ty.hits:
             newy.append(h)
             heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
-            newy[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
+            newy[-1].timestamp = h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
         Txprime = Track(newx)
         Typrime = Track(newy)
         return Track3D(Txprime,Typrime)
@@ -57,15 +59,16 @@ def time_correction_electronics(*args) :
     
     # If 1 argument which is a Track3D, change timestamp of each hit and return the track3D
     if len(args) == 1 :
-        T = args[0]
+        # print("PCB")
+        T = copy.deepcopy(args[0])
         for h in T.x.hits:
             [x,z] = h.coord
             tofpet = mapping_inv_2D(1,x,z)
-            h.timestamp = h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1])
+            h.timestamp = copy.deepcopy(h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1]))
         for h in T.y.hits:
             [y,z] = h.coord
             tofpet = mapping_inv_2D(0,y,z)
-            h.timestamp = h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1])
+            h.timestamp = copy.deepcopy(h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1]))
         return T
     
 
@@ -89,7 +92,8 @@ def time_correction_offset(*args) :
     
     # If 1 argument which is a track3D, change the timestamp of every hit and return the track3D
     if len(args) == 1 :
-        T = args[0]
+        # print("offset")
+        T = copy.deepcopy(args[0])
         for h in T.x.hits:
                 tofpet = mapping_inv_2D(1,h.coord[0],h.coord[1])
                 h.timestamp = h.timestamp - muX[tofpet[0], tofpet[1]]
@@ -103,10 +107,10 @@ def time_correction_global(*args) :
     # if 1 argument which is a track3D. change the timestamp of every hit 
     # with respect of all the time correction functions.
     if len(args) == 1 :
-        T = args[0]
-        T = time_correction_fiber(T)
-        T = time_correction_electronics(T)
-        T= time_correction_offset(T)
+        T = copy.deepcopy(args[0])
+        T = copy.deepcopy(time_correction_fiber(T))
+        T = copy.deepcopy(time_correction_electronics(T))
+        T= copy.deepcopy(time_correction_offset(T))
         return T
     else :
         raise ValueError("Expect only one argument (Track3D)")

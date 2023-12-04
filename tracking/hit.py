@@ -43,6 +43,7 @@ class Hit:
                 self.is_sidex = True
             else:
                 self.is_sidex = False
+                self.coord[0]=25-self.coord[0]
             self.timestamp = args[0]['timestamp']
             self.timestamp_event = args[0]['evt_timestamp']
             self.value = args[0]['value'][args[1]]
@@ -80,5 +81,3 @@ class Hit:
         print("Timestamp event : ", self.timestamp_event)
         print("Value : ", self.value)
         
-        
-

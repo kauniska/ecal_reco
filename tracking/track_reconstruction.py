@@ -34,7 +34,7 @@ def mapping_2D(t_id,channel):
         return mapping[int(t_id/4)][channel+32*np.mod(t_id,2)]   
 
 ## Determine the tofpet id and channel from (X,Y,Z) coord. Warning : topfet id is not unique (modulo) !
-def mapping_inv_2D(side_x,bar,layer) :y
+def mapping_inv_2D(side_x,bar,layer) :
     for t_id in range(8) :
         for channel in range(64) :
             if side_x and mapping_2D(t_id,channel) == [bar,layer] :
@@ -266,5 +266,32 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
 
     return fig,ax
 
-        
+#compute the average over the timestamps of a list of hit
+def mean_timestamp(*args):
+    total_timestamp = 0
+    total_hits = 0
 
+    if len(args) == 1:
+        # print("token1")
+        for h in args[0]:
+            for t in h.timestamp :
+                # print("token 1 " + str(t))
+                total_timestamp += t
+                total_hits += 1
+    elif len(args) == 2:
+        # print("token2")
+        for hits_list in args:
+            for h in hits_list:
+                for t in h.timestamp :
+                    # print("token 2 " + str(t))
+                    total_timestamp += t
+                    total_hits += 1
+    else:
+        raise ValueError("Expect one or two arguments")
+
+    if total_hits > 0:
+        mean_value = total_timestamp / total_hits
+    else:
+        mean_value = 0  # ou une autre valeur par défaut si aucun élément n'est trouvé
+
+    return mean_value
