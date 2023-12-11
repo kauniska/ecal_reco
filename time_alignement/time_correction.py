@@ -93,18 +93,18 @@ def time_correction_electronics(*args) :
     ## Apply a time correction from general offset and coming from the time alignement procedure
 def time_correction_offset(*args) :
 
-
     # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
     if len(args) == 3 :
         timestamp = args[0] 
         tofpet_id= args[1] 
         tofpet_channel= args[2] 
+        [x,z]=mapping_2D(tofpet_id, tofpet_channel)
     
         ##Use the value of muX and muY computed form time alignement procedure and located in parameters.py
         if is_sidex(tofpet_id) :
-            return timestamp - muX[mapping_2D(tofpet_id, tofpet_channel)]
+            return timestamp - muX[x-1,z-1]
         else :
-            return timestamp - muY[mapping_2D(tofpet_id, tofpet_channel)]
+            return timestamp - muY[x-1,z-1]
     
     # If 1 argument which is a track3D, change the timestamp of every hit and return the track3D
     if len(args) == 1 :
@@ -131,23 +131,33 @@ def time_correction_global(*args) :
         # print(args[0].x[0].timestamps)
         # print("A")
         return T4
+    
+
     elif len(args)==2 :
         T = args[0] #muon track before decay
         S = args[1] #list of hits of the shower after decay
-       
+        # print(S)
         for h in S :
             # if h.is_sidex :
             #     # Find the object with the smallest coord[1]
             #     min_hit_track = min(T.y, key=lambda x: x.coord[1])
-            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.get_pos()[0], min_hit_track.get_pos()[0], h.get_pos()[1]))
+            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.coord[0], min_hit_track.coord[0], h.coord[1]))
             #  else :
             #     min_hit_track = min(T.x, key=lambda x: x.coord[1])
-            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.get_pos()[0], min_hit_track.get_pos()[0], h.get_pos()[1]))
+            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.coord[0], min_hit_track.coord[0], h.coord[1]))
         
-        
-            h.timestamp = copy.deepcopy(time_correction_electronics(h.is_sidex,mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[0],mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[1]))
-            h.timestamp = copy.deepcopy(time_correction_offset(h.is_sidex,mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[0],mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[1]))
-            return S
+            is_sidex = h.is_sidex
+            x = h.coord[0]
+            z = h.coord[1]
+            # print(x,z)
+            tofpet= mapping_inv_2D(is_sidex,x,z)
+            # print(tofpet)
+            tofpet_id = tofpet[0]
+            tofpet_channel = tofpet[1]
+            h.timestamp = time_correction_electronics(h.timestamp,tofpet_id, tofpet_channel)
+            h.timestamp = time_correction_offset(h.timestamp,tofpet_id, tofpet_channel)
+            # print(S)
+        return S
     else :
         raise ValueError("Expect one argument (Track3D) or two (Track3D and list of hits)")
 

@@ -296,16 +296,17 @@ def mean_timestamp(*args):
 
 
 ## Select the first timestamp of a list of hit (can take many lists as arguments)
-def first_timestamp(*args):
+def first_timestamp(hit_list):
     timestamps = []
-
-    # Iterate through all lists
-    for hit_list in args:
-        # Add all timestamps to the list
-        timestamps.extend(item.timestamp for item in hit_list if hasattr(item, 'timestamp'))
+        # Check if the list is not empty and contains objects with a timestamp attribute
+    for h in hit_list :
+            
+        timestamps.append(h.timestamp)
+        # print(timestamps)
 
     # Return the smallest timestamp
-    if timestamps:
-        return min(timestamps)
-    else:
-        return None
+    # print(timestamps)
+    min_timestamp = np.min(timestamps)
+    return min_timestamp
+
+    

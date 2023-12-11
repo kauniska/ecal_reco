@@ -1,6 +1,7 @@
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
+import copy
 import sys
 sys.path.insert(1, ".\\utils")
 sys.path.insert(1, ".\\tracking")
@@ -107,20 +108,20 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, time_min = 20, spacial_cut
 
                         hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
 
-                        # if time_corr : 
-                        #     hits_next_event = time_correction_global(track,hits_next_event)
-                        #     hitsX_next_event = track_next_event.x.hits
-                        #     hitsY_next_event = track_next_event.y.hits
-                        # else : 
-                        hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
-                        hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
+                        if time_corr : 
+                            hits_next_event = copy.deepcopy(time_correction_global(track,hits_next_event))
+                            hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
+                            hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
+                        else : 
+                            hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
+                            hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
 
                       
                         ## check if the next event happend close enough from the muon track for it to be the product of a decay
                         ## The mean value of all singles timestamps of hits in event are computed (and add to the timestamp_event)
                         # time_interval = hits_next_event[0].timestamp_event + mean_timestamp(hitsX_next_event,hitsY_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
                         # time_interval = hits_next_event[0].timestamp_event + first_timestamp(hits_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
-                        time_interval = hits_next_event[0].timestamp_event + 100  - (hits[0].timestamp_event + mean_timestamp(hitsX,hitsY) )
+                        time_interval = hits_next_event[0].timestamp_event + first_timestamp(hits_next_event)  - (hits[0].timestamp_event + mean_timestamp(hitsX,hitsY) )
                         # time_interval = hits_next_event[0].timestamp_event  - (hits[0].timestamp_event )
                         
                         # print(time_interval)
