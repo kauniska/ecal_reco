@@ -65,6 +65,8 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
         hits = [Hit(row,i) for i in range(row['n_hits'])]
         hitsX = [h for h in hits if h.is_sidex]
         hitsY = [h for h in hits if not h.is_sidex]
+
+
         
         ## Some events don't have three hits on one of the two sides and are thus not considered
         if len(hitsX) > 3 and len(hitsY) > 3:
@@ -118,9 +120,12 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                                         # print("mean_timestamp " + str(mean_timestamp(hits_next_event)))
                                         # print(hits[0].timestamp_event)
                                         # print("mean_timestamp " + str(mean_timestamp(hitsX, hitsY)))
+                                        # print("mean_timestamp returned" + str(mean_timestamp(hits_next_event)))
+
 
                                         
                                  ## check if the next event happend close enough from the muon track for it to be the product of a decay
+                                 ## The mean value of all singles timestamps of hits in event are computed (and add to the timestamp_event)
                                 time_interval = hits_next_event[0].timestamp_event + mean_timestamp(hits_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
                                 
                                 if  time_interval < time_cutoff: 

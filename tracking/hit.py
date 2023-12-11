@@ -44,7 +44,7 @@ class Hit:
             else:
                 self.is_sidex = False
                 self.coord[0]=25-self.coord[0]
-            self.timestamp = args[0]['timestamp']
+            self.timestamp = args[0]['timestamp'][args[1]]
             self.timestamp_event = args[0]['evt_timestamp']
             self.value = args[0]['value'][args[1]]
         elif len(args) == 5:

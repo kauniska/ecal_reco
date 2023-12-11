@@ -272,25 +272,23 @@ def mean_timestamp(*args):
     total_hits = 0
 
     if len(args) == 1:
-        # print("token1")
+        print("args[0] :"+str(len((args[0]))))
         for h in args[0]:
-            for t in h.timestamp :
-                # print("token 1 " + str(t))
-                total_timestamp += t
+                print("timestamps : "+str(h.timestamp))
+                total_timestamp += h.timestamp
                 total_hits += 1
+                print("number of hits : "+str(total_hits))
     elif len(args) == 2:
-        # print("token2")
         for hits_list in args:
             for h in hits_list:
-                for t in h.timestamp :
-                    # print("token 2 " + str(t))
-                    total_timestamp += t
+                    total_timestamp += h.timestamp
                     total_hits += 1
     else:
         raise ValueError("Expect one or two arguments")
 
     if total_hits > 0:
         mean_value = total_timestamp / total_hits
+        print("mean_value: "+str(mean_value))
     else:
         mean_value = 0  # ou une autre valeur par défaut si aucun élément n'est trouvé
 
