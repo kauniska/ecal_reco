@@ -4,6 +4,7 @@ import fnmatch
 import matplotlib as plt
 import math
 import copy
+import pickle
 
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\tracking')
@@ -20,8 +21,10 @@ def time_correction_fiber(*args):
     ## clock cycle = 6.25 nanosecond
     Speed_In_Fiber = 1/convert_ns_to_clockcycle(1/Speed_In_Fiber) # cm/clock cycle
     Speed_Of_Light = 1/convert_ns_to_clockcycle(1/Speed_Of_Light) # cm/clock cycle
+    zmax =  thickness+thickness_screen + (8-0.5)*thickness + (8-1)*(2*thickness_screen+thickness)
 
     #If one argument whcih is Track3D, change the timestamp of each hits of the track and return the track
+    
     if len(args)== 1 : 
         # print("fiber")
         Tx = copy.deepcopy(args[0].x)
@@ -41,6 +44,21 @@ def time_correction_fiber(*args):
         Txprime = Track(newx)
         Typrime = Track(newy)
         return Track3D(Txprime,Typrime)
+    
+    # if len(args)== 5 :
+    #     timestamp = args[0]
+    #     is_sidex = args[1]
+    #     z = args[4]
+
+    #     if is_sidex :
+    #         x = args[2]
+    #         y = args[3]
+    #         # heightcorr = math.sqrt(((z-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
+    #         newx[-1].timestamp = h.timestamp - y(z)/Speed_In_Fiber
+    #     else : 
+    #         y = args[2]
+    #         x =args[3]
+
         
 
     
@@ -75,8 +93,6 @@ def time_correction_electronics(*args) :
     ## Apply a time correction from general offset and coming from the time alignement procedure
 def time_correction_offset(*args) :
 
-    muX = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
-    muY = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
 
     # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
     if len(args) == 3 :
@@ -84,22 +100,22 @@ def time_correction_offset(*args) :
         tofpet_id= args[1] 
         tofpet_channel= args[2] 
     
-        
+        ##Use the value of muX and muY computed form time alignement procedure and located in parameters.py
         if is_sidex(tofpet_id) :
-            return timestamp - muX[tofpet_id,tofpet_channel]
+            return timestamp - muX[mapping_2D(tofpet_id, tofpet_channel)]
         else :
-            return timestamp - muY[tofpet_id,tofpet_channel]
+            return timestamp - muY[mapping_2D(tofpet_id, tofpet_channel)]
     
     # If 1 argument which is a track3D, change the timestamp of every hit and return the track3D
     if len(args) == 1 :
         # print("offset")
         T = copy.deepcopy(args[0])
         for h in T.x.hits:
-                tofpet = mapping_inv_2D(1,h.coord[0],h.coord[1])
-                h.timestamp = h.timestamp - muX[tofpet[0], tofpet[1]]
+                # tofpet = mapping_inv_2D(1,h.coord[0],h.coord[1])
+                h.timestamp = h.timestamp - muX[h.coord[0]-1,h.coord[1]-1]
         for h in T.y.hits:
-                tofpet = mapping_inv_2D(0,h.coord[0],h.coord[1])
-                h.timestamp = h.timestamp - muY[tofpet[0], tofpet[1]]
+                # tofpet = mapping_inv_2D(0,h.coord[0],h.coord[1])
+                h.timestamp = h.timestamp - muY[h.coord[0]-1,h.coord[1]-1]
 
         return T
 
@@ -107,11 +123,31 @@ def time_correction_global(*args) :
     # if 1 argument which is a track3D. change the timestamp of every hit 
     # with respect of all the time correction functions.
     if len(args) == 1 :
+        # print(args[0].x[0].timestamps)
         T = copy.deepcopy(args[0])
-        T = copy.deepcopy(time_correction_fiber(T))
-        T = copy.deepcopy(time_correction_electronics(T))
-        T= copy.deepcopy(time_correction_offset(T))
-        return T
+        T2 = copy.deepcopy(time_correction_fiber(T))
+        T3 = copy.deepcopy(time_correction_electronics(T2))
+        T4= copy.deepcopy(time_correction_offset(T3))
+        # print(args[0].x[0].timestamps)
+        # print("A")
+        return T4
+    elif len(args)==2 :
+        T = args[0] #muon track before decay
+        S = args[1] #list of hits of the shower after decay
+       
+        for h in S :
+            # if h.is_sidex :
+            #     # Find the object with the smallest coord[1]
+            #     min_hit_track = min(T.y, key=lambda x: x.coord[1])
+            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.get_pos()[0], min_hit_track.get_pos()[0], h.get_pos()[1]))
+            #  else :
+            #     min_hit_track = min(T.x, key=lambda x: x.coord[1])
+            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.get_pos()[0], min_hit_track.get_pos()[0], h.get_pos()[1]))
+        
+        
+            h.timestamp = copy.deepcopy(time_correction_electronics(h.is_sidex,mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[0],mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[1]))
+            h.timestamp = copy.deepcopy(time_correction_offset(h.is_sidex,mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[0],mapping_2D_inv(h.is_sidex,h.get_pos()[0],h.get_pos()[1])[1]))
+            return S
     else :
-        raise ValueError("Expect only one argument (Track3D)")
+        raise ValueError("Expect one argument (Track3D) or two (Track3D and list of hits)")
 

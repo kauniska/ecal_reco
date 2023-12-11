@@ -125,43 +125,7 @@ class Track3D:
             self.y.kalman_filter(sigma)
 # load and filter data
 
-import sys
-import time
-tic = time.time() 
-from data_loading import *
-from tqdm import tqdm
-from matplotlib import pyplot as plt
-from track_reconstruction import *
 
-file_path = 'C:\\Users\\eliot\\EPFL\\TP4_ECAL\\raw_data\\run_000006\\data_0000.root'
-import pandas as pd
-import uproot
-import numpy as np
-
-
-N_cons_events = 1000 # number of events to consider
-
-br_list_data = ['n_hits', 'tofpet_id', 'tofpet_channel', 'timestamp', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value']
-br_list_evt = ['timestamp', 'evt_number', 'evt_flags']
-evt_tree = 'event_data;1'
-hits_tree = 'event_data;1'
-
-with uproot.open(file_path) as tree:
-    hits_dict = tree[hits_tree].arrays(br_list_data, library="np")
-    evts_dict = tree[evt_tree].arrays(br_list_evt, library="np")
-    
-df_evts = pd.DataFrame.from_dict(evts_dict)
-df_hits = pd.DataFrame.from_dict(hits_dict)
-df_hits['timestamp_event'] = df_evts['timestamp']
-df_hits = df_hits[0:N_cons_events]
-
-og_len = len(df_hits)
-df_hits.query('n_hits > 6', inplace=True)
-df_hits.query('n_hits < 50', inplace=True)
-new_len = len(df_hits)
-print('selected {:.2f}% of all events'.format(new_len/og_len * 100))
-# selected 49.60% of all events
-# create tracks
 def create_tracks(df, plot = False):
     tracks = []
     nb_events = len(df['n_hits'])

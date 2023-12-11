@@ -293,3 +293,19 @@ def mean_timestamp(*args):
         mean_value = 0  # ou une autre valeur par défaut si aucun élément n'est trouvé
 
     return mean_value
+
+
+## Select the first timestamp of a list of hit (can take many lists as arguments)
+def first_timestamp(*args):
+    timestamps = []
+
+    # Iterate through all lists
+    for hit_list in args:
+        # Add all timestamps to the list
+        timestamps.extend(item.timestamp for item in hit_list if hasattr(item, 'timestamp'))
+
+    # Return the smallest timestamp
+    if timestamps:
+        return min(timestamps)
+    else:
+        return None

@@ -1,6 +1,10 @@
+import pickle
+
 '''
 Geometric properties of the detector
 '''
+
+
 
 n_strips = 24
 n_layers = 8
@@ -26,8 +30,13 @@ total_height = 2*n_layers*(thickness+thickness_screen)
 Delta_z = 2*(thickness+thickness_screen)
 
 # #General offset on time computed with time alignement algorithm, for each channel
-# muX = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
-# muY = np.nan_to_num(np.ndarray(shape=(8,64), dtype=float), nan=0, posinf=0, neginf=0)*0
+with open(r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\time_alignement\muXF.pkl', 'rb') as file:
+    # Charger les données depuis le fichier pickle
+    muX = pickle.load(file)
+
+with open(r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\time_alignement\muYF.pkl', 'rb') as file:
+ # Charger les données depuis le fichier pickle
+    muY = pickle.load(file)
 
 
 ## Delay of each SiPM channel (in picosecond)
