@@ -94,47 +94,36 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                     else : 
                         track = Track3D(hits)
 
-                    ## check if track has a "good" chi2 value
-                    if track.is_good_2D_fit():
-                        if index+1 >= len(df_total):
-                            last_event_of_df += 1
-                        else:
-                            next_event = df_total.loc[index+1]
+                    if index+1 >= len(df_total):
+                        last_event_of_df += 1
+                    else:
+                        next_event = df_total.loc[index+1]
+
+                        hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
+                        hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
+                        hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
+
+                        ## check if the next event happend close enough from the muon track for it to be the product of a decay
+                        ## The mean value of all singles timestamps of hits in event are computed (and add to the timestamp_event)
+                        time_interval = hits_next_event[0].timestamp_event + mean_timestamp(hits_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
                         
+                        if  time_interval < time_cutoff: 
+                            hitsX.sort(key = lambda hit: -hit.get_pos()[1])
+                            hitsY.sort(key = lambda hit: -hit.get_pos()[1])
+
+
+                            ## check if track has a "good" chi2 value
+                            if track.is_good_2D_fit():
     
-                            hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
-                            hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
-                            hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
-
-                            hitsX = [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) < spacial_cutoff] #Keep only the hits close to the track
-                            hitsY = [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) < spacial_cutoff]
-
-                            ## check if there's still hits in the list after removing the ones far from the reconstructed track
-                            if len(hitsX) != 0 or len(hitsY) != 0:
-
-                                
-                                        
-                                        ## Debuging print
-                                        # print(hits_next_event[0].timestamp_event)
-                                        # print(hits_next_event)
-                                        # print("mean_timestamp " + str(mean_timestamp(hits_next_event)))
-                                        # print(hits[0].timestamp_event)
-                                        # print("mean_timestamp " + str(mean_timestamp(hitsX, hitsY)))
-                                        # print("mean_timestamp returned" + str(mean_timestamp(hits_next_event)))
-
-
-                                        
-                                 ## check if the next event happend close enough from the muon track for it to be the product of a decay
-                                 ## The mean value of all singles timestamps of hits in event are computed (and add to the timestamp_event)
-                                time_interval = hits_next_event[0].timestamp_event + mean_timestamp(hits_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
-                                
-                                if  time_interval < time_cutoff: 
-                                    hitsX.sort(key = lambda hit: -hit.get_pos()[1])
-                                    hitsY.sort(key = lambda hit: -hit.get_pos()[1])
-
+                                hitsX = [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) < spacial_cutoff] #Keep only the hits close to the track
+                                hitsY = [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) < spacial_cutoff]
+                                ## check if there's still hits in the list after removing the ones far from the reconstructed track
+                                if len(hitsX) != 0 or len(hitsY) != 0:
+                                  
+                                    
                                     X_near = False
                                     Y_near = False
-
+    
                                     ## Check if the hits in the next event are close to the end of the muon track
                                     if len(hitsX) != 0:
                                         for h in hitsX_next_event:
@@ -156,15 +145,17 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
                                             decay_data['hits_muon'].append(hits)
                                             decay_data['hits_electron'].append(hits_next_event)
                                             decay_data['time_interval'].append(time_interval)
-
+    
                                     else:
                                         no_spacial_correlation += 1
+                                    
                                 else:
-                                    too_large_time_interval += 1
+                                    hits_far_from_track += 1
                             else:
-                                hits_far_from_track += 1
-                    else:
-                        bad_fit += 1
+                                 bad_fit += 1
+
+                        else:
+                            too_large_time_interval += 1
             else:
                 bottom_touch += 1
         else:
