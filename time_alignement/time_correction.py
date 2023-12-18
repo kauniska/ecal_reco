@@ -71,9 +71,9 @@ def time_correction_electronics(*args) :
         tofpet_channel= args[2] 
 
         if is_sidex(tofpet_id) :
-            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
+            return timestamp - mapping_PCB_delay(tofpet_id,tofpet_channel)
         else :
-            return timestamp - mapping_SiPM_delay(tofpet_id,tofpet_channel)
+            return timestamp - mapping_PCB_delay(tofpet_id,tofpet_channel)
     
     # If 1 argument which is a Track3D, change timestamp of each hit and return the track3D
     if len(args) == 1 :
@@ -82,11 +82,11 @@ def time_correction_electronics(*args) :
         for h in T.x.hits:
             [x,z] = h.coord
             tofpet = mapping_inv_2D(1,x,z)
-            h.timestamp = copy.deepcopy(h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1]))
+            h.timestamp = copy.deepcopy(h.timestamp - mapping_PCB_delay(tofpet[0], tofpet[1]))
         for h in T.y.hits:
             [y,z] = h.coord
             tofpet = mapping_inv_2D(0,y,z)
-            h.timestamp = copy.deepcopy(h.timestamp - mapping_SiPM_delay(tofpet[0], tofpet[1]))
+            h.timestamp = copy.deepcopy(h.timestamp - mapping_PCB_delay(tofpet[0], tofpet[1]))
         return T
     
 

@@ -50,18 +50,18 @@ def convert_ns_to_clockcycle(ns) :
     return clockcycle
 
 
-def mapping_SiPM_delay(tofpet_id, tofpet_channel) :
-    ## find the delay of the corresponding SiPM channel (in picosecond)
+def mapping_PCB_delay(tofpet_id, tofpet_channel) :
+    ## find the delay of the corresponding PCB channel (in picosecond)
     ## then convert it into nanosecond, the into clockcycle
 
     if tofpet_id % 2 == 0 :        
-        return convert_ns_to_clockcycle(SiPM_delay[63-tofpet_channel]/1000)  
-         ## SiPM channels 1-64 are related to tofpet 0 (or 2/4/6) 
-         ## SiPM channels are inversly sorted as tofpet channels
+        return convert_ns_to_clockcycle(PCB_delay[63-tofpet_channel]/1000)  
+         ## PCB channels 1-64 are related to tofpet 0 (or 2/4/6) 
+         ## PCB channels are inversly sorted as tofpet channels
     else :         
-        return convert_ns_to_clockcycle(SiPM_delay[127-tofpet_channel]/1000)
-        ## SiPM channels 65-96 are related to tofpet 1 (or 3/5/7)
-        ## SiPM channels are inversly sorted as tofpet channels
+        return convert_ns_to_clockcycle(PCB_delay[127-tofpet_channel]/1000)
+        ## PCB channels 65-96 are related to tofpet 1 (or 3/5/7)
+        ## PCB channels are inversly sorted as tofpet channels
 
 
 ## Looks how many hits overlap at a certain angle t. Return the the hits index that overlap, the number of overlaping
