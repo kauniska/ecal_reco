@@ -48,6 +48,7 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, time_min = 0, spacial_cuto
         -bad_fit : number of events for which the chi square value of the reconstructed track wasn't satisfactory
         -last_event_of_df : number of events for which the muon track is the last event of a run : the decay can't be accessed
         -hits_far_from_track : number of hits for which all hits at a distance higher than spacial_cutoff of the reconstructed track (preventive part of the code, shouldn't happen)
+        -shower_upward : number events for which the next event have hits "upward" the end of the muon track
         -too_large_time_interval : number of events for which the next event happend too long after to be considered the product of a decay
         -too_small_time_interval : number of events for which the next event happend too short after to be considered the product of a decay
         -no_spacial_correlation : number of events for which the hits in the next event are far from the end of the track and can thus not be considered
@@ -61,13 +62,14 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, time_min = 0, spacial_cuto
     side_touch = 0
     bad_fit = 0
     last_event_of_df = 0
+    shower_upward = 0
     too_large_time_interval = 0
     too_small_time_interval = 0
     no_spacial_correlation = 0
     hits_far_from_track = 0
     row_count = 0
     index_count =0
-
+   
     if save_hits:
         decay_data = {'event_index': [], 'track_x0' : [], 'track_tx' : [], 'track_y0' : [], 'track_ty' : [], 'hits_muon': [], 'hits_electron': [], 'time_interval' : [],'distance' : []}
 
@@ -114,7 +116,7 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, time_min = 0, spacial_cuto
 
                         hits_next_event = [Hit(next_event,i) for i in range(next_event['n_hits'])]
 
-                        if time_corr : 
+                        if time_corr :  ## Apply time correction on the hits of the next event
                             hits_next_event = copy.deepcopy(time_correction_global(track,hits_next_event))
                             hitsX_next_event = [hit for hit in hits_next_event if hit.is_sidex]
                             hitsY_next_event = [hit for hit in hits_next_event if not hit.is_sidex]
@@ -125,14 +127,15 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, time_min = 0, spacial_cuto
                       
                         ## check if the next event happend close enough from the muon track for it to be the product of a decay
                         ## The mean value of all singles timestamps of hits in event are computed (and add to the timestamp_event)
+                        
                         # time_interval = hits_next_event[0].timestamp_event + mean_timestamp(hitsX_next_event,hitsY_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
                         # time_interval = hits_next_event[0].timestamp_event + first_timestamp(hits_next_event)- (hits[0].timestamp_event + mean_timestamp(hitsX, hitsY))
                         time_interval = hits_next_event[0].timestamp_event + first_timestamp(hits_next_event)  - (hits[0].timestamp_event + mean_timestamp(hitsX,hitsY) )
                         # time_interval = hits_next_event[0].timestamp_event  - (hits[0].timestamp_event )
-                        
-                        
+                         
                         if  time_interval < time_cutoff:
                             if time_min < time_interval :
+
 
                                 ## check if track has a "good" chi2 value
                                 if track.is_good_2D_fit():
@@ -140,44 +143,56 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, time_min = 0, spacial_cuto
                                     hitsX = [hit for hit in hitsX if dist_line_rect(track.x.t, track.x.x0, hit.get_pos(), thickness, width) < spacial_cutoff] #Keep only the hits close to the track
                                     hitsY = [hit for hit in hitsY if dist_line_rect(track.y.t, track.y.x0, hit.get_pos(), thickness, width) < spacial_cutoff]
                                     ## check if there's still hits in the list after removing the ones far from the reconstructed track
-                                    if len(hitsX) != 0 or len(hitsY) != 0:
+                                    if len(hitsX) != 0 and len(hitsY) != 0:
                                     
                                         hitsX.sort(key = lambda hit: -hit.get_pos()[1])
                                         hitsY.sort(key = lambda hit: -hit.get_pos()[1])
 
+                                        X_upward = False
+                                        Y_upward = False
+                                        ## Check if the electron does not go "upward" in the direction of muon track
+                                        for h in hitsX_next_event :
+                                             if h.get_pos()[1] > hitsX[-1].get_pos()[1] :
+                                                 X_upward = True
+                                        for h in hitsY_next_event :
+                                             if h.get_pos()[1] > hitsY[-1].get_pos()[1] :
+                                                 Y_upward = True
+                                        if not X_upward and not Y_upward :
+
         
-                                        ## Check if the hits in the next event are close to the end of the muon track
-                                        r = 1e100000
-                                        if len(hitsX) != 0 :                     
-                                            for h in hitsX_next_event:
-                                                rX_int = np.linalg.norm(h.get_pos()-hitsX[-1].get_pos())
-                                                if rX_int < r:
-                                                    r = rX_int
-                                        if len(hitsY) != 0:
-                                            for h in hitsY_next_event:
-                                                rY_int = np.linalg.norm(h.get_pos()-hitsY[-1].get_pos())
-                                                if rY_int < r:
-                                                    r = rY_int
-                                        if  r < spacial_cutoff : 
-                                            if spacial_min < r :
-                                                candidate_index.append(index)
-                                                time_intervals.append(time_interval)
-                                                distances.append(r)
-                                                if save_hits:
-                                                    decay_data['event_index'].append(index)
-                                                    decay_data['track_x0'].append(track.x.x0)
-                                                    decay_data['track_tx'].append(track.x.t)
-                                                    decay_data['track_y0'].append(track.y.x0)
-                                                    decay_data['track_ty'].append(track.y.t)
-                                                    decay_data['hits_muon'].append(hits)
-                                                    decay_data['hits_electron'].append(hits_next_event)
-                                                    decay_data['time_interval'].append(time_interval)
-                                                    decay_data['distance'].append(r)
-                                            else :
-                                                 no_spacial_correlation += 1
-                                        else:
-                                            no_spacial_correlation += 1
-                                        
+                                            ## Check if the hits in the next event are close to the end of the muon track
+                                            r = 1e100000
+                                            if len(hitsX) != 0 :                     
+                                                for h in hitsX_next_event:
+                                                    rX_int = np.linalg.norm(h.get_pos()-hitsX[-1].get_pos())
+                                                    if rX_int < r:
+                                                        r = rX_int
+                                            if len(hitsY) != 0:
+                                                for h in hitsY_next_event:
+                                                    rY_int = np.linalg.norm(h.get_pos()-hitsY[-1].get_pos())
+                                                    if rY_int < r:
+                                                        r = rY_int
+                                            if  r < spacial_cutoff : 
+                                                if spacial_min < r :
+                                                    candidate_index.append(index)
+                                                    time_intervals.append(time_interval)
+                                                    distances.append(r)
+                                                    if save_hits:
+                                                        decay_data['event_index'].append(index)
+                                                        decay_data['track_x0'].append(track.x.x0)
+                                                        decay_data['track_tx'].append(track.x.t)
+                                                        decay_data['track_y0'].append(track.y.x0)
+                                                        decay_data['track_ty'].append(track.y.t)
+                                                        decay_data['hits_muon'].append(hits)
+                                                        decay_data['hits_electron'].append(hits_next_event)
+                                                        decay_data['time_interval'].append(time_interval)
+                                                        decay_data['distance'].append(r)
+                                                else :
+                                                    no_spacial_correlation += 1
+                                            else:
+                                                no_spacial_correlation += 1
+                                        else :
+                                            shower_upward +=1
                                     else:
                                         hits_far_from_track += 1
                                 else:
@@ -213,6 +228,7 @@ def find_muon_decay(df, df_total, time_cutoff = 1500, time_min = 0, spacial_cuto
                     'too_large_time_interval' : [too_large_time_interval],
                     'too_small_time_interval' : [too_small_time_interval],
                     'hits_far_from_track' : [hits_far_from_track],
+                    'shower_upward' : [shower_upward],
                     'no_spacial_correlation' : [no_spacial_correlation]})
     if save_stats:
         filtering.to_pickle(storage_dir+"filtering_data"+run_name)

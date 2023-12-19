@@ -22,9 +22,8 @@ def time_correction_fiber(*args):
     Speed_In_Fiber = 1/convert_ns_to_clockcycle(1/Speed_In_Fiber) # cm/clock cycle
     Speed_Of_Light = 1/convert_ns_to_clockcycle(1/Speed_Of_Light) # cm/clock cycle
     zmax =  thickness+thickness_screen + (8-0.5)*thickness + (8-1)*(2*thickness_screen+thickness)
-
     #If one argument whcih is Track3D, change the timestamp of each hits of the track and return the track
-    
+
     if len(args)== 1 : 
         # print("fiber")
         Tx = copy.deepcopy(args[0].x)
@@ -32,32 +31,34 @@ def time_correction_fiber(*args):
         
         newx = []
         newy = []
-        zmax =  thickness+thickness_screen + (8-0.5)*thickness + (8-1)*(2*thickness_screen+thickness)
         for h in Tx.hits:
             newx.append(h)
             heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
-            newx[-1].timestamp = h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
+            newx[-1].timestamp = copy.deepcopy(h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr)
         for h in Ty.hits:
             newy.append(h)
             heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
-            newy[-1].timestamp = h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
+            newy[-1].timestamp = copy.deepcopy(h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr)
         Txprime = Track(newx)
         Typrime = Track(newy)
         return Track3D(Txprime,Typrime)
     
-    # if len(args)== 5 :
-    #     timestamp = args[0]
-    #     is_sidex = args[1]
-    #     z = args[4]
+    ## If two arguments (one Hit and one 3DTrack) change and return the timestamp of the Hit wrt the geomtry of the track
 
-    #     if is_sidex :
-    #         x = args[2]
-    #         y = args[3]
-    #         # heightcorr = math.sqrt(((z-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
-    #         newx[-1].timestamp = h.timestamp - y(z)/Speed_In_Fiber
-    #     else : 
-    #         y = args[2]
-    #         x =args[3]
+    if len(args)== 2 :
+        h = args[0]
+        T = args[1]
+        Tx = T.x
+        Ty = T.y
+        is_sidex = h.is_sidex
+
+## compute the spatial position of the hit by approximating that he's close to end of the track
+        if  is_sidex :
+            heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
+            return h.timestamp - Ty.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
+        else :
+            heightcorr = math.sqrt(((h.get_pos()[1]-zmax)**2)*(Tx.t**2 + Ty.t**2 + 1))/Speed_Of_Light
+            return h.timestamp - Tx.x(h.get_pos()[1])/Speed_In_Fiber-heightcorr
 
         
 
@@ -138,25 +139,19 @@ def time_correction_global(*args) :
         S = args[1] #list of hits of the shower after decay
         # print(S)
         for h in S :
-            # if h.is_sidex :
-            #     # Find the object with the smallest coord[1]
-            #     min_hit_track = min(T.y, key=lambda x: x.coord[1])
-            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.coord[0], min_hit_track.coord[0], h.coord[1]))
-            #  else :
-            #     min_hit_track = min(T.x, key=lambda x: x.coord[1])
-            #     h.timestamp = copy.deepcopy(time_correction_fiber(h.timestamp,h.is_sidex,h.coord[0], min_hit_track.coord[0], h.coord[1]))
-        
+                     
             is_sidex = h.is_sidex
             x = h.coord[0]
             z = h.coord[1]
-            # print(x,z)
+            
             tofpet= mapping_inv_2D(is_sidex,x,z)
-            # print(tofpet)
             tofpet_id = tofpet[0]
             tofpet_channel = tofpet[1]
+
+            h.timestamp = time_correction_fiber(h,T)
             h.timestamp = time_correction_electronics(h.timestamp,tofpet_id, tofpet_channel)
             h.timestamp = time_correction_offset(h.timestamp,tofpet_id, tofpet_channel)
-            # print(S)
+            
         return S
     else :
         raise ValueError("Expect one argument (Track3D) or two (Track3D and list of hits)")
