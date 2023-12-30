@@ -35,15 +35,16 @@ def load_dataset(file_path):
     return df_hits
 
 
-def load_run(run_path, n_hits_muon_min=6, n_hits_muon_max=20, n_hits_shower_min = 4, n_hits_shower_max = 50):
+def load_run(run_path, n_hits_min=3, n_hits_max=50):
     """
     Arguments :
         -run_path : path to the directory of a run containing .root files (The separator "/" or "\" should already be put at the end of the path)
     Returns :
-        -df_hits_total : pandas dataframe made of the concatenation of all the events in each .root file
-        -df_hits : pandas dataframe with the events only containing 6 <= n_hits <= 50
-        -og_len : length of df_hits_total
-        -new_len : length of df_hits
+        -df_hits_total : pandas dataframe made of the concatenation of all the events in each .root file \
+        -df_hits : pandas dataframe with the events only containing 3 <= n_hits <= 50
+        -og_len : initial number of event before selection
+        -new_len_ : length of df_hits  
+        
     """
     files = filter(listdir(run_path),'*.root')
     for i,file in enumerate(files):
@@ -60,26 +61,18 @@ def load_run(run_path, n_hits_muon_min=6, n_hits_muon_max=20, n_hits_shower_min 
 
     og_len = len(df_hits_total)
 
-    ## Keep only the hits with n_hits between "n_hits_muon_min" and "_max" from df_hits 
-    ## First selection to keep track corresponding to muons
-    min_condition = "n_hits > "+str(n_hits_muon_min)
-    max_condition = "n_hits < "+str(n_hits_muon_max)
+    ## Keep only the hits with n_hits between "n_hits_min" and "_max" from df_hits 
+    min_condition = "n_hits > "+str(n_hits_min)
+    max_condition = "n_hits < "+str(n_hits_max)
     df_hits.query(min_condition, inplace=True)
     df_hits.query(max_condition, inplace=True)
 
     new_len = len(df_hits)
 
-    # ## Keep only the hits with n_hits between "n_hits_shower_min" and "_max" from df_hits_total
-    # ## First slection on the rest of datas, to keep only event corresponding to useful electron shower 
-    # min_condition = "n_hits > "+str(n_hits_shower_min)
-    # max_condition = "n_hits < "+str(n_hits_shower_max)
-    # df_hits_total.query(min_condition, inplace=True)
-    # df_hits_total.query(max_condition, inplace=True)
-
-    og_len = len(df_hits_total)
-
     
 
     print('selected {:.2f}% of all events'.format(new_len/og_len * 100))
+
+
     return df_hits_total, df_hits, og_len, new_len
 
