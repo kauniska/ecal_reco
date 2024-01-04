@@ -44,7 +44,6 @@ def time_correction_fiber(*args):
         return Track3D(Txprime,Typrime)
     
     ## If two arguments (one Hit and one 3DTrack) change and return the timestamp of the Hit wrt the geomtry of the track
-
     if len(args)== 2 :
         h = args[0]
         T = args[1]
@@ -64,8 +63,9 @@ def time_correction_fiber(*args):
 
     
 def time_correction_electronics(*args) :
+    ##Apply time corretion of the displacement of electronic signal into PCBs
 
-    # If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
+    ## If 3 arguments which are a timestamp and coordinate (tofpet id and channel), change the timestamp and returns it
     if len(args) == 3 :
         timestamp = args[0] 
         tofpet_id= args[1] 
