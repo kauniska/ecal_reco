@@ -41,8 +41,7 @@ class Track:
         elif len(args) == 1:
             self.hits = args[0]
             self.n_freedom = len(self.hits) - 1 # two parameters: f(x) = a*x + b, number of data points = len + 1
-            self.find_track(1, 10,False,5,0)
-            self.find_track(10, 15,False,0.5,self.t)
+            self.find_track()
             self.mean_time = None # TODO: implement
             if self.n_freedom > 0:
                 self.reduced_chi2 = self.chi2()/self.n_freedom
@@ -209,31 +208,6 @@ class Track:
             plt.legend()
             
             return fig1, fig2
-
-            # hitsX = [hit.get_pos()[0] for hit in self.hits]
-            # hitsZ = [hit.get_pos()[1] for hit in self.hits]
-            # bins_z = np.array([0])
-            # for i in range(16):
-            #     bins_z = np.append(bins_z,[bins_z[-1]+thickness, bins_z[-1]+thickness_screen])
-                
-            # axs[1].hist2d(hitsX, hitsZ, bins=[(np.linspace(0, 25, 26))*width, bins_z], cmap='magma')
-            # axs[1].plot([f[0] for f in fit], [f[1] for f in fit], 'b-')
-            # axs[1].set_xticks(np.linspace(1, 24, 6)*width)
-            # axs[1].set_yticks(np.linspace(1, 8, 8)*(thickness+thickness_screen))
-            # axs[1].grid(True, which='major')
-            # axs[1].grid(False, which='minor')
-            # coords_x = []
-            # coords_z = []
-            # fit = np.round(self.get_tracks())
-            # fit = [[int(f[0]), int(f[1])] for f in fit]
-            # for i in self.hits_index:
-            #     if self.hits[i].coord in fit:
-            #         coords_x.append(self.hits[i].coord[0])
-            #         coords_z.append(self.hits[i].coord[1])
-            # axs[1].plot(coords_x, coords_z, 'r*')
-            # axs[1].set(xlabel='$x$', ylabel='$z$')
-
-        # return self.x0, self.t, self.hits_index
 
     def precise_track(self, plot = False):
         """Makes a very precise fit of the track, updates the angle of the object

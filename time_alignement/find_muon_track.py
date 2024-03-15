@@ -14,7 +14,7 @@ from physics import dist_line_rect
 ## This function finds the indices of event which are good candidate for muon decay : good tracks that don't end on a side of the detector
 ## have enough hits on both planes, and close to the reconstructed track, and for which the next event is not too long after and has hits
 ## close to the possible decay point.
-def find_muon_track(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
+def find_muon_track(df, df_total, \
                     save_indices = True, save_hits = False, save_stats = False, save_time_intervals = True,\
                     run_name = None, storage_dir = None, \
                     return_stats = True):
@@ -22,8 +22,6 @@ def find_muon_track(df, df_total, time_cutoff = 1500, spacial_cutoff = 4, \
     Arguments :
         -df : data frame filtered containing only the events with a certain range of n_hits
         -df_total : data frame containing all events
-        -time_cutoff : maximal time interval in clock cycles over which a decay is searched
-        -spacial_cutoff : maximal distance between the end of the muon track and the potential electron in the next event 
         -save_indices : if True, the indices of the events candidate for muon decay are stored in files with path {storage_dir"events_indices"run_name.txt}                     
         -save_hits : if True, the lists of hits are stored with pickle in {storage_dir"pickle_events"run_name} for each muon decay event
         -save_stats : if True, the function saves the filtering stats in a dictionary with pickle in {storage_dir"filtering_data"run_name}   

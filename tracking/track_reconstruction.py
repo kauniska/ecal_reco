@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import sys
-sys.path.insert(1, 'C:\\Users\\eliot\\OneDrive\\Documents\EPFL\\TP4_ECAL\\Code\\ecal_reco\\utils')
+import fnmatch
+sys.path.insert(1, r'C:\Users\eliot\EPFL\TP4_ECAL\Code\ecal_reco\utils')
 from parameters import *
 from scipy.stats import norm
 
@@ -49,18 +50,18 @@ def convert_ns_to_clockcycle(ns) :
     return clockcycle
 
 
-def mapping_SiPM_delay(tofpet_id, tofpet_channel)
-    ## find the delay of the corresponding SiPM channel (in picosecond)
+def mapping_PCB_delay(tofpet_id, tofpet_channel) :
+    ## find the delay of the corresponding PCB channel (in picosecond)
     ## then convert it into nanosecond, the into clockcycle
 
     if tofpet_id % 2 == 0 :        
-        return convert_ns_to_clockcycle(SiPM_delay[63-tofpet_channel]/1000)  
-         ## SiPM channels 1-64 are related to tofpet 0 (or 2/4/6) 
-         ## SiPM channels are inversly sorted as tofpet channels
-    else                            
-        return convert_ns_to_clockcycle(SiPM_delay[127-tofpet_channel]/1000)
-        ## SiPM channels 65-96 are related to tofpet 1 (or 3/5/7)
-        ## SiPM channels are inversly sorted as tofpet channels
+        return convert_ns_to_clockcycle(PCB_delay[63-tofpet_channel]/1000)  
+         ## PCB channels 1-64 are related to tofpet 0 (or 2/4/6) 
+         ## PCB channels are inversly sorted as tofpet channels
+    else :         
+        return convert_ns_to_clockcycle(PCB_delay[127-tofpet_channel]/1000)
+        ## PCB channels 65-96 are related to tofpet 1 (or 3/5/7)
+        ## PCB channels are inversly sorted as tofpet channels
 
 
 ## Looks how many hits overlap at a certain angle t. Return the the hits index that overlap, the number of overlaping
@@ -265,5 +266,47 @@ def plot_hits(hits, x_plane = None, plot_perpendicular = False, scaling = 1, hit
 
     return fig,ax
 
-        
+#compute the average over the timestamps of a list of hit
+def mean_timestamp(*args):
+    total_timestamp = 0
+    total_hits = 0
 
+    if len(args) == 1:
+             # print("args[0] :"+str(len((args[0]))))
+        for h in args[0]:
+                          # print("timestamps : "+str(h.timestamp))
+                total_timestamp += h.timestamp
+                total_hits += 1
+                        # print("number of hits : "+str(total_hits))
+    elif len(args) == 2:
+        for hits_list in args:
+            for h in hits_list:
+                    total_timestamp += h.timestamp
+                    total_hits += 1
+    else:
+        raise ValueError("Expect one or two arguments")
+
+    if total_hits > 0:
+        mean_value = total_timestamp / total_hits
+                # print("mean_value: "+str(mean_value))
+    else:
+        mean_value = 0  # ou une autre valeur par défaut si aucun élément n'est trouvé
+
+    return mean_value
+
+
+## Select the first timestamp of a list of hit (can take many lists as arguments)
+def first_timestamp(hit_list):
+    timestamps = []
+        # Check if the list is not empty and contains objects with a timestamp attribute
+    for h in hit_list :
+            
+        timestamps.append(h.timestamp)
+        # print(timestamps)
+
+    # Return the smallest timestamp
+    # print(timestamps)
+    min_timestamp = np.min(timestamps)
+    return min_timestamp
+
+    
